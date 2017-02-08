@@ -1,0 +1,93 @@
+<template name="solveChallenge">
+    <div class="container">
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <h3>Solve Challenge</h3>
+
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <p>This is a challenge. You can try to solve it, running the commands available bellow. Your solution will automatically
+                    be verified using secret check commands that will compare your constraints with the ones previously set by the challenger.
+                    Lines marked with <span class="lock-header glyphicon glyphicon-lock"></span> can't be edited to keeping the challenge's logic intact. If the counter-examples provided aren't enough
+                    to understand what constraints are missing, you can define and execute your own commands. Good luck!</p>
+            </div>
+            <div class="edit-challenge">
+                <span class="glyphicon glyphicon-lock lock-password"></span><input placeholder="password" name="challengePassword" id="challengePassword"/>
+                <button id="editChallenge" class="btn btn-primary btn-margins">Edit Challenge & Statistics</button>
+            </div>
+        </div>
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 challenge-creator">
+            <textarea id="challengeEditor"></textarea>
+        </div>
+        <div class="command-selection margin-top-20px">
+            {{#with challenges}}
+                <label>Check : </label>
+
+                <select>
+                    {{#each this}}
+                        <option value="{{name}}">{{name}}</option>
+                    {{/each}}
+                    {{#with userCommands}}
+                        {{#each this}}
+                            <option value="{{.}}">{{.}}</option>
+                            {{/each}}
+
+                    {{/with}}
+                </select>
+            {{/with}}
+        </div>
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <div class="text-center">
+
+                {{#if isSolution}}
+                    <button id="shareSolution" class="cbutton cbutton--effect-boris ">
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                            <span class="glyphicon glyphicon-link"></span></div>
+                        <span class="cbutton__text">GenUrl</span><i class="legend">Share Solution</i>
+                    </button>
+                {{/if}}
+                <button id="execbtn" class="cbutton cbutton--effect-boris">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <i class="cbutton__icon fa fa-fw fa-play auto-margin"></i></div>
+                    <span class="cbutton__text">Play</span><i class="legend">Execute</i>
+                </button>
+            </div>
+        </div>
+        <div id="url-challenge-permalink" class="col-lg-12 col-md-12 col-sm-12 col-xs-12"></div>
+
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" id="log"></div>
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            {{drawInstance}}
+            <div id="instanceViewer" class="instanceViewer col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                {{> frameNavigation}}
+                <div id="instance"></div>
+                {{> visSettings}}
+            </div>
+        </div>
+        <!--<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <p class="empty-univ">Empty Universe.</p>
+            <div id="instanceViewer" class="instanceViewer col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <div id="instance"></div>
+
+            </div>
+        </div>-->
+        <div id="instancenav" class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <div class="text-center">
+                <div id="prev" class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                    <button id="prevbtn" class="cbutton cbutton--effect-boris float-right">
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                            <i class="cbutton__icon fa fa-fw fa-step-backward auto-margin"></i></div>
+                        <span class="cbutton__text">Backward</span><i class="legend">Previous instance</i>
+                    </button>
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                </div>
+                <div id="next" class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                    <button id="nextbtn" class="cbutton cbutton--effect-boris float-left">
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                            <i class="cbutton__icon fa fa-fw fa-step-forward auto-margin"></i></div>
+                        <span class="cbutton__text">Forward</span><i class="legend">Next instance</i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
