@@ -8,6 +8,9 @@
     "babel-runtime": "^6.18.0",
     "codemirror": "^5.23.0",
     "cytoscape": "^2.7.14",
-    "meteor-node-stubs": "^0.2.5"
+    "meteor-node-stubs": "^0.2.5",
+    "jquery": "2.1.1",
+    "classie": "latest",
+    "qtip2": "latest"
   }
 }
