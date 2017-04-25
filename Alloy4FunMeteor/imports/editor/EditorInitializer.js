@@ -127,24 +127,28 @@ function initializeEditor(htmlElement, mode){
     options.mode = mode;
     //Parses the editor's text for alloy commands.
     editor.getCommands = function(){
-        var runPattern = /(\W|^)run(\{|(\[\n\r\s]+\{)|([\n\r\s]+([^{\n\r\s]*)))/g;
-        var checkPattern = /(\W|^)check(\{|(\[\n\r\s]+\{)|([\n\r\s]+([^{\n\r\s]*)))/g;
+        //match a run or a check block
+        var pattern = /((\W|^)run(\{|(\[\n\r\s]+\{)|([\n\r\s]+([^{\n\r\s]*)))|((\W|^)check(\{|(\[\n\r\s]+\{)|([\n\r\s]+([^{\n\r\s]*)))))/g;
         var commands = [];
-        var runNumber = 1;
-        var checkNumber = 1;
+        var commandNumber = 1;
         var input = this.getValue();
 
-        var runMatches = runPattern.exec(input);
-        while(runMatches != null){
-            commands.push(runMatches[5]?runMatches[5]:"run$"+runNumber++);
-            runMatches = runPattern.exec(input);
+        var matches = pattern.exec(input);
+        while(matches != null){
+            //console.log(matches);
+
+            if (matches[6]) commands.push(matches[6]); //run command w/ name?
+            else if (matches[12]) commands.push(matches[12]); //check command w/ name?
+            else if (matches[0].includes("run")) { //unnamed run command?
+                commands.push("run$"+commandNumber);
+            } else if (matches[0].includes("check")) {//unnamed check command?
+                commands.push("check$"+commandNumber);
+            } else console.log("Unreachable block of code. If you're reading this, consider debugging (function initializeEditor, file EditorInitializer).");
+            commandNumber++;
+            matches = pattern.exec(input);
         }
 
-        var checkMatches = checkPattern.exec(input);
-        while(checkMatches != null){
-            commands.push(checkMatches[5]?checkMatches[5]:"check$"+checkNumber++);
-            checkMatches = checkPattern.exec(input);
-        }
+        //console.log(commands);
         //Adds the found commands to the session variables, triggering template events automatically.
         Session.set("commands",commands);
     };
@@ -152,7 +156,6 @@ function initializeEditor(htmlElement, mode){
     //editor.setSize("100%","100%");
     return editor;
 }
-
 
 
 
