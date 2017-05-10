@@ -209,11 +209,16 @@ public String projectOver(String[] type){
 			sb.append(", \"fields\" : " + fields);
 
 			sb.append(", \"skolem\" : {");
-			for (ExprVar v : answer.getAllSkolems()) {
+			Iterator<ExprVar> vars = answer.getAllSkolems().iterator();
+			while (vars.hasNext()){
+				ExprVar v = vars.next();
+			//for (ExprVar v : answer.getAllSkolems()) {
 				sb.append("\"" + v.label + "\"")
 						.append(" : ")
 						.append(answer.eval(v).toString().replace("{", "\"")
 								.replace("}", "\""));
+				if (vars.hasNext())
+					sb.append(", ");
 			}
 			sb.append("}}");
 			return sb.toString();
