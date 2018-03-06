@@ -4,8 +4,8 @@
 
 //WSDL URL
 //debugging webservice locally
-url="http://alloy4funvm.di.uminho.pt:8080/Alloy4Fun/services/AlloyService?wsdl";
-//url="http://localhost:8080/Alloy4Fun/services/AlloyService?wsdl";
+//url="http://alloy4funvm.di.uminho.pt:8080/Alloy4Fun/services/AlloyService?wsdl";
+url="http://localhost:8080/Alloy4Fun/services/AlloyService?wsdl";
 
 Meteor.methods({
     'getInstance' : function (model, sessionId, instanceNumber, commandLabel, forceInterpretation){
@@ -22,7 +22,12 @@ Meteor.methods({
                 throw new Meteor.Error(501, "We're sorry! The service is currently unavailable. Please try again later.");
             }
         }
-        var resultObject = JSON.parse(result.getInstanceReturn);
+        //var resultObject = JSON.parse(result.getInstanceReturn);
+        var resultObject = JSON.parse(result.return);
+
+        console.log("result = ");
+        console.log(result);
+
         if(resultObject.syntax_error){
             throw new Meteor.Error(502, resultObject);
         } else {
@@ -202,6 +207,8 @@ Meteor.methods({
                 throw new Meteor.Error(501, "We're sorry! The service is currently unavailable. Please try again later.");
             }
         }
-        return JSON.parse(result.getProjectionReturn.toString());
+        //verificar : return JSON.parse(result.return.toString());
+        //return JSON.parse(result.getProjectionReturn.toString());
+        return JSON.parse(result.return.toString());
     },
 });
