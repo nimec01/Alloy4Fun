@@ -5,6 +5,7 @@
 import {initializeAlloyCreateChallengeEditor} from '/imports/editor/EditorInitializer';
 
 Template.createChallenge.helpers({
+  /*Edit challenge  */
     'loadContent' : function(){
         if(this.whole && this.password && challengeEditor){
             challengeEditor.setValue(this.whole);
@@ -12,6 +13,7 @@ Template.createChallenge.helpers({
             $("#challengePassword")[0].value = this.password;
         }
     },
+  /*Display challenge statistics*/
     'displayStatistics' : function(){
         var statistics = Session.get("statistics");
         if(statistics) return statistics;
@@ -19,20 +21,26 @@ Template.createChallenge.helpers({
     }
 });
 
-
 Template.createChallenge.events({
-    //Save and Share Challenge
+
+    /* Save and Share Challenge */
     "click #saveAndShare" : function (){
-        //Disable save and Share button
+        /* Disable save and Share button */
         $('#saveAndShare').prop('disabled', true);
-        //Clear errors from editor's gutter
+
+        /* Clear errors from editor's gutter */
         challengeEditor.clearGutter("error-gutter");
+
+        /* #challengePassword -> input id*/
         var password = $("#challengePassword")[0].value;
+
+        /* if password length > 0 */
         if(password!="" ){
-            //Check for syntax errors
+            /* Execute getInstance mainly because a model verification is needed, handleInterpretModelEvent alert model errors and store the challenge*/
             Meteor.call('getInstance', challengeEditor.getValue()+'\nrun test{}', Meteor.default_connection._lastSessionId, 0, 'test' , true, handleInterpretModelEvent);
         }
     },
+    /* Password requirements */
     "input #challengePassword" : function () {
         $("#challengePassword").removeClass("missing-field");
         $(".lock-password").removeClass("wrong");
@@ -41,27 +49,10 @@ Template.createChallenge.events({
 });
 
 
-function checkSecretBlocks(){
-    var challenge= challengeEditor.getValue();
 
-    var secretsStart = getIndexesOf(/\/\/START_SECRET/gi, challenge);
-    var secretsEnd = getIndexesOf(/\/\/END_SECRET/gi, challenge);
+/*----- ---Save and Share Event ------- */
 
-    if(secretsStart.length != secretsEnd.length){
-        throw {number : 1, message : "Different number of SECRET open and closing tags! (//START_SECRET .. //END_SECRET)"};
-    }
-
-    while(secretsStart.length>0){
-        var secretStart = secretsStart.shift();
-        var secretEnd = secretsEnd.shift();
-        if(secretStart > secretEnd) {
-            throw {number : 2,lineNumber : challengeEditor.posFromIndex(secretEnd).line+1, message : "END tag before any START ! (//START_SECRET .. //END_SECRET)"};
-        }
-    }
-
-}
-
-
+/* saveAndShare event handler*/
 function handleInterpretModelEvent(err, result){
     if (err) {
         if (err.error == 502) {
@@ -85,6 +76,9 @@ function handleInterpretModelEvent(err, result){
     }
 }
 
+/* Method that stores a challenge, uses 'storeChallenge' server method and handleResponse with the result
+   checkSecretBlocks function used before storeChallenge
+*/
 function storeChallenge(){
     var error = false;
     try{
@@ -104,7 +98,7 @@ function storeChallenge(){
     if(!error)Meteor.call('storeChallenge',challengeEditor.getValue(), $("#challengePassword")[0].value, true, 'original', getLockedMarkers(), handleResponse);
 }
 
-
+/* Handle the result from storeChallenge method, displays the generated permalink */
 function handleResponse(err, result){
     if(err){
         if(err.error == 503) {
@@ -152,8 +146,33 @@ function handleResponse(err, result){
     }
 }
 
+function checkSecretBlocks(){
+    var challenge= challengeEditor.getValue();
+
+    var secretsStart = getIndexesOf(/\/\/START_SECRET/gi, challenge);
+    var secretsEnd = getIndexesOf(/\/\/END_SECRET/gi, challenge);
+
+    if(secretsStart.length != secretsEnd.length){
+        throw {number : 1, message : "Different number of SECRET open and closing tags! (//START_SECRET .. //END_SECRET)"};
+    }
+
+    while(secretsStart.length>0){
+        var secretStart = secretsStart.shift();
+        var secretEnd = secretsEnd.shift();
+        if(secretStart > secretEnd) {
+            throw {number : 2,lineNumber : challengeEditor.posFromIndex(secretEnd).line+1, message : "END tag before any START ! (//START_SECRET .. //END_SECRET)"};
+        }
+    }
+
+}
+
+/*------- ------ ------ ----- ----- ---- */
 
 
+
+/*
+Callbacks added with this method are called once when an instance of Template.createChallenge is rendered into DOM nodes and put into the document for the first time.
+*/
 Template.createChallenge.onRendered(function () {
     challengeEditor = initializeAlloyCreateChallengeEditor(document.getElementById("challengeEditor"));
     $('#saveAndShare').qtip({
@@ -196,7 +215,6 @@ function handleGetStatistics(err, result){
         Session.set("statistics", result);
     }
 }
-
 
 function zeroclipboard() {
     var client = new ZeroClipboard($(".clipboardbutton"));

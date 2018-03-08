@@ -5,6 +5,9 @@
 import classie from 'classie';
 import 'qtip2/src/core.css';
 
+/*
+Each template has a local dictionary of helpers that are made available to it, and this call specifies helpers to add to the template’s dictionary.
+*/
 Template.alloyEditor.helpers({
     'drawInstance' : function (){
         var instanceNumber = Session.get("currentInstance");
@@ -34,6 +37,9 @@ Template.alloyEditor.helpers({
     }
 });
 
+/*
+ Declare event handlers for instances of this template. Multiple calls add new event handlers in addition to the existing ones.
+*/
 Template.alloyEditor.events({
     'click #exec': function (evt) {
         if (evt.toElement.id != "exec") {
@@ -114,6 +120,9 @@ Template.alloyEditor.events({
     }
 });
 
+/*
+Callbacks added with this method are called once when an instance of Template.alloyEditor is rendered into DOM nodes and put into the document for the first time.
+*/
 Template.alloyEditor.onRendered(function () {
     try{cy}catch(e){initGraphViewer("instance");}
     //Adds click effects to Buttons
@@ -182,6 +191,11 @@ Template.alloyEditor.onRendered(function () {
 
 });
 
+
+
+//------------- HANDLERS -----------
+
+// nextbtn event handler after getInstance(textEditor.getValue) , currentInstance + 1
 function handleNextInstanceEvent(err, result){
     if(err){
         swal(err.reason, "", "error");
@@ -198,34 +212,7 @@ function handleNextInstanceEvent(err, result){
 
 }
 
-
-function handleGenInstanceURLEvent(err, result){
-    if (!err) {
-        // if the URL was generated successfully, create and append a new element to the HTML containing it.
-        var url = document.createElement('div');
-        url.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
-        var anchor = document.createElement('a');
-        anchor.href = "/editor/" +  result;
-        anchor.className= "urlinfo";
-        anchor.innerHTML =  window.location.origin +"/editor/" +  result;
-        url.appendChild(anchor);
-
-        var clipboard = document.createElement('div');
-        clipboard.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
-        clipboard.innerHTML = "<button class='clipboardbutton cbutton cbutton--effect-boris'><img src='/images/icons/clipboard.png' /><i class='legend'>copy to clipboard</i></button></div>";
-
-        var textcenter = document.createElement('div');
-        textcenter.className = "text-center";
-        textcenter.id = "permalink";
-        textcenter.appendChild(url);
-        textcenter.appendChild(clipboard);
-
-        document.getElementById('url-instance-permalink').appendChild(textcenter);
-        $("#genInstanceUrl > button").prop('disabled', true);
-        zeroclipboard();
-    }
-}
-
+// execbtn event handler after getInstance(textEditor.getValue)
 function handleInterpretModelEvent(err, result) {
     $('#exec > button').prop('disabled', true);
     if (err) {
@@ -253,17 +240,6 @@ function handleInterpretModelEvent(err, result) {
         }
     }
 }
-
-function handlePreviousInstanceEvent(err, result){
-    if(err){
-        swal(err.reason, "", "error");
-    }else{
-        if (result.unsat)$('#prev > button').prop('disabled', true);
-        else updateInstances(result);
-        Session.set("currentInstance",result.number);
-    }
-}
-
 updateInstances = function(instance){
     if(!Session.get("instances")){
         var instances = [instance];
@@ -277,6 +253,19 @@ updateInstances = function(instance){
     }
 }
 
+// prevbtn event handler after getInstance(textEditor.getValue) , currentInstance - 1
+function handlePreviousInstanceEvent(err, result){
+    if(err){
+        swal(err.reason, "", "error");
+    }else{
+        if (result.unsat)$('#prev > button').prop('disabled', true);
+        else updateInstances(result);
+        Session.set("currentInstance",result.number);
+    }
+}
+
+
+// genUrlbtn event handler after genUrl method
 function handleGenURLEvent(err, result) {
     if (!err) {
         // if the URL was generated successfully, create and append a new element to the HTML containing it.
@@ -303,6 +292,38 @@ function handleGenURLEvent(err, result) {
         zeroclipboard();
     }
 }
+
+// geninstanceurlbtn event handler after storeInstance method
+function handleGenInstanceURLEvent(err, result){
+    if (!err) {
+        // if the URL was generated successfully, create and append a new element to the HTML containing it.
+        var url = document.createElement('div');
+        url.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
+        var anchor = document.createElement('a');
+        anchor.href = "/editor/" +  result;
+        anchor.className= "urlinfo";
+        anchor.innerHTML =  window.location.origin +"/editor/" +  result;
+        url.appendChild(anchor);
+
+        var clipboard = document.createElement('div');
+        clipboard.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
+        clipboard.innerHTML = "<button class='clipboardbutton cbutton cbutton--effect-boris'><img src='/images/icons/clipboard.png' /><i class='legend'>copy to clipboard</i></button></div>";
+
+        var textcenter = document.createElement('div');
+        textcenter.className = "text-center";
+        textcenter.id = "permalink";
+        textcenter.appendChild(url);
+        textcenter.appendChild(clipboard);
+
+        document.getElementById('url-instance-permalink').appendChild(textcenter);
+        $("#genInstanceUrl > button").prop('disabled', true);
+        zeroclipboard();
+    }
+}
+
+
+
+
 function buttonsEffects() {
 
     function mobilecheck() {
@@ -349,14 +370,12 @@ function buttonsEffects() {
         });
     });
 }
-
 function hideButtons() {
     $('#exec > button').prop('disabled', true);
     $('#next > button').prop('disabled', true);
     $('#prev > button').prop('disabled', true);
     $('.permalink > button').prop('disabled', true);
 }
-
 //Setup clipboard to copy the model's URL
 function zeroclipboard() {
     var client = new ZeroClipboard($(".clipboardbutton"));
@@ -366,7 +385,7 @@ function zeroclipboard() {
     });
 };
 
-
+// Get instance number defined by function argument
 getCurrentInstance = function (instanceNumber){
     var instances = Session.get("instances");
     var result = undefined;
@@ -378,5 +397,3 @@ getCurrentInstance = function (instanceNumber){
     });
     return result;
 };
-
-

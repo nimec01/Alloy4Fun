@@ -74,4 +74,3 @@ Template.createChallengeWrapper.onRendered(function () {
         }
     });
 });
-
