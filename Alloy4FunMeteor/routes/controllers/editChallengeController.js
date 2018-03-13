@@ -31,7 +31,6 @@ editChallengeController = RouteController.extend({
 
     data: function () {
         var challenge = Challenge.findOne({_id: this.params._id});
-
         if (challenge)return challenge;
         else return {_id: this.params._id, passwordRequired: true};
     },

@@ -2,6 +2,7 @@
  * Created by josep on 31/03/2016.
  */
 
+import 'qtip2';
 import {initializeAlloyCreateChallengeEditor} from '/imports/editor/EditorInitializer';
 
 Template.createChallenge.helpers({
@@ -64,6 +65,7 @@ function checkSecretBlocks(){
 
 function handleInterpretModelEvent(err, result){
     if (err) {
+        console.log(err);
         if (err.error == 502) {
             //Syntax error, add error marker to editor's gutter
             addErrorMarkerToGutter(err.reason.msg, err.reason.line);

@@ -47,7 +47,10 @@ Template.alloyEditor.events({
                         content: 'There are no commands to execute.',
                         hide: 'unfocus'
                     });
-                }else Meteor.call('getInstance', textEditor.getValue(), Meteor.default_connection._lastSessionId, 0,command, true, handleInterpretModelEvent);
+                }else {
+                    console.log("test");
+                    Meteor.call('getInstance', textEditor.getValue(), Meteor.default_connection._lastSessionId, 0,command, true, handleInterpretModelEvent);
+                }
                 $("#exec > button").prop('disabled', true);
                 $("#next > button").prop('disabled', false);
             }

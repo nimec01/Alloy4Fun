@@ -1,7 +1,7 @@
 /**
  * Created by josep on 31/03/2016.
  */
-//import * as qt from 'qtip2';
+import 'qtip2';
 
 Template.createChallengeWrapper.helpers({
     'unlocked' : function(){
