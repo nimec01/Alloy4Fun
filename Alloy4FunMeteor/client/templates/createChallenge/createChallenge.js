@@ -9,16 +9,11 @@ import 'qtip2';
 Template.createChallenge.helpers({
   /*Edit challenge  */
     'loadContent' : function(){
-        console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
         if(this.whole && this.password && challengeEditor){
-            console.log(this.whole)
             challengeEditor.setValue(this.whole);
             setLockedLines(Router.current().data().lockedLines);
             $("#challengePassword")[0].value = this.password;
         }
-        console.log("createChallenge.js tenta fazer load")
-        console.log(this.whole)
-
     },
   /*Display challenge statistics*/
     'displayStatistics' : function(){

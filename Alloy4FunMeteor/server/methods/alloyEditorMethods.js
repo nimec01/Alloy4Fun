@@ -2,12 +2,17 @@
  * Created by josep on 09/02/2016.
  */
 
-//WSDL URL
-//debugging webservice locally
 //url="http://alloy4funvm.di.uminho.pt:8080/Alloy4Fun/services/AlloyService?wsdl";
 url="http://localhost:8080/Alloy4Fun/services/AlloyService?wsdl";
 
+
+/* Meteor server methods */
 Meteor.methods({
+  /*
+    Uses webservice to get a model instance
+      forceInterpretation : used to skip cache and force new model interpretation
+      used in Execute, Next and Prev Button
+   */
     'getInstance' : function (model, sessionId, instanceNumber, commandLabel, forceInterpretation){
         var args = {model: model, sessionId: sessionId, instanceNumber: instanceNumber, commandLabel: commandLabel, forceInterpretation: forceInterpretation};
         try {
@@ -25,9 +30,6 @@ Meteor.methods({
         //var resultObject = JSON.parse(result.getInstanceReturn);
         var resultObject = JSON.parse(result.return);
 
-        //console.log("result = ");
-        //console.log(result);
-
         if(resultObject.syntax_error){
             throw new Meteor.Error(502, resultObject);
         } else {
@@ -36,12 +38,20 @@ Meteor.methods({
         }
 
     },
+/*
+      Stores the model specified in the function argument, returns model url 'id'
+      used in Share Model option
+*/
     'genURL' : function (model) {
         var id=Model.insert({
             model: model
         });
         return id;
     },
+/*
+      Stores model instance, returns url to make possible share the instance.
+      used in Share Instance option
+*/
     'storeInstance' : function (model, themeData, instance){
         var id = Model.insert({
             model: model,
@@ -50,9 +60,14 @@ Meteor.methods({
         });
         return id;
     },
+/*
+      Stores 'wholeChallenge' in Challenge collection
+      used by the getInstance handler triggered by Share Model event in Create Challenge mode
+*/
     'storeChallenge' : function (wholeChallenge, password, public, derivationOf, lockedLines) {
         var regexSecret = /\/\/START_SECRET(?:(?!\/\/END_SECRET)[^/])*\/\/END_SECRET/g;
         var regexCheck = /((?:\s(check|run)\s+)([a-zA-Z][a-zA-Z0-9_"'$]*)?(?:\s*\{[^}]*}))/g;
+
         var challenges = [];
         var secretBlock, checkCommand;
         while (secretBlock = regexSecret.exec(wholeChallenge)) {
@@ -78,6 +93,9 @@ Meteor.methods({
 
         throw new Meteor.Error(505, "Server error.");
     },
+/*
+      Used in Solve Challenge mode to verify the challenge solution
+*/
     'assertChallenge' : function (model, id, command, sessionId, instNumber, forceInterpretation){
         var challenge = Challenge.findOne({_id: id});
         var storedCommand = challenge.challenges.filter((i)=>{return i.name==command});
@@ -118,7 +136,8 @@ Meteor.methods({
         return 1;
 
     },
-    //Every time a challenge is changed and executed, store it as a derivation of the original
+/*  Every time a challenge is changed and executed, store it as a derivation of the original
+*/
     'storeDerivation' : function(model, derivationOf, sat){
         var challenge = Challenge.findOne({_id: derivationOf});
 
@@ -146,7 +165,10 @@ Meteor.methods({
 
         return challengeId;
     },
-    //Check if the password is correct
+/*
+    Check if the password is correct
+    used to access Create Challenge mode by Solve Challenge mode
+*/
     'unlockChallenge' : function(id, password){
         var challenge = Challenge.findOne({_id: id});
         console.log("tentar desbloquear um desafio")
@@ -156,7 +178,9 @@ Meteor.methods({
             return challenge;
         }else throw new Meteor.Error(506, "Invalid password!");
     },
-    //Share button.
+/*
+    Used by Share event in Solve Challenge mode
+*/
     'storeSolution' : function(content, derivationOf,  immutable){
         var challenge = Challenge.findOne({_id: derivationOf});
 

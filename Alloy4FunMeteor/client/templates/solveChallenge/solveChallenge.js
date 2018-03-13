@@ -4,6 +4,7 @@
 import {initializeAlloySolveChallengeEditor} from '/imports/editor/EditorInitializer';
 
 Template.solveChallenge.helpers({
+  /*Get user 'runs' and 'checks' defined in the (Session editor > EditorInitialize > initializeEditor)*/
     'userCommands' : function(){
         var commands = Session.get("commands");
         return commands;
@@ -23,9 +24,12 @@ Template.solveChallenge.helpers({
 
 
 Template.solveChallenge.events({
+  /*Execute Button */
     "click #execbtn" : function (){
-        //Check if model was changed since last execution
+      /*Check if model was changed since last execution,
+        defined in initializeAlloySolveChallengeEditor method from editor>EditorInitializer*/
         var history = Session.get("modelHistory");
+      /*challengeEditor : code editor */
         var model = challengeEditor.getValue();
         Session.set("currentInstance",0);
         blockInterface();
@@ -36,6 +40,7 @@ Template.solveChallenge.events({
 
 
     },
+    /*Next Instance Button*/
     "click #next" : function(){
         $("#prev > button").prop('disabled', false);
         blockInterface();
@@ -43,6 +48,7 @@ Template.solveChallenge.events({
         Session.set("currentInstance",Session.get("currentInstance")+1);
         Meteor.call('assertChallenge', model, Router.current().data()._id, $('.command-selection > select option:selected').text(), Meteor.default_connection._lastSessionId,Session.get("currentInstance"), false, false, handleResponse);
     },
+    /*Previous Instance Button*/
     "click #prev" : function(){
         $("#next > button").prop('disabled', false);
         var model = challengeEditor.getValue();
@@ -51,6 +57,8 @@ Template.solveChallenge.events({
         if(Session.get("currentInstance")==0)$("#prev > button").prop('disabled', true);
         Meteor.call('assertChallenge', model, Router.current().data()._id, $('.command-selection > select option:selected').text(), Meteor.default_connection._lastSessionId,Session.get("currentInstance"), false, false, handleResponse);
     },
+
+    /*Events associated with mode switch (Solve Challenge Mode --> Create Challenge Mode)  */
     "input #challengePassword" : function () {
 
     },
@@ -72,6 +80,8 @@ Template.solveChallenge.events({
         var password = $("#challengePassword")[0].value;
         Meteor.call('unlockChallenge', Router.current().data()._id, password, handleUnlockChallenge);
     },
+
+    /*Share -> generate permalink and stores solution */
     'click #shareSolution' : function(){
         $.blockUI({message: '<div class="sk-circle"><div class="sk-circle1 sk-child"></div><div class="sk-circle2 sk-child"></div><div class="sk-circle3 sk-child"></div><div class="sk-circle4 sk-child"></div><div class="sk-circle5 sk-child"></div><div class="sk-circle6 sk-child"></div><div class="sk-circle7 sk-child"></div><div class="sk-circle8 sk-child"></div><div class="sk-circle9 sk-child"></div><div class="sk-circle10 sk-child"></div><div class="sk-circle11 sk-child"></div><div class="sk-circle12 sk-child"></div></div>',
             css: { border: '0px' , background:  'transparent'}});
@@ -94,11 +104,13 @@ function lockedMarkers(){
     return lockedLines;
 }
 
+/*Handler associated with storeSolution result, from #shareSolution event */
 function handleStoreSolution(err, result){
 
     if(err){
         //TODO: Handle Error
     }else{
+      // shows permalink
         var url = document.createElement('div');
         url.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
         var anchor = document.createElement('a');
@@ -122,6 +134,7 @@ function handleStoreSolution(err, result){
     unblockInterface();
 }
 
+/*When the unlockChallenge output != err ,  Router.go('editChallenge', {_id: id} );  */
 function handleUnlockChallenge (err, result){
     unblockInterface();
     if (err){
@@ -151,6 +164,7 @@ function handleUnlockChallenge (err, result){
     }
 }
 
+/*Handler responsible to handle the result from assertChallenge call on Run Event */
 function handleResponse(err, result){
     $.unblockUI();
     $('#instanceViewer').hide();
@@ -170,7 +184,9 @@ function handleResponse(err, result){
             $('#prev > button').prop('disabled', true);
         }
     }else{
+      /*This method was defined in alloyEditor > alloyEditor.js */
         updateInstances(result);
+
         $("#instancenav").show();
         var history = Session.get("modelHistory");
 
@@ -179,7 +195,7 @@ function handleResponse(err, result){
             history.changed = false;
             Meteor.call("storeDerivation", challengeEditor.getValue(), history.id, !result.unsat, handleStoreDerivation);
         }
-        console.log(result);
+
         if(result.commandType && result.commandType == "check") {
             var log = document.createElement('div');
             log.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
@@ -194,16 +210,19 @@ function handleResponse(err, result){
                 paragraph.className = "log-wrong";
                 updateGraph(result);
             }
-        
+
             log.appendChild(paragraph);
             $("#log")[0].appendChild(log);
         }else{
+          /*Method defined in visualizer,
+            result : instance  */
             updateGraph(result);
         }
 
     }
 }
 
+/*Store the model Derivation  in Session ("modelHistory") */
 function handleStoreDerivation(err, result){
     Session.set("modelHistory", {id : result, changed : false});
     unblockInterface();
@@ -222,7 +241,7 @@ Template.solveChallenge.onRendered(function () {
     console.log("tentar por o modelo")
     Session.set("modelHistory", {id: Router.current().data()._id, changed: false});
 
-    
+
     //Instance viewer right click settings customization
     (function($){
         $(document).ready(function(){
@@ -262,11 +281,13 @@ function lockLines(lockedLines){
     });
 }
 
+/*Makes interface unavailable */
 blockInterface = function(){
     $.blockUI({message: '<div class="sk-circle"><div class="sk-circle1 sk-child"></div><div class="sk-circle2 sk-child"></div><div class="sk-circle3 sk-child"></div><div class="sk-circle4 sk-child"></div><div class="sk-circle5 sk-child"></div><div class="sk-circle6 sk-child"></div><div class="sk-circle7 sk-child"></div><div class="sk-circle8 sk-child"></div><div class="sk-circle9 sk-child"></div><div class="sk-circle10 sk-child"></div><div class="sk-circle11 sk-child"></div><div class="sk-circle12 sk-child"></div></div>',
             css: { border: '0px' , background:  'transparent'}});
 };
 
+/* Makes interface available */
 unblockInterface = function(){
     $.unblockUI();
 };
