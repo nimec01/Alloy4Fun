@@ -37,6 +37,7 @@ Router.route('/editor/:_id', {
     where: 'client'
 });
 
+//route para editar challenge já criado [erro]
 Router.route('/createChallenge/:_id',{
     name: 'editChallenge',
     template: 'createChallengeWrapper',

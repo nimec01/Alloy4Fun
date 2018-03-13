@@ -25,8 +25,8 @@ Meteor.methods({
         //var resultObject = JSON.parse(result.getInstanceReturn);
         var resultObject = JSON.parse(result.return);
 
-        console.log("result = ");
-        console.log(result);
+        //console.log("result = ");
+        //console.log(result);
 
         if(resultObject.syntax_error){
             throw new Meteor.Error(502, resultObject);
@@ -73,7 +73,7 @@ Meteor.methods({
         }
 
         var id = Challenge.insert(storableChallenge);
-
+        console.log("store challenge feito")
         return id;
 
         throw new Meteor.Error(505, "Server error.");
@@ -103,8 +103,10 @@ Meteor.methods({
             }
         }
 
-        var resultObject = JSON.parse(result.getInstanceReturn);
+        //var resultObject = JSON.parse(result.getInstanceReturn);
+        var resultObject = JSON.parse(result.return);
         if(resultObject.syntax_error){
+            console.log("error no assert")
             throw new Meteor.Error(502, resultObject);
         } else {
 
@@ -147,7 +149,10 @@ Meteor.methods({
     //Check if the password is correct
     'unlockChallenge' : function(id, password){
         var challenge = Challenge.findOne({_id: id});
+        console.log("tentar desbloquear um desafio")
         if (password == challenge.password){
+            console.log("desbloqueou")
+            console.log(challenge)
             return challenge;
         }else throw new Meteor.Error(506, "Invalid password!");
     },

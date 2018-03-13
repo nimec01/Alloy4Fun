@@ -11,6 +11,6 @@
     "cytoscape": "^2.7.14",
     "jquery": "2.1.1",
     "meteor-node-stubs": "^0.2.5",
-    "qtip2": "latest"
+    "qtip2": "^3.0.3"
   }
 }
