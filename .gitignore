@@ -1,9 +1,6 @@
 *.class
 node_modules
 
-#meteor stuff
-.meteor
-
 mup.json
 .deploymeteor.config
 
