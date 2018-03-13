@@ -4,8 +4,8 @@
 
 //WSDL URL
 //debugging webservice locally
-url="http://alloy4funvm.di.uminho.pt:8080/Alloy4Fun/services/AlloyService?wsdl";
-//url="http://localhost:8080/Alloy4Fun/services/AlloyService?wsdl";
+//url="http://alloy4funvm.di.uminho.pt:8080/Alloy4Fun/services/AlloyService?wsdl";
+url="http://localhost:8080/Alloy4Fun/services/AlloyService?wsdl";
 
 Meteor.methods({
     'getInstance' : function (model, sessionId, instanceNumber, commandLabel, forceInterpretation){

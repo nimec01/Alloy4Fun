@@ -2,6 +2,7 @@
  * Created by josep on 06/04/2016.
  */
 import {initializeAlloySolveChallengeEditor} from '/imports/editor/EditorInitializer';
+import 'qtip2';
 
 Template.solveChallenge.helpers({
     'userCommands' : function(){
