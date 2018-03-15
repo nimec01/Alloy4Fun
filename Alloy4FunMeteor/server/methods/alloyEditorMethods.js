@@ -8,12 +8,15 @@ url="http://localhost:8080/Alloy4Fun/services/AlloyService?wsdl";
 
 /* Meteor server methods */
 Meteor.methods({
+
+
   /*
     Uses webservice to get a model instance
-      forceInterpretation : used to skip cache and force new model interpretation
-      used in Execute, Next and Prev Button
-   */
+        forceInterpretation : used to skip cache and force new model interpretation
+  */
     'getInstance' : function (model, sessionId, instanceNumber, commandLabel, forceInterpretation){
+
+  /* web service , getInstance method */
         var args = {model: model, sessionId: sessionId, instanceNumber: instanceNumber, commandLabel: commandLabel, forceInterpretation: forceInterpretation};
         try {
             var client = Soap.createClient(url);
@@ -27,7 +30,7 @@ Meteor.methods({
                 throw new Meteor.Error(501, "We're sorry! The service is currently unavailable. Please try again later.");
             }
         }
-        //var resultObject = JSON.parse(result.getInstanceReturn);
+
         var resultObject = JSON.parse(result.return);
 
         if(resultObject.syntax_error){
@@ -36,8 +39,17 @@ Meteor.methods({
             resultObject.number=instanceNumber;
             return resultObject;
         }
+  },
 
-    },
+
+
+
+
+
+
+
+
+
 /*
       Stores the model specified in the function argument, returns model url 'id'
       used in Share Model option
@@ -93,6 +105,47 @@ Meteor.methods({
 
         throw new Meteor.Error(505, "Server error.");
     },
+
+
+/* New Store Challenge to Edit template*/
+    'storeChallenge2' : function(wholeChallenge,public,derivationOf,lockedLines){
+      var regexSecret = /\/\/START_SECRET(?:(?!\/\/END_SECRET)[^/])*\/\/END_SECRET/g;
+      var regexCheck = /((?:\s(check|run)\s+)([a-zA-Z][a-zA-Z0-9_"'$]*)?(?:\s*\{[^}]*}))/g;
+
+      var challenges = [];
+      var secretBlock, checkCommand;
+      while (secretBlock = regexSecret.exec(wholeChallenge)) {
+          while(checkCommand = regexCheck.exec(secretBlock)){
+              if (checkCommand && checkCommand[3])challenges.push({name: checkCommand[3], value: checkCommand[1], commandType: checkCommand[2]});
+              //Error: Unnamed check command. // Error message needed
+              else throw new Meteor.Error(503,
+                  wholeChallenge.split(checkCommand[3].trim())[0].split(/\r\n|\r|\n/).length);
+          }
+      }
+
+      var storableChallenge = {
+          whole: wholeChallenge,
+          lockedLines : lockedLines,
+          challenges: challenges,
+          password: "",   // no password by default
+          public : public,
+          derivationOf : derivationOf
+      }
+
+      var private_id = Challenge.insert(storableChallenge);
+
+      var storableSolution = {
+           theChallenge : private_id
+      }
+
+      var public_id = Solutions.insert(storableSolution);
+
+      return {'private': private_id , 'public' : public_id};
+
+      throw new Meteor.Error(505, "Server error.");
+    },
+
+
 /*
       Used in Solve Challenge mode to verify the challenge solution
 */

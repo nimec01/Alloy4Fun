@@ -101,7 +101,7 @@ Schema.Theme = new SimpleSchema({
         optional: false
     },
 
-    //Node Colors 
+    //Node Colors
     nodeColors: {
         type : Array,
         optional : true
@@ -115,7 +115,7 @@ Schema.Theme = new SimpleSchema({
     "nodeColors.color":{
         type: String
     },
-    
+
     //Node Shapes
     nodeShapes: {
         type : Array,
@@ -167,7 +167,7 @@ Schema.Theme = new SimpleSchema({
         type: String
     },
 
-    
+
     //Edge Colors
     edgeColors: {
         type : Array,
@@ -203,9 +203,9 @@ Schema.Theme = new SimpleSchema({
         type: String,
         optional : false
     },
-    
+
     //Edge Colors
-    
+
 });
 
 /*Schema.Instance = new SimpleSchema({
@@ -223,8 +223,20 @@ Schema.Theme = new SimpleSchema({
     }
 })*/
 
+Schema.Solutions = new SimpleSchema({
+   _id: {
+      type : String,
+      optional : false
+   },
+   theChallenge: {
+        type : String,
+        optional : false
+  }
+});
+
 //Model.attachSchema(Schema.Model);
 Challenge.attachSchema(Schema.Challenge);
 Run.attachSchema(Schema.Run);
 Theme.attachSchema(Schema.Theme);
+Solutions.attachSchema(Schema.Solutions);
 //Instance.attachSchema(Schema.Instance);

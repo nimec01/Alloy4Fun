@@ -22,11 +22,15 @@ getIndexesOf = function(regex, string){
 
 //Returns lines marked with a lock
 getLockedMarkers = function(){
+   var lockedLines = [];
+
+  /*
     var i = 0, line;
     var lockedLines = [];
     while(line = challengeEditor.lineInfo(i++)){
         if(line.gutterMarkers && line.gutterMarkers.breakpoints)lockedLines.push(i);
     }
+  */
     return lockedLines;
 };
 

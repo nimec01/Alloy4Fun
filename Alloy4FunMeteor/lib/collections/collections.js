@@ -11,3 +11,5 @@ Run = new Meteor.Collection('Run');
 Instance = new Meteor.Collection('Instance');
 
 Theme = new Meteor.Collection('Theme');
+
+Solutions = new Meteor.Collection('Solutions');
