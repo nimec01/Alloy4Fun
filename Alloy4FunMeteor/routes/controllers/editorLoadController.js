@@ -9,9 +9,14 @@ editorLoadController = RouteController.extend({
     // this.subscribe('items');
     // // add the subscription to the waitlist
     // this.subscribe('item', this.params._id).wait();
+
     template : 'alloyEditor',
+
     subscriptions: function () {
         this.subscribe('editorLoad', this.params._id).wait();
+
+        //subscribe to cursor solutions. check server/publications/alloyLoadPublications
+        this.subscribe('solutions', this.params._id).wait();
     },
 
     // Subscriptions or other things we want to "wait" on. This also
@@ -29,13 +34,40 @@ editorLoadController = RouteController.extend({
     // return Posts.findOne({_id: this.params._id});
 
     data: function () {
+        var teste = this.params._id;
         var model = Model.findOne({_id: this.params._id});
         var themes = Theme.find({modelId : this.params._id}).fetch();
 
+
+        //var modelCursor = Model.find();
+
+        //var solutions = Solutions.find();
+        var challengeId = Solutions.findOne({_id: this.params._id});
+
+        if (challengeId) {
+
+
+
+            return model;
+        }
+
         if (model) {
+
+
             model.themes = themes;
             return model;
         }
+/*
+        else{ */
+            var challengeId = Solutions.findOne({_id: this.params._id});
+            console.log("challenge id");
+            console.log(challengeId);
+            var challengeToSolve = Challenge.find({_id: challengeId});
+
+            if(challengeToSolve)
+                console.log(challengeToSolve);
+                return challengeToSolve;
+        //}
 
     },
 
