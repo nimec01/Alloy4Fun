@@ -42,7 +42,7 @@ editorLoadController = RouteController.extend({
         //var modelCursor = Model.find();
 
         //var solutions = Solutions.find();
-        var challengeId = Solutions.findOne({_id: this.params._id});
+        var challengeId = Link.findOne({_id: this.params._id});
 
         if (challengeId) {
 
@@ -59,7 +59,7 @@ editorLoadController = RouteController.extend({
         }
 /*
         else{ */
-            var challengeId = Solutions.findOne({_id: this.params._id});
+            var challengeId = Link.findOne({_id: this.params._id});
             console.log("challenge id");
             console.log(challengeId);
             var challengeToSolve = Challenge.find({_id: challengeId});

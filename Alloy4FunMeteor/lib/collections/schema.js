@@ -222,21 +222,27 @@ Schema.Theme = new SimpleSchema({
         optional : false
     }
 })*/
-
-Schema.Solutions = new SimpleSchema({
+/* Link merely links to Models. When a challenge is created two links are provided. One public and another private.
+* This corresponds to two Link instances (with different _ids obvs) but both have the same model_id as they both
+* point to same model. */
+Schema.Link = new SimpleSchema({
    _id: {
       type : String,
       optional : false
    },
-   theChallenge: {
+   private: {
+        type : Boolean,
+        optional : false
+  },
+    model_id:{
         type : String,
         optional : false
-  }
+    }
 });
 
 //Model.attachSchema(Schema.Model);
 Challenge.attachSchema(Schema.Challenge);
 Run.attachSchema(Schema.Run);
 Theme.attachSchema(Schema.Theme);
-Solutions.attachSchema(Schema.Solutions);
+Link.attachSchema(Schema.Link);
 //Instance.attachSchema(Schema.Instance);

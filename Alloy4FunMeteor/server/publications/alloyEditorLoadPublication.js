@@ -76,7 +76,7 @@ Meteor.publish('solutions', function (_id) {
     };
 
     //puts query return in result variable and is captured in "editLoadController.js"
-    var result = Solutions.find(selector, options);
+    var result = Link.find(selector, options);
 
     if (result) {
         return result;

@@ -12,4 +12,4 @@ Instance = new Meteor.Collection('Instance');
 
 Theme = new Meteor.Collection('Theme');
 
-Solutions = new Meteor.Collection('Solutions');
+Link = new Meteor.Collection('Link');

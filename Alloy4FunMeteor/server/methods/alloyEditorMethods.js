@@ -55,10 +55,36 @@ Meteor.methods({
       used in Share Model option
 */
     'genURL' : function (model) {
+        //a Model is always created, regardless of having secrets or not
         var id=Model.insert({
-            model: model
+            whole: model
         });
-        return id;
+        //A public link is always created as well
+        var public_link_id=Link.insert({
+            model_id : id,
+            private: false
+        });
+
+        var result;
+        //variable "result" will contain public link if there are no secrets
+        //variable "result" will contain both public and private link if there are "secrets"
+        if (model.indexOf("//START_SECRET") !== -1){
+            var private_link_id=Link.insert({
+                model_id : id,
+                private: true
+            });
+            var result={
+                public: public_link_id,
+                private: private_link_id
+            }
+        }else{
+            result={
+                public: public_link_id
+            }
+        }
+
+        return result;
+
     },
 /*
       Stores model instance, returns url to make possible share the instance.
@@ -138,7 +164,7 @@ Meteor.methods({
            theChallenge : private_id
       }
 
-      var public_id = Solutions.insert(storableSolution);
+      var public_id = Link.insert(storableSolution);
 
       return {'private': private_id , 'public' : public_id};
 

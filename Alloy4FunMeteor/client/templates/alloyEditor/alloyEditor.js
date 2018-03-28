@@ -92,6 +92,8 @@ Template.alloyEditor.events({
             };
             if (!$("#genUrl > button").is(":disabled")){
 
+                Meteor.call('genURL', textEditor.getValue(), themeData,  handleGenURLEvent);
+              /*
               switch(modelType()){
 
                   case "normal" :  Meteor.call('genURL', textEditor.getValue(), themeData,  handleGenURLEvent);
@@ -102,7 +104,7 @@ Template.alloyEditor.events({
                   case "solution" :
                         break;
               }
-
+                */
             }
           }
     },
@@ -301,13 +303,26 @@ updateInstances = function(instance){
 function handleGenURLEvent(err, result) {
     if (!err) {
         // if the URL was generated successfully, create and append a new element to the HTML containing it.
+
         var url = document.createElement('div');
         url.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
         var anchor = document.createElement('a');
-        anchor.href = "/editor/" +  result;
-        anchor.className= "urlinfo";
-        anchor.innerHTML =  window.location.origin +"/editor/" +  result;
+        anchor.href = "/editor/" + result['public'];
+        anchor.className = "urlinfo";
+        anchor.innerHTML = window.location.origin + "/editor/" + result['public'];
         url.appendChild(anchor);
+
+
+        var urlPrivate = "";
+        if (result['private'] !== undefined) {
+            urlPrivate = document.createElement('div');
+            urlPrivate.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
+            var anchor = document.createElement('a');
+            anchor.href = "/editor/" + result['private'];
+            anchor.className = "urlinfo";
+            anchor.innerHTML = window.location.origin + "/editor/" + result['private'];
+            urlPrivate.appendChild(anchor);
+        }
 
         var clipboard = document.createElement('div');
         clipboard.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
@@ -316,7 +331,25 @@ function handleGenURLEvent(err, result) {
         var textcenter = document.createElement('div');
         textcenter.className = "text-center";
         textcenter.id = "permalink";
-        textcenter.appendChild(url);
+
+        if (result['private']!==undefined) {
+            var paragraph = document.createElement('p');
+
+            var text = document.createTextNode("Public Link:  ");
+            paragraph.appendChild(text);
+            paragraph.appendChild(url);
+
+            textcenter.appendChild(paragraph);
+            paragraph = document.createElement('p');
+
+            text = document.createTextNode("Private Link:  ");
+            paragraph.appendChild(text);
+            paragraph.appendChild(urlPrivate);
+            textcenter.appendChild(paragraph);
+        }else{
+            textcenter.appendChild(url);
+        }
+
         textcenter.appendChild(clipboard);
 
         document.getElementById('url-permalink').appendChild(textcenter);
@@ -474,6 +507,7 @@ function handleGenInstanceURLEvent(err, result){
         var clipboard = document.createElement('div');
         clipboard.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
         clipboard.innerHTML = "<button class='clipboardbutton cbutton cbutton--effect-boris'><img src='/images/icons/clipboard.png' /><i class='legend'>copy to clipboard</i></button></div>";
+
 
         var textcenter = document.createElement('div');
         textcenter.className = "text-center";
