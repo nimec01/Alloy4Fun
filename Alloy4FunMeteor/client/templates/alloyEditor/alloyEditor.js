@@ -62,14 +62,15 @@ Template.alloyEditor.events({
                 }
         /* Execute command */
                 else {
-                    switch(modelType()){
-                       case "normal": Meteor.call('getInstance', textEditor.getValue(), Meteor.default_connection._lastSessionId, 0,command, true, handleInterpretModelEvent);
-                            break;
-                       case "challenge": Meteor.call('getInstance', textEditor.getValue(), Meteor.default_connection._lastSessionId, 0,command, true, handleInterpretModelEvent);
-                            break;
-                       case "solution"  : //TODO
-                            break;
-                    }
+                  id = Router.current().params._id;
+
+                  if (!id) {id = "Original"; alert("id = Original");}
+
+
+                  // BUG : caso esteja na mesma sessão não vai funcionar utilizar o link porque ele não vai recompilar * ou algo do género.
+
+
+                  Meteor.call('getInstance2', textEditor.getValue(), Meteor.default_connection._lastSessionId, 0,command, true,id, handleInterpretModelEvent);
                 }
         /* available buttons */
                 $("#exec > button").prop('disabled', true);
@@ -91,20 +92,16 @@ Template.alloyEditor.events({
                 currentlyProjectedTypes : currentlyProjectedTypes
             };
             if (!$("#genUrl > button").is(":disabled")){
+                if (id = Router.current().params._id){
 
-                Meteor.call('genURL', textEditor.getValue(), themeData,  handleGenURLEvent);
-              /*
-              switch(modelType()){
 
-                  case "normal" :  Meteor.call('genURL', textEditor.getValue(), themeData,  handleGenURLEvent);
-                        break;
-                  case "challenge" :  Meteor.call('getInstance', textEditor.getValue()+'\nrun test{}', Meteor.default_connection._lastSessionId, 0, 'test' , true, handleShareChallenge);
-                        break;
-                    // TODO
-                  case "solution" :
-                        break;
-              }
-                */
+                  Meteor.call('genURL', textEditor.getValue(),id, themeData, handleGenURLEvent);
+                }
+                else {
+                  // Original
+                  Meteor.call('genURL', textEditor.getValue(),"Original",themeData, handleGenURLEvent);
+
+                }
             }
           }
     },
@@ -157,7 +154,6 @@ Template.alloyEditor.events({
         Meteor.call('storeInstance', textEditor.getValue(), themeData, cy.json(), handleGenInstanceURLEvent);
     }
 });
-
 /*
 Callbacks added with this method are called once when an instance of Template.alloyEditor is rendered into DOM nodes and put into the document for the first time.
 */
@@ -286,6 +282,9 @@ function handleInterpretModelEvent(err, result) {
     }
 }
 updateInstances = function(instance){
+
+
+
     if(!Session.get("instances")){
         var instances = [instance];
         Session.set("instances",instances);
@@ -296,6 +295,8 @@ updateInstances = function(instance){
         Session.set("instances",instances);
         Session.set("currentInstance",Session.get("currentInstance"));
     }
+
+
 }
 
 
@@ -592,28 +593,6 @@ getCurrentInstance = function (instanceNumber){
     });
     return result;
 };
-
-
-
-
-
-/* Returns the model type
-    normal : editor
-    challenge : if have some kind of special commands like locks or secrets
-    solution : if is solution to some challenge
-*/
-function modelType() {
-
-  var text = textEditor.getValue();
-
-  if (text.indexOf("//START_SECRET") !== -1){return "challenge";}
-  //if (Solutions.findOne({_id: Router.current().data()._id})) return "solution";
-  return "normal";
-}
-
-
-
-
 
 /*Handler responsible to handle the result from assertChallenge call on Run Event */
 function handleResponse(err, result){

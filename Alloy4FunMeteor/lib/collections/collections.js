@@ -4,8 +4,6 @@
 
 Model = new Meteor.Collection('Model');
 
-Challenge = new Meteor.Collection('Challenge');
-
 Run = new Meteor.Collection('Run');
 
 Instance = new Meteor.Collection('Instance');

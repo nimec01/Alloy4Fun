@@ -18,6 +18,7 @@ Meteor.methods({
 
   /* web service , getInstance method */
         var args = {model: model, sessionId: sessionId, instanceNumber: instanceNumber, commandLabel: commandLabel, forceInterpretation: forceInterpretation};
+
         try {
             var client = Soap.createClient(url);
             var result = client.getInstance(args);
@@ -39,7 +40,56 @@ Meteor.methods({
             resultObject.number=instanceNumber;
             return resultObject;
         }
+
   },
+
+
+
+  'getInstance2' : function (model, sessionId, instanceNumber, commandLabel, forceInterpretation,cid){
+
+      /* if the link != Original and belongs and links to a model that cointains //SECRETs, then secret commands must be added to the actual model
+      if (cid != "Original"){
+        var LinkEntry = Link.findOne({_id:cid});
+        var originalModel = Model.findOne({_id:LinkEntry.model_id});
+
+        /*
+    
+          é nescessário ir buscar o modelo original e comparar se este tem segredos adicionais aqueles que estão
+          em "model" recebido como argumento, se este for o caso eles devem ser adicionados antes de ser chamado o serviço do webService
+        */
+
+
+      }
+      var args = {model: model, sessionId: sessionId, instanceNumber: instanceNumber, commandLabel: commandLabel, forceInterpretation: forceInterpretation};
+      try {
+          var client = Soap.createClient(url);
+          var result = client.getInstance(args);
+      }
+      catch (err) {
+          if(err.error === 'soap-creation') {
+              throw new Meteor.Error(500, "We're sorry! The service is currently unavailable. Please try again later.");
+          }
+          else if (err.error === 'soap-method') {
+              throw new Meteor.Error(501, "We're sorry! The service is currently unavailable. Please try again later.");
+          }
+      }
+
+      var resultObject = JSON.parse(result.return);
+
+      if(resultObject.syntax_error){
+          throw new Meteor.Error(502, resultObject);
+      } else {
+          resultObject.number=instanceNumber;
+          return resultObject;
+      }
+},
+
+
+
+
+
+
+
 
 
 
@@ -54,13 +104,25 @@ Meteor.methods({
       Stores the model specified in the function argument, returns model url 'id'
       used in Share Model option
 */
-    'genURL' : function (model) {
+    'genURL' : function (model,current_id) {
+
+        if (current_id != "Original"){
+
+          var link = Link.findOne({_id:current_id});
+          modelID = link.model_id;
+          var modelc = Model.findOne({_id:modelID});
+          current_id = modelc._id;
+        }
+
         //a Model is always created, regardless of having secrets or not
-        var id=Model.insert({
-            whole: model
-        });
+        var id  = Model.insert({
+                    whole: model,
+                    derivationOf : current_id
+                  });
+
+
         //A public link is always created as well
-        var public_link_id=Link.insert({
+        var public_link_id = Link.insert({
             model_id : id,
             private: false
         });
@@ -86,6 +148,7 @@ Meteor.methods({
         return result;
 
     },
+
 /*
       Stores model instance, returns url to make possible share the instance.
       used in Share Instance option

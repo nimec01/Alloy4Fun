@@ -5,24 +5,7 @@
 var Schema = {};
 
 //Models created through the editor feature.
-/*Schema.Model = new SimpleSchema({
-    //The id can be appended to the editor's URL to load that particular model into it.
-    _id: {
-        type: String,
-        optional: false
-    },
-    model: {
-        type: String,
-        optional: false
-    },
-    instance: {
-        type : Object,
-        optional : true
-    }
-});*/
-
-//Challenges created through the challenge creation page.
-Schema.Challenge = new SimpleSchema({
+Schema.Model = new SimpleSchema({
     _id: {
         type: String,
         optional: false
@@ -31,47 +14,9 @@ Schema.Challenge = new SimpleSchema({
         type: String,
         optional: false
     },
-    lockedLines: {
-        type : Array,
-        optional : true
-    },
-    "lockedLines.$" : {
-        type: Number
-    },
-    cut : {
-        type: String,
-        optional : false,
-        autoValue : function () {
-            return this.field("whole").value.replace(/\/\/START_SECRET(?:(?!\/\/END_SECRET)[^/])*\/\/END_SECRET/g, "").replace(/\/\/START_LOCK/g, "\n").replace(/\/\/END_LOCK/g, "\n");
-        }
-    },
-    challenges : {
-        type : Array,
-        optional : true
-    },
-    "challenges.$" : {
-        type : Object
-    },
-    "challenges.$.name" : {
-        type : String
-    },
-    "challenges.$.value" : {
-        type : String
-    },
-    "challenges.$.commandType" : {
-        type : String
-    },
-    password : {
-        type: String,
-        optional : true
-    },
     derivationOf : {
         type: String,
-        optional : false
-    },
-    public : {
-        type : Boolean,
-        optional : false
+        optional : true
     }
 });
 
@@ -208,7 +153,7 @@ Schema.Theme = new SimpleSchema({
 
 });
 
-/*Schema.Instance = new SimpleSchema({
+Schema.Instance = new SimpleSchema({
     _id: {
         type: String,
         optional: false
@@ -221,7 +166,10 @@ Schema.Theme = new SimpleSchema({
         type : Object,
         optional : false
     }
-})*/
+})
+
+
+
 /* Link merely links to Models. When a challenge is created two links are provided. One public and another private.
 * This corresponds to two Link instances (with different _ids obvs) but both have the same model_id as they both
 * point to same model. */
@@ -240,9 +188,8 @@ Schema.Link = new SimpleSchema({
     }
 });
 
-//Model.attachSchema(Schema.Model);
-Challenge.attachSchema(Schema.Challenge);
+Model.attachSchema(Schema.Model);
 Run.attachSchema(Schema.Run);
 Theme.attachSchema(Schema.Theme);
 Link.attachSchema(Schema.Link);
-//Instance.attachSchema(Schema.Instance);
+Instance.attachSchema(Schema.Instance);

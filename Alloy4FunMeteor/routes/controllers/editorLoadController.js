@@ -34,40 +34,6 @@ editorLoadController = RouteController.extend({
     // return Posts.findOne({_id: this.params._id});
 
     data: function () {
-        var teste = this.params._id;
-        var model = Model.findOne({_id: this.params._id});
-        var themes = Theme.find({modelId : this.params._id}).fetch();
-
-
-        //var modelCursor = Model.find();
-
-        //var solutions = Solutions.find();
-        var challengeId = Link.findOne({_id: this.params._id});
-
-        if (challengeId) {
-
-
-
-            return model;
-        }
-
-        if (model) {
-
-
-            model.themes = themes;
-            return model;
-        }
-/*
-        else{ */
-            var challengeId = Link.findOne({_id: this.params._id});
-            console.log("challenge id");
-            console.log(challengeId);
-            var challengeToSolve = Challenge.find({_id: challengeId});
-
-            if(challengeToSolve)
-                console.log(challengeToSolve);
-                return challengeToSolve;
-        //}
 
     },
 
