@@ -168,9 +168,10 @@ Template.alloyEditor.onRendered(function () {
     if (Router.current().data && textEditor){
         var themeData = Router.current().data().themeData;
         //Place model on text editor
-        console.log(Router.current().data().model);
+        var result = Router.current().data().whole;
+        console.log(result);
         console.log("TESTSERTESTSTSET");
-        textEditor.setValue(Router.current().data().model);
+        textEditor.setValue(result);
         //Load theme settings;
         if(themeData){
             atomSettings = themeData.atomSettings;

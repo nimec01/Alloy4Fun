@@ -7,22 +7,25 @@
 //to access is necessary to "subscribe"
 
 
-Meteor.publish('editorLoad', function (_id) {
+Meteor.publish('editorLoad', function (/*_id*/) {//sem parametro para se conseguir aceder
 
     var selector = {
-        _id: _id
+        //_id: _id
     };
 
     var options = {
         fields : {
-            model: 1,
+            _id: 1,
+            whole: 1,
+            derivationOf: 1,
             instance : 1,
             themeData : 1
         }
     }
 
-
+    //empty selector access all Models (required to get the specific Model with the ModelId)
     var result = Model.find(selector, options);
+    //var result = Model.find(selector, options);
 
     if (result) {
         return result;
@@ -71,7 +74,8 @@ Meteor.publish('solutions', function (_id) {
 
     var options = {
         fields: {
-            theChallenge: 1,
+            model_id: 1,
+            private: 1
         }
     };
 

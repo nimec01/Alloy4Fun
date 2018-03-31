@@ -59,7 +59,7 @@ Meteor.methods({
         */
 
 
-      }
+
       var args = {model: model, sessionId: sessionId, instanceNumber: instanceNumber, commandLabel: commandLabel, forceInterpretation: forceInterpretation};
       try {
           var client = Soap.createClient(url);
