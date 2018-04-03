@@ -9,14 +9,13 @@ url="http://localhost:8080/Alloy4Fun/services/AlloyService?wsdl";
 /* Meteor server methods */
 Meteor.methods({
 
-
   /*
     Uses webservice to get a model instance
         forceInterpretation : used to skip cache and force new model interpretation
-  */
+
     'getInstance' : function (model, sessionId, instanceNumber, commandLabel, forceInterpretation){
 
-  /* web service , getInstance method */
+  /* web service , getInstance method
         var args = {model: model, sessionId: sessionId, instanceNumber: instanceNumber, commandLabel: commandLabel, forceInterpretation: forceInterpretation};
 
         try {
@@ -43,24 +42,45 @@ Meteor.methods({
 
   },
 
+*/
 
 
+
+/*
+  Uses webservice to get a model instance
+      'forceInterpretation' : used to skip cache and force new model interpretation
+      'cid' : link_id  , 'derivatedOf' model
+              "Original" otherwise
+*/
   'getInstance2' : function (model, sessionId, instanceNumber, commandLabel, forceInterpretation,cid){
 
-      /* if the link != Original and belongs and links to a model that cointains //SECRETs, then secret commands must be added to the actual model
-      if (cid != "Original"){
-        var LinkEntry = Link.findOne({_id:cid});
-        var originalModel = Model.findOne({_id:LinkEntry.model_id});
+      /* Extra behaviour:
+         In the case "cid!=Original" and the model of the Link entry with "_id = cid && private = false" contains secrets, these secrets must be added to the model before
+         the RPC  */
 
-        /*
-    
-          é nescessário ir buscar o modelo original e comparar se este tem segredos adicionais aqueles que estão
-          em "model" recebido como argumento, se este for o caso eles devem ser adicionados antes de ser chamado o serviço do webService
-        */
+      if (cid != "Original" && (LinktoModel= Link.findOne({_id: cid,private: false})))
+      {
 
+        if( last_model = (Model.findOne({_id:LinktoModel.model_id})) )
+            {
+              last_model = last_model.whole;
+              /* If the model contains some secret */
+              if(last_model.indexOf("//START_SECRET") != -1){
+                model = model.concat("\n");
 
+                /* Parse and add Secrets to the model  */
+                var secretExpression = /\/\/START_SECRET(?:(?!\/\/END_SECRET)[^/])*\/\/END_SECRET/g;
 
+                while(secretBlock = secretExpression.exec(last_model)){
+                    model = model.concat(secretBlock);
+                }
+              }
+            }
+      }
+
+      /* Normal behaviour */
       var args = {model: model, sessionId: sessionId, instanceNumber: instanceNumber, commandLabel: commandLabel, forceInterpretation: forceInterpretation};
+
       try {
           var client = Soap.createClient(url);
           var result = client.getInstance(args);
@@ -76,63 +96,60 @@ Meteor.methods({
 
       var resultObject = JSON.parse(result.return);
 
+      /*Contents of executed models must be stored in the Run collection for statistics use,
+        only for saved models */
+      if (forceInterpretation && cid != "Original" && (l = Link.findOne({_id:cid}))){
+
+          var sat = (result.unsat) ? false : true;
+          /* command used must be added to the object for stats */
+          var storableRun = {
+            sat : sat,
+            model: l.model_id
+          }
+          Run.insert(storableRun)
+     }
+
       if(resultObject.syntax_error){
           throw new Meteor.Error(502, resultObject);
       } else {
           resultObject.number=instanceNumber;
           return resultObject;
       }
-},
+  },
 
 
+    /* Stores the model specified in the function argument, returns model url 'id'
+       used in Share Model option */
+  'genURL' : function (model,current_id) {
 
+        var modeldOf = "Original";
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-      Stores the model specified in the function argument, returns model url 'id'
-      used in Share Model option
-*/
-    'genURL' : function (model,current_id) {
-
+        /* if its not an original model */
         if (current_id != "Original"){
-
           var link = Link.findOne({_id:current_id});
-          modelID = link.model_id;
-          var modelc = Model.findOne({_id:modelID});
-          current_id = modelc._id;
+          modeldOf = link.model_id;
         }
 
-        //a Model is always created, regardless of having secrets or not
-        var id  = Model.insert({
-                    whole: model,
-                    derivationOf : current_id
-                  });
+        /*A Model is always created, regardless of having secrets or not */
+        var newModel_id  = Model.insert({
+                            whole: model,
+                            derivationOf : modeldOf
+                         });
 
 
-        //A public link is always created as well
+        /*A public link is always created as well*/
         var public_link_id = Link.insert({
-            model_id : id,
+            model_id : newModel_id,
             private: false
         });
 
         var result;
-        //variable "result" will contain public link if there are no secrets
-        //variable "result" will contain both public and private link if there are "secrets"
+        /*variable "result" will contain public link if there are no secrets
+          variable "result" will contain both public and private link if there are "secrets" */
+
         if (model.indexOf("//START_SECRET") !== -1){
             var private_link_id=Link.insert({
-                model_id : id,
+                model_id : newModel_id,
                 private: true
             });
             var result={
@@ -149,6 +166,11 @@ Meteor.methods({
 
     },
 
+
+
+
+
+
 /*
       Stores model instance, returns url to make possible share the instance.
       used in Share Instance option
@@ -161,10 +183,13 @@ Meteor.methods({
         });
         return id;
     },
+
+
 /*
       Stores 'wholeChallenge' in Challenge collection
       used by the getInstance handler triggered by Share Model event in Create Challenge mode
 */
+/*
     'storeChallenge' : function (wholeChallenge, password, public, derivationOf, lockedLines) {
         var regexSecret = /\/\/START_SECRET(?:(?!\/\/END_SECRET)[^/])*\/\/END_SECRET/g;
         var regexCheck = /((?:\s(check|run)\s+)([a-zA-Z][a-zA-Z0-9_"'$]*)?(?:\s*\{[^}]*}))/g;
@@ -196,7 +221,7 @@ Meteor.methods({
     },
 
 
-/* New Store Challenge to Edit template*/
+/* New Store Challenge to Edit template
     'storeChallenge2' : function(wholeChallenge,public,derivationOf,lockedLines){
       var regexSecret = /\/\/START_SECRET(?:(?!\/\/END_SECRET)[^/])*\/\/END_SECRET/g;
       var regexCheck = /((?:\s(check|run)\s+)([a-zA-Z][a-zA-Z0-9_"'$]*)?(?:\s*\{[^}]*}))/g;
@@ -237,7 +262,7 @@ Meteor.methods({
 
 /*
       Used in Solve Challenge mode to verify the challenge solution
-*/
+
     'assertChallenge' : function (model, id, command, sessionId, instNumber, forceInterpretation){
         var challenge = Challenge.findOne({_id: id});
         var storedCommand = challenge.challenges.filter((i)=>{return i.name==command});
@@ -279,7 +304,7 @@ Meteor.methods({
 
     },
 /*  Every time a challenge is changed and executed, store it as a derivation of the original
-*/
+
     'storeDerivation' : function(model, derivationOf, sat){
         var challenge = Challenge.findOne({_id: derivationOf});
 
@@ -310,7 +335,7 @@ Meteor.methods({
 /*
     Check if the password is correct
     used to access Create Challenge mode by Solve Challenge mode
-*/
+
     'unlockChallenge' : function(id, password){
         var challenge = Challenge.findOne({_id: id});
         console.log("tentar desbloquear um desafio")
@@ -320,9 +345,10 @@ Meteor.methods({
             return challenge;
         }else throw new Meteor.Error(506, "Invalid password!");
     },
+
 /*
     Used by Share event in Solve Challenge mode
-*/
+
     'storeSolution' : function(content, derivationOf,  immutable){
         var challenge = Challenge.findOne({_id: derivationOf});
 
@@ -361,6 +387,8 @@ Meteor.methods({
         return result;
 
     },
+*/
+
     'getProjection' : function (sessid, frameInfo){
         var args = {sessid: sessid, types : []};
         for(var key in frameInfo){

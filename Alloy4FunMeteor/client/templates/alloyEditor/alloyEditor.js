@@ -41,8 +41,6 @@ Template.alloyEditor.helpers({
  Declare event handlers for instances of this template. Multiple calls add new event handlers in addition to the existing ones.
 */
 Template.alloyEditor.events({
-
-
   /* Exec button */
     'click #exec': function (evt) {
 
@@ -62,14 +60,9 @@ Template.alloyEditor.events({
                 }
         /* Execute command */
                 else {
+                  /* Original Model or Derivation */
                   id = Router.current().params._id;
-
-                  if (!id) {id = "Original"; alert("id = Original");}
-
-
-                  // BUG : caso esteja na mesma sessão não vai funcionar utilizar o link porque ele não vai recompilar * ou algo do género.
-
-
+                  if (!id) {id = "Original";}
                   Meteor.call('getInstance2', textEditor.getValue(), Meteor.default_connection._lastSessionId, 0,command, true,id, handleInterpretModelEvent);
                 }
         /* available buttons */
@@ -82,6 +75,7 @@ Template.alloyEditor.events({
     'change .command-selection > select' : function (){
         $("#exec > button").prop('disabled', false);
     },
+  /*Share button */
     'click #genUrl': function (evt) {
         if (evt.toElement.id != "genUrl"){
             var themeData = {
@@ -93,22 +87,17 @@ Template.alloyEditor.events({
             };
             if (!$("#genUrl > button").is(":disabled")){
                 if (id = Router.current().params._id){
-
-
+                  /* if its loaded through an URL its a derivationOf model */
                   Meteor.call('genURL', textEditor.getValue(),id, themeData, handleGenURLEvent);
                 }
                 else {
-                  // Original
+                  /* Otherwise its an original model*/
                   Meteor.call('genURL', textEditor.getValue(),"Original",themeData, handleGenURLEvent);
 
                 }
             }
           }
     },
-
-
-
-
     'click #prev': function (evt) {
         if (evt.toElement.id != "prev") {
             if (!$("#prev > button").is(":disabled")) {
@@ -119,7 +108,11 @@ Template.alloyEditor.events({
                         Session.set("currentInstance", currentInstance - 1);
                     } else {
                         var command = Session.get("commands").length > 1?$('.command-selection > select option:selected').text():Session.get("commands")[0];
-                        Meteor.call('getInstance', textEditor.getValue(), Meteor.default_connection._lastSessionId, currentInstance - 1, command, true, handlePreviousInstanceEvent);
+
+                        id = Router.current().params._id;
+                        if (!id) {id = "Original";}
+
+                        Meteor.call('getInstance2', textEditor.getValue(), Meteor.default_connection._lastSessionId, currentInstance - 1, command, true,id, handlePreviousInstanceEvent);
                     }
                     $("#next > button").prop('disabled', false);
                 }
@@ -135,7 +128,10 @@ Template.alloyEditor.events({
                     Session.set("currentInstance", currentInstance + 1);
                 } else {
                     var command = Session.get("commands").length > 1?$('.command-selection > select option:selected').text():Session.get("commands")[0];
-                    Meteor.call('getInstance', textEditor.getValue(), Meteor.default_connection._lastSessionId, currentInstance + 1, command, false, handleNextInstanceEvent);
+
+                    id = Router.current().params._id;
+                    if (!id) {id = "Original";}
+                    Meteor.call('getInstance2', textEditor.getValue(), Meteor.default_connection._lastSessionId, currentInstance + 1, command, false,id, handleNextInstanceEvent);
                 }
                 $("#prev > button").prop('disabled', false);
             }
@@ -224,8 +220,6 @@ Template.alloyEditor.onRendered(function () {
         });
     })(jQuery);
     $('#optionsMenu').hide();
-
-
 });
 
 
@@ -283,8 +277,6 @@ function handleInterpretModelEvent(err, result) {
     }
 }
 updateInstances = function(instance){
-
-
 
     if(!Session.get("instances")){
         var instances = [instance];
@@ -359,6 +351,8 @@ function handleGenURLEvent(err, result) {
         zeroclipboard();
     }
 }
+
+
 
 /* saveAndShare event handler for the model type : challenge, uses storeChallenge method*/
 function handleShareChallenge(err, result){
