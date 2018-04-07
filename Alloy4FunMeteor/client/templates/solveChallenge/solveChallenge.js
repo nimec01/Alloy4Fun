@@ -238,8 +238,10 @@ Template.solveChallenge.onRendered(function () {
     initGraphViewer("instance");
     //Fill editor with the id referent model
     challengeEditor.setValue(Router.current().data().cut);
-    console.log("tentar por o modelo")
-    Session.set("modelHistory", {id: Router.current().data()._id, changed: false});
+
+    Session.set("modelHistory", {
+        id: Router.current().data()._id, changed: false
+    });
 
 
     //Instance viewer right click settings customization

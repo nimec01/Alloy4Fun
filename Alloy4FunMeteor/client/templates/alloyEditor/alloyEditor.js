@@ -220,8 +220,17 @@ Template.alloyEditor.onRendered(function () {
         });
     })(jQuery);
     $('#optionsMenu').hide();
+    if (Router.current().data().lockedLines)
+        lockLines(Router.current().data().lockedLines);
 });
 
+function lockLines(lockedLines){
+    lockedLines.forEach(function(n){
+        var info = textEditor.lineInfo(n);
+        textEditor.setGutterMarker(n-1, "breakpoints", info.gutterMarkers ? null : makeMarker());
+        textEditor.markText({line : n-1, ch: 0},{line: n , ch : 0}, { className: "challenge-lock", readOnly: true, inclusiveLeft: true, clearWhenEmpty:false});
+    });
+}
 
 
 //------------- HANDLERS -----------

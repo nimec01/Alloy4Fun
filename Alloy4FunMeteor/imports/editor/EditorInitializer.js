@@ -33,10 +33,12 @@ function initializeAlloyEditor(htmlElement){
     //Text change event for the editor on alloy4fun/editor page
     editor.on('change', function (editor) {
         $(".qtip").remove();
+        //[gutter] -> A gutter is the clear empty space between an element's boundaries and the element's content.
         editor.clearGutter("error-gutter");
         //Delete previous existing permalink elements if existent.
-        var permalink= document.getElementById("permalink");
-        if(permalink)permalink.remove();
+        var permalink = document.getElementById("permalink");
+        if(permalink)
+            permalink.remove();
         $("#genInstanceUrl").hide();
         if ($.trim(editor.getValue()) == '') {
             //When editor is empty
@@ -69,6 +71,7 @@ function initializeAlloyCreateChallengeEditor(htmlElement){
     defineAlloyChallengeMode();
     var editor = initializeEditor(htmlElement, "alloyChallenge");
 
+    //[gutter] -> A gutter is the clear empty space between an element's boundaries and the element's content.
     editor.on("gutterClick", function(cm, n) {
         var info = cm.lineInfo(n);
         cm.setGutterMarker(n, "breakpoints", info.gutterMarkers ? null : makeMarker());
@@ -121,6 +124,7 @@ function initializeAlloySolveChallengeEditor(htmlElement){
     return editor;
 }
 
+//both editor and challenge use the same function to initialize
 function initializeEditor(htmlElement, mode){
     var editor = CodeMirror.fromTextArea(htmlElement, options);
     //Indicate that it must use the previously defined mode.
@@ -147,7 +151,7 @@ function initializeEditor(htmlElement, mode){
             commandNumber++;
             matches = pattern.exec(input);
         }
-
+        //TODO: acrescentar os comandos dos secrets
         //console.log(commands);
         //Adds the found commands to the session variables, triggering template events automatically.
         Session.set("commands",commands);

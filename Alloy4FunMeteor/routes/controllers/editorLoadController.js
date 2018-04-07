@@ -39,6 +39,7 @@ editorLoadController = RouteController.extend({
         var link = Link.findOne({_id: this.params._id});
 
         var model;
+        var secrets = "";
         if (link){
             model = Model.findOne({_id: link.model_id});
 
@@ -46,22 +47,64 @@ editorLoadController = RouteController.extend({
             if (!link.private){
                 //secret is removed
 
+                //whole is where the whole model is stored
                 var v = model.whole;
 
                 var i;
+
+                //indexOf -> returns the position of the first occurrence of a specified value in a string.
                 while ((i = v.indexOf("//START_SECRET"))>=0) {
+                    //para o modelo de paragrafo pesquisar o fim do paragrafo
                     var e = v.indexOf("//END_SECRET");
+                    //substr -> extracts parts of a string, beginning at the character at the specified position,
+                    //          and returns the specified number of characters. [string.substr(start, length)]
+
+                    //SECRETS DE V para a variável "secrets"
+                    secrets+="\n"+v.substr(i+1, e-i+1+12); //12="//END_SECRE
+
+                    //retira secret de v
                     v = v.substr(0, i) + v.substr(e+12);
                 }
 
-                model.whole = v;
+                //_______________LOCK LINES______________________
+                var lockedLines = [];
+                //parse do whole apos tirados secrets (em v) para obter os locked paragraphs
+                //lines -> array of lines
+                var lines = v.split(/\r?\n/);
+                var l=0;
+                while (l<lines.length) {
+                    var line = lines[l];
+                    //trim removes white spaces
+                    if (line.trim() == "//LOCK") {
+                        lockedLines.push(l+1);//line numbers in editor are '1' based
+                        l++;
+                        //last line is where the paragraph ends
+                        var lastLine = findParagraph(lines, l);
+
+                        while (l < lastLine + 1) {
+                            lockedLines.push(l+1);
+                            l++
+                        }
+                    }else
+                        l++;
+                }
+
+                model = {
+                    "_id": model._id,
+                    "whole": v,
+                    "secrets": secrets,
+                    "lockedLines":lockedLines
+                }
+                //model.whole = v;
+                //model.secrets=secrets
             }
             //Link.find().fetch();
             //Model.find().fetch();
         }else{
             model = {
                 "_id": -1,
-                "whole": "Link não encontrado"
+                "whole": "Link não encontrado",
+                "secrets": ""
             }
         }
 
@@ -118,3 +161,29 @@ editorLoadController = RouteController.extend({
     onStop: function () {
     }
 });
+
+function findParagraph(lines, l) {
+    //locate the start of the next paragraph {
+    var foundStart=false;
+    var braces=0;
+    while (l<lines.length) {
+        var line = lines[l];
+        for (var c=0;c<line.length;c++){
+            if (line.charAt(c)=="{") {
+                if (!foundStart)
+                    foundStart = true;
+                braces++;
+            }else if(foundStart && line.charAt(c)=="}")
+                braces--;
+
+            if (foundStart && braces==0)
+                return l;//this is the last line of this paragraph
+        }
+        l++;
+    }
+
+    return l-1;
+}
+
+
+

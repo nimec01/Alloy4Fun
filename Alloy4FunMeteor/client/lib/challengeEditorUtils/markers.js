@@ -1,13 +1,15 @@
 /**
  * Created by José Pereira on 2/8/2017.
  */
-
+//20180406 switched challengeEditor to textEditor
 //Places lock markers
 setLockedLines = function(lockedLines){
     if(lockedLines)
         lockedLines.forEach(function(n){
-            var info = challengeEditor.lineInfo(n);
-            challengeEditor.setGutterMarker(n-1, "breakpoints", info.gutterMarkers ? null : makeMarker());
+            //var info = challengeEditor.lineInfo(n);
+            var info = textEditor.lineInfo(n);
+            //var info = challengeEditor.lineInfo(n);
+            textEditor.setGutterMarker(n-1, "breakpoints", info.gutterMarkers ? null : makeMarker());
         });
 };
 
@@ -40,9 +42,9 @@ markBlocks = function(string, beginnings, endings, className){
         var beginning = beginnings.shift();
         var ending = endings.length > 0?endings.shift():undefined;
         if(ending && ending>beginning){
-            challengeEditor.markText(challengeEditor.posFromIndex(beginning),challengeEditor.posFromIndex(ending), {className: className});
+            textEditor.markText(textEditor.posFromIndex(beginning),textEditor.posFromIndex(ending), {className: className});
         }else{
-            challengeEditor.markText(challengeEditor.posFromIndex(beginning),challengeEditor.posFromIndex(string.length), {className: className});
+            textEditor.markText(textEditor.posFromIndex(beginning),textEditor.posFromIndex(string.length), {className: className});
         }
     }
 };
@@ -50,8 +52,8 @@ markBlocks = function(string, beginnings, endings, className){
 //Highlights secret blocks of code.
 highlightLocksAndSecrets = function(){
     //Clear previous marks.
-    challengeEditor.getAllMarks().forEach(function(mark){mark.clear()});
-    var editorContent = challengeEditor.getValue();
+    textEditor.getAllMarks().forEach(function(mark){mark.clear()});
+    var editorContent = textEditor.getValue();
 
     //SECRETS
     var startSecrets = getIndexesOf(/\/\/START_SECRET/g, editorContent);
@@ -66,8 +68,8 @@ addErrorMarkerToGutter = function(message, lineNumber){
     x.setAttribute("width", "15");
     x.setAttribute("id", "error");
     x.setAttribute("title", message);
-    challengeEditor.setGutterMarker(lineNumber-1, "error-gutter", x);
-    challengeEditor.refresh();
+    textEditor.setGutterMarker(lineNumber-1, "error-gutter", x);
+    textEditor.refresh();
 };
 
 makeMarker = function () {
