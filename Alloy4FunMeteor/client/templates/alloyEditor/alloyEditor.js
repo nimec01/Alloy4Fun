@@ -5,9 +5,15 @@
 import classie from 'classie';
 import 'qtip2/src/core.css';
 
-/*
-Each template has a local dictionary of helpers that are made available to it, and this call specifies helpers to add to the template’s dictionary.
-*/
+
+//[GLOBAL]
+//ve o Session.get e o Session.set, pelo que percebi é uma maneira de ir buscar dados em qqr parte do meteor
+//tentei fazer Session.set("segredo",secrets) no editorLoadControler (onde estão os dados que são recebidos aqui)
+//... e aqui faria-se session.get("segredo")
+
+    /*
+    Each template has a local dictionary of helpers that are made available to it, and this call specifies helpers to add to the template’s dictionary.
+    */
 Template.alloyEditor.helpers({
     'drawInstance' : function (){
         var instanceNumber = Session.get("currentInstance");
@@ -161,7 +167,11 @@ Template.alloyEditor.onRendered(function () {
     hideButtons();
 
     //If there's subscribed data, process it.
+
+
     if (Router.current().data && textEditor){
+
+
         var themeData = Router.current().data().themeData;
         //Place model on text editor
         var result = Router.current().data().whole;

@@ -53,17 +53,24 @@ editorLoadController = RouteController.extend({
                 var i;
 
                 //indexOf -> returns the position of the first occurrence of a specified value in a string.
-                while ((i = v.indexOf("//START_SECRET"))>=0) {
+                while ((i = v.indexOf("//SECRET"))>=0) {
+
+
+                    var z = i;
+                    for(z;v[z]!='{';z++);
+
+                    var e = findClosingBracketMatchIndex(v,z)
                     //para o modelo de paragrafo pesquisar o fim do paragrafo
-                    var e = v.indexOf("//END_SECRET");
+                    //var e = v.indexOf("//END_SECRET");
+
                     //substr -> extracts parts of a string, beginning at the character at the specified position,
                     //          and returns the specified number of characters. [string.substr(start, length)]
 
                     //SECRETS DE V para a variável "secrets"
-                    secrets+="\n"+v.substr(i+1, e-i+1+12); //12="//END_SECRE
+                    secrets+="\n"+v.substr(i+1, e-i+1); //12="//END_SECRE
 
                     //retira secret de v
-                    v = v.substr(0, i) + v.substr(e+12);
+                    v = v.substr(0, i) + v.substr(e +1);
                 }
 
                 //_______________LOCK LINES______________________
@@ -76,23 +83,40 @@ editorLoadController = RouteController.extend({
                     var line = lines[l];
                     //trim removes white spaces
                     if (line.trim() == "//LOCK") {
-                        lockedLines.push(l+1);//line numbers in editor are '1' based
+                        //lockedLines.push(l+1);//line numbers in editor are '1' based
                         l++;
                         //last line is where the paragraph ends
                         var lastLine = findParagraph(lines, l);
 
-                        while (l < lastLine + 1) {
-                            lockedLines.push(l+1);
-                            l++
+                        if (lastLine!=-1){
+                            lockedLines.push(l/*-1+1*/);//line numbers in editor are '1' based
+                            while (l < lastLine + 1) {
+                                lockedLines.push(l + 1);
+                                l++
+                            }
                         }
                     }else
                         l++;
                 }
 
+
+                var secretCommands = [];
+                var secretsAux= secrets.split(" ");
+
+                //deixa este to do comigo, mas não tive tempo para mais
+                //TODO : Ricardo -> sacar nomes dos runs, checks e asserts. Os que não têmm nome, os que têm chaveta à frente (run A{.....), os que tem \n logo à frente (run a\n{....)
+                for(z=0;z<secretsAux.length;z++)
+                    if(secretsAux[z]=="run" ||
+                        secretsAux[z]=="check" ||
+                        secretsAux[z]=="assert")
+                            secretCommands.push(secretsAux[z+1])
+
+
                 model = {
                     "_id": model._id,
                     "whole": v,
                     "secrets": secrets,
+                    "secretCommands" : "",
                     "lockedLines":lockedLines
                 }
                 //model.whole = v;
@@ -116,20 +140,9 @@ editorLoadController = RouteController.extend({
         model.themes = themes;
 
 
-        var challengeId = Solutions.findOne({_id: this.params._id});
 
 
-        /*
-                else{
-        var challengeId = Solutions.findOne({_id: this.params._id});
-        console.log("challenge id");
-        console.log(challengeId);
-        var challengeToSolve = Challenge.find({_id: challengeId});
 
-        if(challengeToSolve)
-            console.log(challengeToSolve);
-        return challengeToSolve;
-        //} */
 
     },
 
@@ -168,21 +181,54 @@ function findParagraph(lines, l) {
     var braces=0;
     while (l<lines.length) {
         var line = lines[l];
-        for (var c=0;c<line.length;c++){
-            if (line.charAt(c)=="{") {
-                if (!foundStart)
-                    foundStart = true;
-                braces++;
-            }else if(foundStart && line.charAt(c)=="}")
-                braces--;
+        if (line.trim().length>0) {//empty lines or lines with white space are ignored
+            for (var c = 0; c < line.length; c++) {
+                if (!foundStart) {
+                    if (line.charAt(c) == "{"
+                        &&
+                        line.substr(0, c).trim()
+                             .match("^(one sig |sig |module |open |fact |pred |assert |fun |run |check )")
+                        ) {
+                            foundStart = true;
+                            braces++;
+                        }
+                }
+                //se encontrou
+                else if (line.charAt(c) == "{")
+                    braces++;
+                else if (line.charAt(c) == "}")
+                    braces--;
 
-            if (foundStart && braces==0)
-                return l;//this is the last line of this paragraph
+                if (foundStart && braces == 0)
+                    return l;//this is the last line of this paragraph
+            }
+            if (!foundStart) //if found a non empty line but the token is not valid the LOCK is ignored
+                return -1;
         }
         l++;
     }
 
     return l-1;
+}
+
+function findClosingBracketMatchIndex(str, pos) {
+    if (str[pos] != '{') {
+        throw new Error("No '{' at index " + pos);
+    }
+    let depth = 1;
+    for (let i = pos + 1; i < str.length; i++) {
+        switch (str[i]) {
+            case '{':
+                depth++;
+                break;
+            case '}':
+                if (--depth == 0) {
+                    return i;
+                }
+                break;
+        }
+    }
+    return -1;    // No matching closing parenthesis
 }
 
 

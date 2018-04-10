@@ -61,6 +61,7 @@ Meteor.methods({
       if (cid != "Original" && (LinktoModel= Link.findOne({_id: cid,private: false})))
       {
 
+          //buscar o secret à bd quando se quer o desenho [fazer exec]
         if( last_model = (Model.findOne({_id:LinktoModel.model_id})) )
             {
               last_model = last_model.whole;
@@ -147,7 +148,7 @@ Meteor.methods({
         /*variable "result" will contain public link if there are no secrets
           variable "result" will contain both public and private link if there are "secrets" */
 
-        if (model.indexOf("//START_SECRET") !== -1){
+        if (model.indexOf("//SECRET") !== -1){
             var private_link_id=Link.insert({
                 model_id : newModel_id,
                 private: true
