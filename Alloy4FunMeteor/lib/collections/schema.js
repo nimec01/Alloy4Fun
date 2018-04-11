@@ -158,11 +158,15 @@ Schema.Instance = new SimpleSchema({
         type: String,
         optional: false
     },
-    run : {
+    model : {
         type: String,
         optional : false
     },
     graph : {
+        type : Object,
+        optional : false
+    },
+    theme : {
         type : Object,
         optional : false
     }

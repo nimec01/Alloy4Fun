@@ -14,7 +14,7 @@ editorLoadController = RouteController.extend({
 
     subscriptions: function () {
         //subscribe to curso editorLoad -> Model collection
-        this.subscribe('editorLoad'/*, this.params._id*/).wait();
+        this.subscribe('editorLoad').wait();
 
         //subscribe to cursor solutions. check server/publications/alloyLoadPublications
         this.subscribe('solutions', this.params._id).wait();
@@ -28,6 +28,7 @@ editorLoadController = RouteController.extend({
     waitOn: function () {
     },
 
+
     // A data function that can be used to automatically set the data context for
     // our layout. This function can also be used by hooks and plugins. For
     // example, the "dataNotFound" plugin calls this function to see if it
@@ -35,55 +36,44 @@ editorLoadController = RouteController.extend({
     // return Posts.findOne({_id: this.params._id});
 
     data: function () {
-        var teste = this.params._id;
         var link = Link.findOne({_id: this.params._id});
-
         var model;
         var secrets = "";
+
+        /*------- SECRETs handler ---------- */
         if (link){
             model = Model.findOne({_id: link.model_id});
-
-            //if the model is public
-            if (!link.private){
+            var v = model.whole;
+            if (!link.private){ /*if the model is public*/
                 //secret is removed
-
-                //whole is where the whole model is stored
-                var v = model.whole;
-
                 var i;
 
-                //indexOf -> returns the position of the first occurrence of a specified value in a string.
-                while ((i = v.indexOf("//SECRET"))>=0) {
+                var nsecrets = 0;
+                while ((i = v.indexOf("//SECRET\n"))>=0) { /*while Contains secrets*/
+                  var z = i;
+                  var j = 0;
+                  var word = "";
+                  for(z; v[z]!= '\n';z++); z++; /*goto next line*/
+                  for(z;v && v[z]!='{';z++){ word += v[z]; j++;}
+                  if (!(isParagraph(word))){ break; /*retira //SECRET */} /*break case 'word' is not a paragraph */
 
+                  try{
+                    var e = findClosingBracketMatchIndex(v,z);
+                  }catch(err){
+                    break;
+                  }
 
-                    var z = i;
-                    for(z;v[z]!='{';z++);
+                 secrets+="\n\n"+v.substr(i,(e-i)+1) ;
 
-                    var e = findClosingBracketMatchIndex(v,z)
-                    //para o modelo de paragrafo pesquisar o fim do paragrafo
-                    //var e = v.indexOf("//END_SECRET");
-
-                    //substr -> extracts parts of a string, beginning at the character at the specified position,
-                    //          and returns the specified number of characters. [string.substr(start, length)]
-
-                    //SECRETS DE V para a variável "secrets"
-                    secrets+="\n"+v.substr(i+1, e-i+1); //12="//END_SECRE
-
-                    //retira secret de v
-                    v = v.substr(0, i) + v.substr(e +1);
+                  v = v.substr(0,i) + v.substr(e+1); /* remove secrets from v (whole model) */
                 }
-
-                //_______________LOCK LINES______________________
+           /*------------LOCK handler---------------*/
                 var lockedLines = [];
-                //parse do whole apos tirados secrets (em v) para obter os locked paragraphs
-                //lines -> array of lines
-                var lines = v.split(/\r?\n/);
+                var lines = v.split(/\r?\n/); /*Array of lines */
                 var l=0;
                 while (l<lines.length) {
                     var line = lines[l];
-                    //trim removes white spaces
                     if (line.trim() == "//LOCK") {
-                        //lockedLines.push(l+1);//line numbers in editor are '1' based
                         l++;
                         //last line is where the paragraph ends
                         var lastLine = findParagraph(lines, l);
@@ -92,41 +82,22 @@ editorLoadController = RouteController.extend({
                             lockedLines.push(l/*-1+1*/);//line numbers in editor are '1' based
                             while (l < lastLine + 1) {
                                 lockedLines.push(l + 1);
-                                l++
+                                l++;
                             }
+
                         }
                     }else
                         l++;
                 }
 
-
-                var secretCommands = [];
-                var secretsAux= secrets.split(" ");
-
-                //deixa este to do comigo, mas não tive tempo para mais
-                //TODO : Ricardo -> sacar nomes dos runs, checks e asserts. Os que não têmm nome, os que têm chaveta à frente (run A{.....), os que tem \n logo à frente (run a\n{....)
-                for(z=0;z<secretsAux.length;z++)
-                    if(secretsAux[z]=="run" ||
-                        secretsAux[z]=="check" ||
-                        secretsAux[z]=="assert")
-                            secretCommands.push(secretsAux[z+1])
-
-
                 model = {
-                    "_id": model._id,
                     "whole": v,
                     "secrets": secrets,
-                    "secretCommands" : "",
                     "lockedLines":lockedLines
                 }
-                //model.whole = v;
-                //model.secrets=secrets
             }
-            //Link.find().fetch();
-            //Model.find().fetch();
         }else{
             model = {
-                "_id": -1,
                 "whole": "Link não encontrado",
                 "secrets": ""
             }
@@ -134,16 +105,11 @@ editorLoadController = RouteController.extend({
 
         return model;
 
-
-        //[ainda vou fazer]
+        //TODO
+        /*
         var themes = Theme.find({modelId : this.params._id}).fetch();
         model.themes = themes;
-
-
-
-
-
-
+        */
     },
 
     // You can provide any of the hook options
@@ -215,8 +181,8 @@ function findClosingBracketMatchIndex(str, pos) {
     if (str[pos] != '{') {
         throw new Error("No '{' at index " + pos);
     }
-    let depth = 1;
-    for (let i = pos + 1; i < str.length; i++) {
+    var depth = 1;
+    for (var i = pos + 1; i < str.length; i++) {
         switch (str[i]) {
             case '{':
                 depth++;
@@ -231,5 +197,9 @@ function findClosingBracketMatchIndex(str, pos) {
     return -1;    // No matching closing parenthesis
 }
 
+function isParagraph(word){
+    var pattern = /^((one sig |sig |module |open |fact |pred |assert |fun |run |check )(\ )*[^ ]+)/;
+    if(word.match(pattern) == null) return false ;
+    else return true;
 
-
+}

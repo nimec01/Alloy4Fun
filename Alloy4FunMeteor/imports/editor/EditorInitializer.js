@@ -137,6 +137,13 @@ function initializeEditor(htmlElement, mode){
         var commandNumber = 1;
         var input = this.getValue();
 
+        if(Router.current().params._id) /*if the model have some _id, the commands must be parsed*/
+        {
+          if(secrets = (Router.current().data().secrets)){
+            input +=secrets;
+          }
+        }
+
         var matches = pattern.exec(input);
         while(matches != null){
             //console.log(matches);
@@ -151,15 +158,10 @@ function initializeEditor(htmlElement, mode){
             commandNumber++;
             matches = pattern.exec(input);
         }
-        //TODO: acrescentar os comandos dos secrets
-        //console.log(commands);
-        //Adds the found commands to the session variables, triggering template events automatically.
+
         Session.set("commands",commands);
     };
 
     //editor.setSize("100%","100%");
     return editor;
 }
-
-
-
