@@ -16,7 +16,6 @@ Meteor.methods({
 */
     'getInstance' : function (model, sessionId, instanceNumber, commandLabel, forceInterpretation,cid){
 
-      console.log("entrou aqui com cid: " + cid);
       /* Normal behaviour */
       var args = {model: model, sessionId: sessionId, instanceNumber: instanceNumber, commandLabel: commandLabel, forceInterpretation: forceInterpretation};
 
@@ -129,12 +128,14 @@ Meteor.methods({
    used in Share Instance option
 */
     'storeInstance' : function (model, themeData, instance){
+        /*
         var id = Instance.insert({
             model: model,
-            graph: instance, /*object type non-printable */
-            theme: themeData /*object type non-printable */
+            graph: instance, /*object type non-printable
+            theme: themeData /*object type non-printable 
         });
-        return id;
+        */
+        return "pendente";
     },
 
     'getProjection' : function (sessid, frameInfo){

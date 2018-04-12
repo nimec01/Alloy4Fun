@@ -64,7 +64,7 @@ Template.alloyEditor.events({
                   var secrets = "";
                   id = Router.current().params._id;
                   if(id && Router.current().data().secrets) secrets = Router.current().data().secrets;
-                  if (!id) {id = "Original"; alert("este é original")}
+                  if (!id) id = "Original";
                   Meteor.call('getInstance', (textEditor.getValue() + secrets), Meteor.default_connection._lastSessionId, 0,command, true,id, handleInterpretModelEvent);
                 }
         /* available buttons */
