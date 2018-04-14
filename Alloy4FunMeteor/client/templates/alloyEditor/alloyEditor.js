@@ -88,13 +88,30 @@ Template.alloyEditor.events({
                 currentlyProjectedTypes : currentlyProjectedTypes
             };
             if (!$("#genUrl > button").is(":disabled")){
+                var modelToShare = "";//textEditor.getValue();
+                //need to inject the '//LOCKED' comment line before the first locked line
+                var i = 0, line, inLockBlock=false;
+                while(line = textEditor.lineInfo(i++)){
+                    if(line.gutterMarkers && line.gutterMarkers.breakpoints) {
+                        if (!inLockBlock) {
+                            modelToShare += "\n//LOCKED";
+                            inLockBlock = true;
+                        }
+                    }else {
+                        inLockBlock = false;
+                    }
+                    modelToShare+="\n"+line.text;
+                }
+
+                modelToShare=stripLockedEmptyLines(modelToShare);
+
                 if (id = Router.current().params._id){
                   /* if its loaded through an URL its a derivationOf model */
-                  Meteor.call('genURL', textEditor.getValue(),id, themeData, handleGenURLEvent);
+                  Meteor.call('genURL', modelToShare,id, themeData, handleGenURLEvent);
                 }
                 else {
                   /* Otherwise its an original model*/
-                  Meteor.call('genURL', textEditor.getValue(),"Original",themeData, handleGenURLEvent);
+                  Meteor.call('genURL', modelToShare,"Original",themeData, handleGenURLEvent);
 
                 }
             }
@@ -684,4 +701,25 @@ function checkSecretBlocks(){
             throw {number : 2,lineNumber : textEditor.posFromIndex(secretEnd).line+1, message : "END tag before any START ! (//START_SECRET .. //END_SECRET)"};
         }
       }
+  }
+
+//Remove linhas vazias entre //LOCKED e o paragrado
+  function stripLockedEmptyLines(model){
+      var lines = model.split(/\r?\n/);
+      var inEmptyBlock=false;
+      var result="";
+      var l=0;
+      while (l<lines.length) {
+          if (lines[l].trim()=="//LOCKED") {
+              inEmptyBlock = true;
+              result+=lines[l]+"\n";
+          }else if (!inEmptyBlock || !lines[l].trim().length==0) {
+              result += lines[l] + "\n";
+              //found line with contents
+              inEmptyBlock=false;
+          }
+
+          l++;
+      }
+      return result;
   }

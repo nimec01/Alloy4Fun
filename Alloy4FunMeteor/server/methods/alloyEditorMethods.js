@@ -96,7 +96,7 @@ Meteor.methods({
           for(var z = i+("//SECRET\n".length) ; (z<model.length && model[z]!='{'); z++){
               paragraph = paragraph + model[z];
           }
-          var para_pattern = /^((one sig |sig |module |open |fact |pred |assert |fun |run |check )(\ )*[^ ]+)/;
+          var para_pattern = /^((one sig |sig |module |open |fact |pred |assert |fun |run |check |abstract )(\ )*[^ ]+)/;
           if(paragraph.match(para_pattern) == null) {paragraph = ""; lastSecret = i + 1 ; continue;}
           if( findClosingBracketMatchIndex(model, z) != -1) {contains_valid_secret = true; break;}
           lastSecret = i + 1 ;

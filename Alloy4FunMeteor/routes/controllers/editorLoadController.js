@@ -28,13 +28,6 @@ editorLoadController = RouteController.extend({
     waitOn: function () {
     },
 
-
-    // A data function that can be used to automatically set the data context for
-    // our layout. This function can also be used by hooks and plugins. For
-    // example, the "dataNotFound" plugin calls this function to see if it
-    // returns a null value, and if so, renders the not found template.
-    // return Posts.findOne({_id: this.params._id});
-
     data: function () {
         var link = Link.findOne({_id: this.params._id});
         var model;
@@ -53,8 +46,11 @@ editorLoadController = RouteController.extend({
                   var z = i;
                   var j = 0;
                   var word = "";
-                  for(z; v[z]!= '\n';z++); z++; /*goto next line*/
-                  for(z;v && v[z]!='{';z++){ word += v[z]; j++;}
+                  for(z; v[z]!= '\n';z++);
+                  z++; /*goto next line*/
+                  for(z;v && v[z]!='{';z++){
+                      word += v[z]; j++;
+                  }
                   if (!(isParagraph(word))){ break; /*retira //SECRET */} /*break case 'word' is not a paragraph */
 
                   try{
@@ -71,27 +67,37 @@ editorLoadController = RouteController.extend({
                 var lockedLines = [];
                 var lines = v.split(/\r?\n/); /*Array of lines */
                 var l=0;
+                var modelToEdit="";
+                var numLockedLines=0;
                 while (l<lines.length) {
                     var line = lines[l];
-                    if (line.trim() == "//LOCK") {
+                    if (line.trim() == "//LOCKED") {
+                        numLockedLines++;
+
+                        //recheck if there are more lines
+                        if (l>=lines.length)
+                            break;
+
                         l++;
                         //last line is where the paragraph ends
                         var lastLine = findParagraph(lines, l);
 
                         if (lastLine!=-1){
-                            lockedLines.push(l/*-1+1*/);//line numbers in editor are '1' based
+                            //lockedLines.push(l - numLockedLines);//line numbers in editor are '1' based
                             while (l < lastLine + 1) {
-                                lockedLines.push(l + 1);
+                                lockedLines.push(l + 1 - numLockedLines);
+                                modelToEdit+=lines[l]+"\n";
                                 l++;
                             }
-
                         }
-                    }else
+                    }else {
+                        modelToEdit+=line+"\n"; //add new line to the last line 
                         l++;
+                    }
                 }
 
                 model = {
-                    "whole": v,
+                    "whole": modelToEdit,
                     "secrets": secrets,
                     "lockedLines":lockedLines
                 }
@@ -198,7 +204,7 @@ function findClosingBracketMatchIndex(str, pos) {
 }
 
 function isParagraph(word){
-    var pattern = /^((one sig |sig |module |open |fact |pred |assert |fun |run |check )(\ )*[^ ]+)/;
+    var pattern = /^((one sig |sig |module |open |fact |pred |assert |fun |run |check |abstract)(\ )*[^ ]+)/;
     if(word.match(pattern) == null) return false ;
     else return true;
 
