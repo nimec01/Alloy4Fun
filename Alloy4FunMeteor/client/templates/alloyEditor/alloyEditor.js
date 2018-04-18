@@ -34,6 +34,12 @@ Template.alloyEditor.helpers({
     'getType' : function (){
         var target = Session.get("targetNode");
         if (target) return target.label.split("$")[0];
+    },
+            //TEST
+    'displayStatistics' : function(){
+        var statistics = Session.get("statistics");
+        if(statistics) { return statistics;}
+        else {return [];}
     }
 });
 
@@ -105,9 +111,25 @@ Template.alloyEditor.events({
 
                 modelToShare=stripLockedEmptyLines(modelToShare);
 
+
                 if (id = Router.current().params._id){
                   /* if its loaded through an URL its a derivationOf model */
-                  Meteor.call('genURL', modelToShare,id, themeData, handleGenURLEvent);
+                  if(secrets = Router.current().data().secrets){
+
+                    swal({
+                            title: "This model contains information that cannot be shared!",
+                            text: "Are you sure you want to share it?",
+                            type: "warning",
+                            showCancelButton: true,
+                            confirmButtonColor: "#DD6B55",
+                            confirmButtonText: "Yes, share it!",
+                            closeOnConfirm: true
+                        },function(){
+                          Meteor.call('genURL', modelToShare,id, themeData, handleGenURLEvent);
+                        }
+                        );
+
+                  }else Meteor.call('genURL', modelToShare,id, themeData, handleGenURLEvent);
                 }
                 else {
                   /* Otherwise its an original model*/
@@ -208,7 +230,9 @@ Template.alloyEditor.onRendered(function () {
             cy.add(Router.current().data().instance.elements);
             updateElementSelectionContent();
         }
-    }
+        //TEST
+        if((id = Router.current().params._id) && Router.current().data().priv) { Meteor.call('getStatistics', id , handleGetStatistics);}
+  }
 
     //On tab/browser closure, terminate the user's session.
     $(window).bind("beforeunload", function (e) {
@@ -704,7 +728,7 @@ function checkSecretBlocks(){
   }
 
 //Remove linhas vazias entre //LOCKED e o paragrado
-  function stripLockedEmptyLines(model){
+function stripLockedEmptyLines(model){
       var lines = model.split(/\r?\n/);
       var inEmptyBlock=false;
       var result="";
@@ -722,4 +746,12 @@ function checkSecretBlocks(){
           l++;
       }
       return result;
+  }
+
+function handleGetStatistics(err, result){
+      if(err){
+          //TODO: Handle statistics error
+      }else{
+          Session.set("statistics", result);
+      }
   }

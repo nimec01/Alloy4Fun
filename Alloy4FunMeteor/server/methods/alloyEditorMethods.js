@@ -132,7 +132,7 @@ Meteor.methods({
         var id = Instance.insert({
             model: model,
             graph: instance, /*object type non-printable
-            theme: themeData /*object type non-printable 
+            theme: themeData /*object type non-printable
         });
         */
         return "pendente";
@@ -160,6 +160,31 @@ Meteor.methods({
         return JSON.parse(result.return.toString());
       },
 
+
+      // STATISTICS ..
+      'getStatistics' : function(id){
+        var numberOfDerivations = 0, satisfiableOutcomes = 0;
+        link = Link.findOne({_id:id});
+
+        if(link) id=link.model_id;
+
+        var derivations = Model.find({derivationOf: id}).fetch();
+
+        console.log("ID é este :" + id);
+        if(Model.findOne({_id: id})) console.log("Um pelo menos encontrou");
+        numberOfDerivations = derivations.length;
+        console.log("Number of derivations: " + numberOfDerivations);
+
+
+        /* Precisa de ser alterado para ter foco nos comandos de desafios (secret commands only)*/
+        var runs = Run.find({model: id,sat: true}).fetch();
+        satisfiableOutcomes = runs.length;
+        console.log("Satisfiable Outcomes " + satisfiableOutcomes);
+
+
+        var result = {numberOfDerivations : numberOfDerivations, satisfiableOutcomes : satisfiableOutcomes};
+        return result;
+        }
 
     });
 

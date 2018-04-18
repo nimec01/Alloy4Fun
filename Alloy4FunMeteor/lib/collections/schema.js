@@ -29,6 +29,7 @@ Schema.Run = new SimpleSchema({
         type: Boolean,
         optional: false
     },
+    // Atenção aqui fica o model_id != "model" : Alterar
     model : {
         type: String,
         optional : false

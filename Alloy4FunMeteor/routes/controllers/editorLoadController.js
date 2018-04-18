@@ -29,6 +29,7 @@ editorLoadController = RouteController.extend({
     },
 
     data: function () {
+        var priv = false;
         var link = Link.findOne({_id: this.params._id});
         var model;
         var secrets = "";
@@ -91,7 +92,7 @@ editorLoadController = RouteController.extend({
                             }
                         }
                     }else {
-                        modelToEdit+=line+"\n"; //add new line to the last line 
+                        modelToEdit+=line+"\n"; //add new line to the last line
                         l++;
                     }
                 }
@@ -101,6 +102,11 @@ editorLoadController = RouteController.extend({
                     "secrets": secrets,
                     "lockedLines":lockedLines
                 }
+            }else { //TEST
+                    model = {
+                        "whole": v,
+                        "priv": true
+                    }
             }
         }else{
             model = {
