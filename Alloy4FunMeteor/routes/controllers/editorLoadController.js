@@ -210,6 +210,7 @@ function findClosingBracketMatchIndex(str, pos) {
 }
 
 function isParagraph(word){
+      //REVIEW : abstract por si só não funciona, nescessário adicionar (abstract pattern)
     var pattern = /^((one sig |sig |module |open |fact |pred |assert |fun |run |check |abstract)(\ )*[^ ]+)/;
     if(word.match(pattern) == null) return false ;
     else return true;

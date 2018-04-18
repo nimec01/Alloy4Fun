@@ -33,6 +33,10 @@ Schema.Run = new SimpleSchema({
     model : {
         type: String,
         optional : false
+    },
+    command : {
+        type: String,
+        optional: false
     }
 });
 

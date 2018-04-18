@@ -34,18 +34,50 @@ Meteor.methods({
 
       var resultObject = JSON.parse(result.return);
 
-      /*Contents of executed models must be stored in the Run collection for statistics use,
-        only for saved models */
-      if (forceInterpretation && cid != "Original" && (l = Link.findOne({_id:cid}))){
+      /*Só grava stats se tiver um link associado e este for público */
+      if (cid != "Original"){
 
+        link = Link.findOne({_id:cid});
+        if(!link.private){
+          modelid = link.model_id;
           var sat = (result.unsat) ? false : true;
-          /* command used must be added to the object for stats */
+          command = getCommand(model,commandLabel);
           var storableRun = {
             sat : sat,
-            model: l.model_id
+            model: modelid,
+            command: command
           }
+          Run.insert(storableRun);
+        }
+      }
+
+      /*Contents of executed models must be stored in the Run collection for statistics use,
+        only, the state of the model must be saved before */
+        /*
+        if (forceInterpretation){
+          /* Command must be extracted from model plus commandLabel
+          command = getCommand(model,commandLabel);
+
+          var storableModel = {
+                whole: model,
+                /*Rever isto, por enquanto derivationOf: Original
+                derivationOf: "Original"
+          }
+
+          var modelid= Model.insert(storableModel); /*Não é nescessário link para este modelo, pois é inacessível do exterior
+
+          var sat = (result.unsat) ? false : true;
+
+          /* command used must be added to the object for stats
+          var storableRun = {
+            sat : sat,
+            model: modelid,
+            command: command
+          }
+          console.log("Run entry: " + storableRun);
           Run.insert(storableRun)
-     }
+        }*/
+
 
       if(resultObject.syntax_error){
           throw new Meteor.Error(502, resultObject);
@@ -160,26 +192,22 @@ Meteor.methods({
         return JSON.parse(result.return.toString());
       },
 
-
-      // STATISTICS ..
+      /*
+        'id' it's a private link
+      */
       'getStatistics' : function(id){
+
         var numberOfDerivations = 0, satisfiableOutcomes = 0;
         link = Link.findOne({_id:id});
+        if(link) var model_id=link.model_id;
 
-        if(link) id=link.model_id;
+        /* derivations */
+        var derivations = Model.find({derivationOf: model_id}).fetch();
+        if((dl = derivations.length) > 0) numberOfDerivations = dl;
 
-        var derivations = Model.find({derivationOf: id}).fetch();
-
-        console.log("ID é este :" + id);
-        if(Model.findOne({_id: id})) console.log("Um pelo menos encontrou");
-        numberOfDerivations = derivations.length;
-        console.log("Number of derivations: " + numberOfDerivations);
-
-
-        /* Precisa de ser alterado para ter foco nos comandos de desafios (secret commands only)*/
-        var runs = Run.find({model: id,sat: true}).fetch();
-        satisfiableOutcomes = runs.length;
-        console.log("Satisfiable Outcomes " + satisfiableOutcomes);
+        /*outcomes*/ /*é nescessário limitar a pesquisa a comandos que sejam comandos objetivo "challenges"*/
+        var runs = Run.find({model: model_id},{sat : true}).fetch();
+        if((rl = runs.length) > 0){ satisfiableOutcomes = rl;}
 
 
         var result = {numberOfDerivations : numberOfDerivations, satisfiableOutcomes : satisfiableOutcomes};
@@ -208,4 +236,14 @@ Meteor.methods({
             }
         }
         return -1;    // No matching closing parenthesis
+    }
+
+  /*
+    From 'model' get the command with the label specified on 'commandLabel'
+  */
+    function getCommand(model,commandLabel) {
+      var re = new RegExp("((run |check |assert )(\ )*)" + commandLabel);
+      command = model.match(re);
+      return command[0]; /*returns the biggest match */
+
     }
