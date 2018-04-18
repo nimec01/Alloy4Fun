@@ -306,7 +306,13 @@ function handleNextInstanceEvent(err, result){
       result: getInstance(textEditor.getValue,..)
 */
 function handleInterpretModelEvent(err, result) {
+    $.unblockUI();
     $('#exec > button').prop('disabled', true);
+
+    $('#instanceViewer').hide();
+    $("#log").empty();
+    var command = $('.command-selection > select option:selected').text();
+
     if (err) {
         if(err.error == 502){
             swal("Syntax Error!", "", "error");
@@ -322,16 +328,47 @@ function handleInterpretModelEvent(err, result) {
         }
     }
     else {
-        if(result.unsat){
-            $('.empty-univ').fadeIn();
-            $('#instanceViewer').hide();
-            $("#genInstanceUrl").hide();
-        } else {
-            updateInstances(result);
-            Session.set("currentInstance",0);
-        }
-    }
-}
+      if(result.commandType && result.commandType == "check") {
+          /* if the commandType == check */
+
+          var log = document.createElement('div');
+          log.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
+          var paragraph = document.createElement('p');
+
+
+          if (result.unsat) {
+
+              $('#instancenav').hide();
+
+              paragraph.innerHTML = "No counter-examples. " + command + " solved!";
+              paragraph.className = "log-complete";
+
+
+          } else {
+
+              paragraph.innerHTML = "Invalid solution, checking " + command + " revealed a counter-example.";
+              paragraph.className = "log-wrong";
+              updateGraph(result);
+
+          }
+
+          log.appendChild(paragraph);
+          /* div with id=log will appendChild(log)*/
+          $("#log")[0].appendChild(log);
+      }else {
+          /* if the commandType != check */
+          if(result.unsat){
+              $('.empty-univ').fadeIn();
+              $('#instanceViewer').hide();
+              $("#genInstanceUrl").hide();
+          } else {
+              updateInstances(result);
+              Session.set("currentInstance",0);
+            }
+          }
+}}
+
+
 updateInstances = function(instance){
 
     if(!Session.get("instances")){

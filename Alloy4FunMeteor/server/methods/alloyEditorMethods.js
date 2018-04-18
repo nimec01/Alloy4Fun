@@ -15,6 +15,7 @@ Meteor.methods({
               "Original" otherwise
 */
     'getInstance' : function (model, sessionId, instanceNumber, commandLabel, forceInterpretation,cid){
+      commandLabel = commandLabel[0].toString()
 
       /* Normal behaviour */
       var args = {model: model, sessionId: sessionId, instanceNumber: instanceNumber, commandLabel: commandLabel, forceInterpretation: forceInterpretation};
@@ -34,6 +35,23 @@ Meteor.methods({
 
       var resultObject = JSON.parse(result.return);
 
+      /* Remendo , recebe command label ou então recebe comando$ qqr coisa*/
+      var commandType = "none";
+
+      if(commandLabel.indexOf("check$") != -1) { command = commandLabel; commandType = "check";}
+      if(commandLabel.indexOf("run$") != -1) {command = commandLabel;     commandType = "run";}
+      if(commandLabel.indexOf("assert$") != -1) {command = commandLabel;  commandType = "assert";}
+
+      if(commandType === "none"){
+            command = getCommand(model,commandLabel);
+
+
+            if(command.indexOf("check")!= -1) commandType = "check";
+            if(command.indexOf("run")!= -1) commandType = "run";
+            if(command.indexOf("assert")!= -1) commandType = "assert";
+      }
+
+
       /*Só grava stats se tiver um link associado e este for público */
       if (cid != "Original"){
 
@@ -41,7 +59,7 @@ Meteor.methods({
         if(!link.private){
           modelid = link.model_id;
           var sat = (result.unsat) ? false : true;
-          command = getCommand(model,commandLabel);
+
           var storableRun = {
             sat : sat,
             model: modelid,
@@ -51,38 +69,12 @@ Meteor.methods({
         }
       }
 
-      /*Contents of executed models must be stored in the Run collection for statistics use,
-        only, the state of the model must be saved before */
-        /*
-        if (forceInterpretation){
-          /* Command must be extracted from model plus commandLabel
-          command = getCommand(model,commandLabel);
-
-          var storableModel = {
-                whole: model,
-                /*Rever isto, por enquanto derivationOf: Original
-                derivationOf: "Original"
-          }
-
-          var modelid= Model.insert(storableModel); /*Não é nescessário link para este modelo, pois é inacessível do exterior
-
-          var sat = (result.unsat) ? false : true;
-
-          /* command used must be added to the object for stats
-          var storableRun = {
-            sat : sat,
-            model: modelid,
-            command: command
-          }
-          console.log("Run entry: " + storableRun);
-          Run.insert(storableRun)
-        }*/
-
 
       if(resultObject.syntax_error){
           throw new Meteor.Error(502, resultObject);
       } else {
           resultObject.number=instanceNumber;
+          resultObject.commandType=commandType;
           return resultObject;
       }
   },
@@ -242,8 +234,9 @@ Meteor.methods({
     From 'model' get the command with the label specified on 'commandLabel'
   */
     function getCommand(model,commandLabel) {
-      var re = new RegExp("((run |check |assert )(\ )*)" + commandLabel);
+      var re = new RegExp("((run|check|assert)(\ )*)" + commandLabel);
       command = model.match(re);
-      return command[0]; /*returns the biggest match */
 
+      if (command!=null) return (command[0]);
+      else return "unknown";
     }
