@@ -38,32 +38,30 @@ editorLoadController = RouteController.extend({
         if (link){
             model = Model.findOne({_id: link.model_id});
             var v = model.whole;
+            var i;
             if (!link.private){ /*if the model is public*/
-                //secret is removed
-                var i;
-
                 var nsecrets = 0;
                 while ((i = v.indexOf("//SECRET\n"))>=0) { /*while Contains secrets*/
                   var z = i;
                   var j = 0;
                   var word = "";
-                  for(z; v[z]!= '\n';z++);
-                  z++; /*goto next line*/
-                  for(z;v && v[z]!='{';z++){
-                      word += v[z]; j++;
-                  }
-                  if (!(isParagraph(word))){ break; /*retira //SECRET */} /*break case 'word' is not a paragraph */
 
-                  try{
+                  for(z; v[z]!= '\n';z++); z++; /*goto next line*/
+                  for(z;v && v[z]!='{';z++){ word += v[z];  j++;}
+
+                  if (!(isParagraph(word))) break; /*break case 'word' is not a paragraph */
+
+                  try{  /*if its a paragraph then } must match '}' */
                     var e = findClosingBracketMatchIndex(v,z);
                   }catch(err){
                     break;
                   }
 
-                 secrets+="\n\n"+v.substr(i,(e-i)+1) ;
+                 secrets+="\n\n"+v.substr(i,(e-i)+1);
+                 v = v.substr(0,i) + v.substr(e+1); /* remove secrets from v (whole model) */
+               }
 
-                  v = v.substr(0,i) + v.substr(e+1); /* remove secrets from v (whole model) */
-                }
+
            /*------------LOCK handler---------------*/
                 var lockedLines = [];
                 var lines = v.split(/\r?\n/); /*Array of lines */
@@ -97,31 +95,30 @@ editorLoadController = RouteController.extend({
                     }
                 }
 
-                model = {
-                    "whole": modelToEdit,
-                    "secrets": secrets,
-                    "lockedLines":lockedLines
-                }
-            }else { //TEST
-                    model = {
-                        "whole": v,
-                        "priv": true
-                    }
+                return (model = {
+                        "whole": modelToEdit,
+                        "secrets": secrets,
+                        "lockedLines":lockedLines,
+                        "priv": false
+                      });
+
+            }else {
+                    return (model = {
+                              "whole": v,
+                              "secrets":"",
+                              "lockedLines":"",
+                              "priv": true
+                            });
             }
         }else{
-            model = {
-                "whole": "Link não encontrado",
-                "secrets": ""
-            }
+            return (model = {
+                        "whole": "Link não encontrado",
+                        "secrets": "",
+                        "lockedLines":"",
+                        "priv":false
+                    });
         }
 
-        return model;
-
-        //TODO
-        /*
-        var themes = Theme.find({modelId : this.params._id}).fetch();
-        model.themes = themes;
-        */
     },
 
     // You can provide any of the hook options
@@ -209,10 +206,12 @@ function findClosingBracketMatchIndex(str, pos) {
     return -1;    // No matching closing parenthesis
 }
 
+/*
+  Function that returns true if the word it's a valid paragraph, returns false otherwise
+*/
 function isParagraph(word){
-      //REVIEW : abstract por si só não funciona, nescessário adicionar (abstract pattern)
-    var pattern = /^((one sig |sig |module |open |fact |pred |assert |fun |run |check |abstract)(\ )*[^ ]+)/;
-    if(word.match(pattern) == null) return false ;
+    var pattern_named = /^((one sig |sig |pred |fun |abstract sig )(\ )*[A-Za-z0-9]+)/;
+    var pattern_nnamed = /^((fact|assert|run|check)(\ )*[A-Za-z0-9]*)/;
+    if(word.match(pattern_named) == null && word.match(pattern_nnamed) == null) return false ;
     else return true;
-
 }

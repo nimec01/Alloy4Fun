@@ -35,12 +35,7 @@ Template.alloyEditor.helpers({
         var target = Session.get("targetNode");
         if (target) return target.label.split("$")[0];
     },
-            //TEST
-    'displayStatistics' : function(){
-        var statistics = Session.get("statistics");
-        if(statistics) { return statistics;}
-        else {return [];}
-    }
+
 });
 
 /*
@@ -50,12 +45,11 @@ Template.alloyEditor.events({
   /* Exec button */
     'click #exec': function (evt) {
 
-        if (evt.toElement.id != "exec") {
-        /* if the button is available, check if there are commands to execute*/
-            if (!$("#exec > button").is(":disabled")) {
-                var command = Session.get("commands").length > 1?$('.command-selection > select option:selected').text():Session.get("commands");
-        /* No commands to execute */
-                if (command.length == 0){
+        if (evt.toElement.id != "exec")
+
+          if (!$("#exec > button").is(":disabled")) {         /* if the button is available, check if there are commands to execute*/
+                var commandLabel = Session.get("commands").length > 1?$('.command-selection > select option:selected').text():Session.get("commands");
+                if (commandLabel.length == 0){
                     $('#execbtn').qtip({
                         show: {
                             ready: true
@@ -64,20 +58,16 @@ Template.alloyEditor.events({
                         hide: 'unfocus'
                     });
                 }
-        /* Execute command */
-                else {
-                  /* Original Model or Derivation */
+                else {       /* Execute command */
                   var secrets = "";
-                  id = Router.current().params._id;
-                  if(id && Router.current().data().secrets) secrets = Router.current().data().secrets;
-                  if (!id) id = "Original";
-                  Meteor.call('getInstance', (textEditor.getValue() + secrets), Meteor.default_connection._lastSessionId, 0,command, true,id, handleInterpretModelEvent);
+                  if(!(id = Router.current().params._id)){ id ="Original";}
+                  if((id!="Original") && Router.current().data().secrets) secrets = Router.current().data().secrets;
+                  Meteor.call('getInstance', (textEditor.getValue() + secrets), Meteor.default_connection._lastSessionId, 0,commandLabel, true,id, handleInterpretModelEvent);
                 }
-        /* available buttons */
-                $("#exec > button").prop('disabled', true);
+                $("#exec > button").prop('disabled', true);  /* available buttons */
                 $("#next > button").prop('disabled', false);
-            }
-        }
+          }
+
     },
   /* Command selection  */
     'change .command-selection > select' : function (){
@@ -94,8 +84,9 @@ Template.alloyEditor.events({
                 currentlyProjectedTypes : currentlyProjectedTypes
             };
             if (!$("#genUrl > button").is(":disabled")){
-                var modelToShare = "";//textEditor.getValue();
-                //need to inject the '//LOCKED' comment line before the first locked line
+
+                /*//LOCKED insertion */
+                var modelToShare = "";
                 var i = 0, line, inLockBlock=false;
                 while(line = textEditor.lineInfo(i++)){
                     if(line.gutterMarkers && line.gutterMarkers.breakpoints) {
@@ -108,14 +99,10 @@ Template.alloyEditor.events({
                     }
                     modelToShare+="\n"+line.text;
                 }
-
                 modelToShare=stripLockedEmptyLines(modelToShare);
 
-
-                if (id = Router.current().params._id){
-                  /* if its loaded through an URL its a derivationOf model */
-                  if(secrets = Router.current().data().secrets){
-
+                if (id = Router.current().params._id){   /* if its loaded through an URL its a derivationOf model */
+                  if(secrets = Router.current().data().secrets && containsValidSecret(modelToShare)){
                     swal({
                             title: "This model contains information that cannot be shared!",
                             text: "Are you sure you want to share it?",
@@ -125,14 +112,13 @@ Template.alloyEditor.events({
                             confirmButtonText: "Yes, share it!",
                             closeOnConfirm: true
                         },function(){
-                          Meteor.call('genURL', modelToShare,id, themeData, handleGenURLEvent);
+                          Meteor.call('genURL', modelToShare,"Original", themeData, handleGenURLEvent);
                         }
                         );
 
-                  }else Meteor.call('genURL', modelToShare,id, themeData, handleGenURLEvent);
+                  }else{ Meteor.call('genURL', modelToShare + secrets, id, themeData, handleGenURLEvent);}
                 }
-                else {
-                  /* Otherwise its an original model*/
+                else {   /* Otherwise its an original model*/
                   Meteor.call('genURL', modelToShare,"Original",themeData, handleGenURLEvent);
 
                 }
@@ -230,8 +216,6 @@ Template.alloyEditor.onRendered(function () {
             cy.add(Router.current().data().instance.elements);
             updateElementSelectionContent();
         }
-        //TEST
-        if((id = Router.current().params._id) && Router.current().data().priv) { Meteor.call('getStatistics', id , handleGetStatistics);}
   }
 
     //On tab/browser closure, terminate the user's session.
@@ -764,7 +748,6 @@ function checkSecretBlocks(){
       }
   }
 
-//Remove linhas vazias entre //LOCKED e o paragrado
 function stripLockedEmptyLines(model){
       var lines = model.split(/\r?\n/);
       var inEmptyBlock=false;
@@ -785,10 +768,46 @@ function stripLockedEmptyLines(model){
       return result;
   }
 
-function handleGetStatistics(err, result){
-      if(err){
-          //TODO: Handle statistics error
-      }else{
-          Session.set("statistics", result);
+  /*
+    Check if the model contains some valid 'secret'
+  */
+ function containsValidSecret(model){
+
+      var i,j,lastSecret = 0;
+      var paragraph = "";
+      while( (i = model.indexOf("//SECRET\n",lastSecret)) >= 0){
+        for(var z = i+("//SECRET\n".length) ; (z<model.length && model[z]!='{'); z++){
+            paragraph = paragraph + model[z];
+        }
+        if(!isParagraph(paragraph)) {paragraph = ""; lastSecret = i + 1 ; continue;}
+        if( findClosingBracketMatchIndex(model, z) != -1) {return true;}
+        lastSecret = i + 1 ;
       }
-  }
+      return false;
+    }
+ function isParagraph(word){
+        var pattern_named = /^((one sig |sig |pred |fun |abstract sig )(\ )*[A-Za-z0-9]+)/;
+        var pattern_nnamed = /^((fact|assert|run|check)(\ )*[A-Za-z0-9]*)/;
+        if(word.match(pattern_named) == null && word.match(pattern_nnamed) == null) return false ;
+        else return true;
+    }
+
+ function findClosingBracketMatchIndex(str, pos) {
+        if (str[pos] != '{') {
+            throw new Error("No '{' at index " + pos);
+        }
+        var depth = 1;
+        for (var i = pos + 1; i < str.length; i++) {
+            switch (str[i]) {
+                case '{':
+                    depth++;
+                    break;
+                case '}':
+                    if (--depth == 0) {
+                        return i;
+                    }
+                    break;
+            }
+        }
+        return -1;    // No matching closing parenthesis
+    }
