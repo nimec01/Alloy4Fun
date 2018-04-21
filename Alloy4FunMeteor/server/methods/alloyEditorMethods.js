@@ -81,7 +81,7 @@ Meteor.methods({
   Stores the model specified in the function argument, returns model url 'id'
    used in Share Model option
 */
-    'genURL' : function (model,current_id) {
+    'genURL' : function (model,current_id,only_one_link) {
 
         var modeldOf = "Original";
 
@@ -102,8 +102,8 @@ Meteor.methods({
 
         var result;
 
+        if ((containsValidSecret(model) && !only_one_link)){   /* assert result and returns*/
 
-        if (containsValidSecret(model)){   /* assert result and returns*/
             var private_link_id=Link.insert({
                 model_id : newModel_id,
                 private: true

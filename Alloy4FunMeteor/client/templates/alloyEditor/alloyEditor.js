@@ -102,7 +102,7 @@ Template.alloyEditor.events({
                 modelToShare=stripLockedEmptyLines(modelToShare);
 
                 if (id = Router.current().params._id){   /* if its loaded through an URL its a derivationOf model */
-                  if(secrets = Router.current().data().secrets && containsValidSecret(modelToShare)){
+                  if((secrets = Router.current().data().secrets) && containsValidSecret(modelToShare)){
                     swal({
                             title: "This model contains information that cannot be shared!",
                             text: "Are you sure you want to share it?",
@@ -112,14 +112,16 @@ Template.alloyEditor.events({
                             confirmButtonText: "Yes, share it!",
                             closeOnConfirm: true
                         },function(){
-                          Meteor.call('genURL', modelToShare,"Original", themeData, handleGenURLEvent);
+                          Meteor.call('genURL', modelToShare,"Original",false, themeData, handleGenURLEvent);
                         }
                         );
 
-                  }else{ Meteor.call('genURL', modelToShare + secrets, id, themeData, handleGenURLEvent);}
+                  }else{ if(secrets.length == 0) Meteor.call('genURL', modelToShare, id,false, themeData, handleGenURLEvent);
+                         else Meteor.call('genURL',modelToShare + secrets, id,true, themeData,handleGenURLEvent)
+                       }
                 }
                 else {   /* Otherwise its an original model*/
-                  Meteor.call('genURL', modelToShare,"Original",themeData, handleGenURLEvent);
+                  Meteor.call('genURL', modelToShare,"Original",false,themeData, handleGenURLEvent);
 
                 }
             }
