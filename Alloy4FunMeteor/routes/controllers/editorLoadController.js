@@ -42,27 +42,27 @@ editorLoadController = RouteController.extend({
             if (!link.private){ /*if the model is public*/
                 var nsecrets = 0;
                 while ((i = v.indexOf("//SECRET\n"))>=0) { /*while Contains secrets*/
-                  var z = i;
-                  var j = 0;
-                  var word = "";
+                    var z = i;
+                    var j = 0;
+                    var word = "";
 
-                  for(z; v[z]!= '\n';z++); z++; /*goto next line*/
-                  for(z;v && v[z]!='{';z++){ word += v[z];  j++;}
+                    for(z; v[z]!= '\n';z++); z++; /*goto next line*/
+                    for(z;v && v[z]!='{';z++){ word += v[z];  j++;}
 
-                  if (!(isParagraph(word))) break; /*break case 'word' is not a paragraph */
+                    if (!(isParagraph(word))) break; /*break case 'word' is not a paragraph */
 
-                  try{  /*if its a paragraph then } must match '}' */
-                    var e = findClosingBracketMatchIndex(v,z);
-                  }catch(err){
-                    break;
-                  }
+                    try{  /*if its a paragraph then } must match '}' */
+                        var e = findClosingBracketMatchIndex(v,z);
+                    }catch(err){
+                        break;
+                    }
 
-                 secrets+="\n\n"+v.substr(i,(e-i)+1);
-                 v = v.substr(0,i) + v.substr(e+1); /* remove secrets from v (whole model) */
-               }
+                    secrets+="\n\n"+v.substr(i,(e-i)+1);
+                    v = v.substr(0,i) + v.substr(e+1); /* remove secrets from v (whole model) */
+                }
 
 
-           /*------------LOCK handler---------------*/
+                /*------------LOCK handler---------------*/
                 var lockedLines = [];
                 var lines = v.split(/\r?\n/); /*Array of lines */
                 var l=0;
@@ -96,27 +96,27 @@ editorLoadController = RouteController.extend({
                 }
 
                 return (model = {
-                        "whole": modelToEdit,
-                        "secrets": secrets,
-                        "lockedLines":lockedLines,
-                        "priv": false
-                      });
+                    "whole": modelToEdit,
+                    "secrets": secrets,
+                    "lockedLines":lockedLines,
+                    "priv": false
+                });
 
             }else {
-                    return (model = {
-                              "whole": v,
-                              "secrets":"",
-                              "lockedLines":"",
-                              "priv": true
-                            });
+                return (model = {
+                    "whole": v,
+                    "secrets":"",
+                    "lockedLines":"",
+                    "priv": true
+                });
             }
         }else{
             return (model = {
-                        "whole": "Link não encontrado",
-                        "secrets": "",
-                        "lockedLines":"",
-                        "priv":false
-                    });
+                "whole": "Link não encontrado",
+                "secrets": "",
+                "lockedLines":"",
+                "priv":false
+            });
         }
 
     },
@@ -152,39 +152,57 @@ editorLoadController = RouteController.extend({
 
 function findParagraph(lines, l) {
     //locate the start of the next paragraph {
-    var foundStart=false;
     var braces=0;
+    var estado=1;
     while (l<lines.length) {
-        var line = lines[l];
-        if (line.trim().length>0) {//empty lines or lines with white space are ignored
-            for (var c = 0; c < line.length; c++) {
-                if (!foundStart) {
-                    if (line.charAt(c) == "{"
-                        &&
-                        line.substr(0, c).trim()
-                             .match("^(one sig |sig |module |open |fact |pred |assert |fun |run |check )")
-                        ) {
-                            foundStart = true;
-                            braces++;
-                        }
-                }
-                //se encontrou
-                else if (line.charAt(c) == "{")
-                    braces++;
-                else if (line.charAt(c) == "}")
-                    braces--;
+        var line = lines[l].trim() + ' ';
 
-                if (foundStart && braces == 0)
-                    return l;//this is the last line of this paragraph
+        if (line.length>0) {//empty lines or lines with white space are ignored
+            if (estado==1
+                && line.match("^(one sig|sig|module|open|fact|pred|assert|fun|run|check|abstract sig)[ \t{]")
+            ){
+                estado=2;
             }
-            if (!foundStart) //if found a non empty line but the token is not valid the LOCK is ignored
-                return -1;
+
+            if (estado>1) {//ie found valid token
+                for (var c = 0; c < line.length; c++) {
+                    if (estado == 2) {//we need to find a {
+                        switch (line.charAt(c)) {
+                            case ' ':
+                            case '\t':
+                            case '\r':
+                            case '\n':
+                                break;//ok allow white space
+                            case '{':
+                                estado = 3;
+                                braces++;
+                                break;
+                            //default: //some other char - so ignore the lock
+                            //    return -1;
+                        }
+                    } else if (estado == 3) {
+                        switch (line.charAt(c)) {
+                            case '{':
+                                braces++;
+                                break;
+                            case '}':
+                                braces--;
+                                break;
+                        }
+                    }
+                }
+            }
+
+            if (estado==3 && braces == 0)
+                return l;//this is the last line of this paragraph
         }
         l++;
     }
 
-    return l-1;
+    return -1;
 }
+
+
 
 function findClosingBracketMatchIndex(str, pos) {
     if (str[pos] != '{') {
