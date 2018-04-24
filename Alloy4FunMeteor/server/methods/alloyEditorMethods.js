@@ -50,20 +50,22 @@ Meteor.methods({
       if(commandType === "unknown"){ commandType = getCommandType(model,commandLabel);}   /*if the command have any label */
 
       /* ----- Store exec data --------*/
-      var derivatedOf="Original";
+      if(instanceNumber == 0){
+        var derivatedOf="Original";
 
-      if(cid != "Original" && (link = Link.findOne({_id:cid}))){ derivatedOf = link.model_id;  } /*Save model derivation */
-      model_id =  Model.insert({  whole: model,
+        if(cid != "Original" && (link = Link.findOne({_id:cid}))){ derivatedOf = link.model_id;  } /*Save model derivation */
+        model_id =  Model.insert({  whole: model,
                                   derivationOf : derivatedOf
-                              });
+                                });
 
-      var sat = (result.unsat) ? false : true;
-      if(control) command = commandType; else command =  + " " + commandLabel;
+        var sat = (result.unsat) ? false : true;
+        if(control) command = commandType; else command = commandType + " " + commandLabel;
 
-      Run.insert({  sat : sat,
-                    model: model_id,
-                    command : command
+        Run.insert({  sat : sat,
+                      model: model_id,
+                      command : command
                   });
+      }
 
       /* handle result*/
       if(resultObject.syntax_error){
