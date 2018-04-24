@@ -62,7 +62,7 @@ Template.alloyEditor.events({
                   var secrets = "";
                   if(!(id = Router.current().params._id)){ id ="Original";}
                   if((id!="Original") && Router.current().data().secrets) secrets = Router.current().data().secrets;
-                  Meteor.call('getInstance', (textEditor.getValue() + secrets), Meteor.default_connection._lastSessionId, 0,commandLabel, true,id, handleInterpretModelEvent);
+                  Meteor.call('getInstance', (textEditor.getValue() + secrets), Meteor.default_connection._lastSessionId, 0,commandLabel, true,id, Session.get("last_id"),handleInterpretModelEvent);
                 }
                 $("#exec > button").prop('disabled', true);  /* available buttons */
                 $("#next > button").prop('disabled', false);
@@ -112,16 +112,16 @@ Template.alloyEditor.events({
                             confirmButtonText: "Yes, share it!",
                             closeOnConfirm: true
                         },function(){
-                          Meteor.call('genURL', modelToShare,"Original",false, themeData, handleGenURLEvent);
+                          Meteor.call('genURL', modelToShare,"Original",false,Session.get("last_id"), themeData, handleGenURLEvent);
                         }
                         );
 
-                  }else{ if(secrets.length == 0) Meteor.call('genURL', modelToShare, id,false, themeData, handleGenURLEvent);
-                         else Meteor.call('genURL',modelToShare + secrets, id,true, themeData,handleGenURLEvent)
+                  }else{ if(secrets.length == 0) Meteor.call('genURL', modelToShare, id,false,Session.get("last_id"), themeData, handleGenURLEvent);
+                         else Meteor.call('genURL',modelToShare + secrets, id,true,Session.get("last_id"), themeData,handleGenURLEvent)
                        }
                 }
                 else {   /* Otherwise its an original model*/
-                  Meteor.call('genURL', modelToShare,"Original",false,themeData, handleGenURLEvent);
+                  Meteor.call('genURL', modelToShare,"Original",false,Session.get("last_id"),themeData, handleGenURLEvent);
 
                 }
             }
@@ -141,7 +141,7 @@ Template.alloyEditor.events({
                         id = Router.current().params._id;
                         if (!id) {id = "Original";}
 
-                        Meteor.call('getInstance', textEditor.getValue(), Meteor.default_connection._lastSessionId, currentInstance - 1, command, true,id, handlePreviousInstanceEvent);
+                        Meteor.call('getInstance', textEditor.getValue(), Meteor.default_connection._lastSessionId, currentInstance - 1, command, true,id,null, handlePreviousInstanceEvent);
                     }
                     $("#next > button").prop('disabled', false);
                 }
@@ -160,7 +160,7 @@ Template.alloyEditor.events({
 
                     id = Router.current().params._id;
                     if (!id) {id = "Original";}
-                    Meteor.call('getInstance', textEditor.getValue(), Meteor.default_connection._lastSessionId, currentInstance + 1, command, false,id, handleNextInstanceEvent);
+                    Meteor.call('getInstance', textEditor.getValue(), Meteor.default_connection._lastSessionId, currentInstance + 1, command, false,id,null, handleNextInstanceEvent);
                 }
                 $("#prev > button").prop('disabled', false);
             }
@@ -352,6 +352,8 @@ function handleInterpretModelEvent(err, result) {
               Session.set("currentInstance",0);
             }
           }
+
+          if(result.last_id) { Session.set("last_id",result.last_id);   }
 }}
 
 
@@ -428,6 +430,8 @@ function handleGenURLEvent(err, result) {
         document.getElementById('url-permalink').appendChild(textcenter);
         $("#genUrl > button").prop('disabled', true);
         zeroclipboard();
+
+        if(result.last_id){ Session.set("last_id",result.last_id);}
     }
 }
 

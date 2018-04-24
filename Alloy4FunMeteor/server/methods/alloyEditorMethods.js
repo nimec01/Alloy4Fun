@@ -14,8 +14,7 @@ Meteor.methods({
       'cid' : link_id  , 'derivatedOf' model
               "Original" otherwise
 */
-    'getInstance' : function (model, sessionId, instanceNumber, commandLabel, forceInterpretation,cid){
-
+    'getInstance' : function (model, sessionId, instanceNumber, commandLabel, forceInterpretation,cid,last_id){
       commandLabel = commandLabel.toString();
 
       /* Normal behaviour */
@@ -53,9 +52,11 @@ Meteor.methods({
       if(instanceNumber == 0){
         var derivatedOf="Original";
 
-        if(cid != "Original" && (link = Link.findOne({_id:cid}))){ derivatedOf = link.model_id;  } /*Save model derivation */
+        if(cid != "Original" && (link = Link.findOne({_id:cid})) && !last_id){ derivatedOf = link.model_id; }
+        else if(last_id) derivatedOf = last_id; /*Save model derivation */
+
         model_id =  Model.insert({  whole: model,
-                                  derivationOf : derivatedOf
+                                    derivationOf : derivatedOf
                                 });
 
         var sat = (result.unsat) ? false : true;
@@ -73,6 +74,7 @@ Meteor.methods({
       } else {
           resultObject.number=instanceNumber;
           resultObject.commandType=commandType;
+          resultObject.last_id = model_id;
           return resultObject;
       }
      },
@@ -82,14 +84,14 @@ Meteor.methods({
   Stores the model specified in the function argument, returns model url 'id'
    used in Share Model option
 */
-    'genURL' : function (model,current_id,only_one_link) {
+    'genURL' : function (model,current_id,only_one_link,last_id) {
 
         var modeldOf = "Original";
 
-        if (current_id != "Original"){ /* if its not an original model */
+        if (current_id != "Original" && !last_id){ /* if its not an original model */
           var link = Link.findOne({_id:current_id});
           modeldOf = link.model_id;
-        }
+        }else if(last_id) modeldOf = last_id;
 
         var newModel_id  = Model.insert({ /*A Model is always created, regardless of having secrets or not */
                             whole: model,
@@ -111,11 +113,13 @@ Meteor.methods({
             });
             var result={
                 public: public_link_id,
-                private: private_link_id
+                private: private_link_id,
+                last_id : newModel_id
             }
         }else{
             result={
-                public: public_link_id
+                public: public_link_id,
+                last_id : newModel_id
             }
         }
 
