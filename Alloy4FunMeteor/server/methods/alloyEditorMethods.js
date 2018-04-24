@@ -62,10 +62,11 @@ Meteor.methods({
         var sat = (result.unsat) ? false : true;
         if(control) command = commandType; else command = commandType + " " + commandLabel;
 
-        Run.insert({  sat : sat,
-                      model: model_id,
-                      command : command
-                  });
+          //we need the id of the inserted Document so we can refer toit when sharing the instance
+          var runID = Run.insert({  sat : sat,
+              model: model_id,
+              command : command
+          });
       }
 
       /* handle result*/
@@ -75,6 +76,7 @@ Meteor.methods({
           resultObject.number=instanceNumber;
           resultObject.commandType=commandType;
           resultObject.last_id = model_id;
+          resultObject.runID = runID;
           return resultObject;
       }
      },
@@ -129,13 +131,24 @@ Meteor.methods({
 
 
 
-/*
-  Stores model instance, returns url to make possible share the instance.
-   used in Share Instance option
-   //TODO
-*/
-    'storeInstance' : function (model, themeData, instance){
-        return "pendente";
+    /*
+      Stores model instance, returns url to make possible share the instance.
+       used in Share Instance option
+       //TODO
+    */
+    //'storeInstance' : function (model, themeData, instance){
+    'storeInstance' : function (runID, themeData, instance){
+        /*
+            criar um instance que aponta para o run
+            guardar no instance o theme e o o proprio "instance"
+         */
+        var instanceID = Instance.insert({
+            run_id: runID,
+            theme: themeData,
+            graph: instance
+        });
+
+        return instanceID;
     },
 
     'getProjection' : function (sessid, frameInfo){

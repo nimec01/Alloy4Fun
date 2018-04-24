@@ -163,10 +163,15 @@ Schema.Instance = new SimpleSchema({
         type: String,
         optional: false
     },
-    model : {
+/*    model : {
+        type: String,
+        optional : false
+    },*/
+    run_id : {
         type: String,
         optional : false
     },
+
     graph : {
         type : Object,
         optional : false

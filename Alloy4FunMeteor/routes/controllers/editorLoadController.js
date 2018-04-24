@@ -34,6 +34,8 @@ editorLoadController = RouteController.extend({
         var model;
         var secrets = "";
 
+
+        var themes = Theme.find({modelId : this.params._id}).fetch();
         /*------- SECRETs handler ---------- */
         if (link){
             model = Model.findOne({_id: link.model_id});
