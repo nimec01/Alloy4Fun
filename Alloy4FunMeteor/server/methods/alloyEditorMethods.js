@@ -8,7 +8,6 @@ url="http://localhost:8080/Alloy4Fun/services/AlloyService?wsdl";
 
 /* Meteor server methods */
 Meteor.methods({
-  // REVIEW
 /*
   Uses webservice to get a model instance
       'forceInterpretation' : used to skip cache and force new model interpretation
@@ -53,13 +52,13 @@ Meteor.methods({
       /* ----- Store exec data --------*/
       var derivatedOf="Original";
 
-      if(cid != "Original" && (link = Link.findOne({_id:cid}))){ derivationOf = link.model_id;  } /*Save model derivation */
+      if(cid != "Original" && (link = Link.findOne({_id:cid}))){ derivatedOf = link.model_id;  } /*Save model derivation */
       model_id =  Model.insert({  whole: model,
                                   derivationOf : derivatedOf
                               });
 
       var sat = (result.unsat) ? false : true;
-      if(control) command = commandType; else command = commandType + commandLabel;
+      if(control) command = commandType; else command =  + " " + commandLabel;
 
       Run.insert({  sat : sat,
                     model: model_id,
