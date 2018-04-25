@@ -157,7 +157,7 @@ Schema.Theme = new SimpleSchema({
     //Edge Colors
 
 });
-
+/*
 Schema.Instance = new SimpleSchema({
     _id: {
         type: String,
@@ -166,21 +166,22 @@ Schema.Instance = new SimpleSchema({
 /*    model : {
         type: String,
         optional : false
-    },*/
+    },* /
     run_id : {
         type: String,
         optional : false
     },
-
     graph : {
         type : Object,
-        optional : false
+        optional : false,
+        blackbox: true
     },
     theme : {
         type : Object,
-        optional : false
+        optional : false,
+        blackbox: true
     }
-})
+})*/
 
 
 
@@ -206,4 +207,4 @@ Model.attachSchema(Schema.Model);
 Run.attachSchema(Schema.Run);
 Theme.attachSchema(Schema.Theme);
 Link.attachSchema(Schema.Link);
-Instance.attachSchema(Schema.Instance);
+//Instance.attachSchema(Schema.Instance);

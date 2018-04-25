@@ -178,7 +178,7 @@ Template.alloyEditor.events({
         };
 
         //obter o id do Run correspondente à instancia atual no browser
-        var runID = Session.get("instances")[Session.get("currentInstance")].runID;
+        var runID = Session.get("instances")[0/*Session.get("currentInstance")*/].runID;
 
         //Meteor.call('storeInstance', textEditor.getValue(), themeData, cy.json(), handleGenInstanceURLEvent);
         Meteor.call('storeInstance', runID, themeData, cy.json(), handleGenInstanceURLEvent);

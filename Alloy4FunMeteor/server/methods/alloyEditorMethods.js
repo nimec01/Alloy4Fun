@@ -62,7 +62,7 @@ Meteor.methods({
         var sat = (result.unsat) ? false : true;
         if(control) command = commandType; else command = commandType + " " + commandLabel;
 
-          //we need the id of the inserted Document so we can refer toit when sharing the instance
+          //we need the id of the inserted Document so we can refer to it when sharing the instance
           var runID = Run.insert({  sat : sat,
               model: model_id,
               command : command
@@ -138,15 +138,24 @@ Meteor.methods({
     */
     //'storeInstance' : function (model, themeData, instance){
     'storeInstance' : function (runID, themeData, instance){
+
+        console.log("storeInstance Theme:");
+        console.log(themeData);
+        console.log("storeInstance instance:");
+        console.log(instance);
+
+
         /*
             criar um instance que aponta para o run
             guardar no instance o theme e o o proprio "instance"
          */
         var instanceID = Instance.insert({
             run_id: runID,
+            graph: instance,
             theme: themeData,
-            graph: instance
-        });
+            date: new Date().toLocaleString()
+
+    });
 
         return instanceID;
     },

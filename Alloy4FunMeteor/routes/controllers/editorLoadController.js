@@ -5,16 +5,12 @@
 
 editorLoadController = RouteController.extend({
 
-    // A place to put your subscriptions
-    // this.subscribe('items');
-    // // add the subscription to the waitlist
-    // this.subscribe('item', this.params._id).wait();
-
     template : 'alloyEditor',
 
     subscriptions: function () {
         //subscribe to curso editorLoad -> Model collection
         this.subscribe('editorLoad').wait();
+        this.subscribe('instanceLoad').wait();
 
         //subscribe to cursor solutions. check server/publications/alloyLoadPublications
         this.subscribe('solutions', this.params._id).wait();
@@ -33,7 +29,7 @@ editorLoadController = RouteController.extend({
         var link = Link.findOne({_id: this.params._id});
         var model;
         var secrets = "";
-
+        var instanteId = Instance.findOne({_id: this.params._id});
 
         var themes = Theme.find({modelId : this.params._id}).fetch();
         /*------- SECRETs handler ---------- */
