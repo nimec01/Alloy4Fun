@@ -59,10 +59,27 @@ Template.alloyEditor.events({
                     });
                 }
                 else {       /* Execute command */
-                  var secrets = "";
-                  if(!(id = Router.current().params._id)){ id ="Original";}
-                  if((id!="Original") && Router.current().data().secrets) secrets = Router.current().data().secrets;
-                  Meteor.call('getInstance', (textEditor.getValue() + secrets), Meteor.default_connection._lastSessionId, 0,commandLabel, true,id, Session.get("last_id"),handleInterpretModelEvent);
+
+                    /*//LOCKED insertion */
+                    var modelToShare = "";
+                    var i = 0, line, inLockBlock=false;
+                    while(line = textEditor.lineInfo(i++)){
+                        if(line.gutterMarkers && line.gutterMarkers.breakpoints) {
+                            if (!inLockBlock) {
+                                modelToShare += "\n//LOCKED";
+                                inLockBlock = true;
+                            }
+                        }else {
+                            inLockBlock = false;
+                        }
+                        modelToShare+="\n"+line.text;
+                    }
+                    modelToShare=stripLockedEmptyLines(modelToShare);
+
+                    var secrets = "";
+                    if(!(id = Router.current().params._id)){ id ="Original";}
+                    if((id!="Original") && Router.current().data().secrets) secrets = Router.current().data().secrets;
+                    Meteor.call('getInstance', (modelToShare/*textEditor.getValue()*/ + secrets), Meteor.default_connection._lastSessionId, 0,commandLabel, true,id, Session.get("last_id"),handleInterpretModelEvent);
                 }
                 $("#exec > button").prop('disabled', true);  /* available buttons */
                 $("#next > button").prop('disabled', false);
@@ -196,15 +213,21 @@ Template.alloyEditor.onRendered(function () {
 
     //If there's subscribed data, process it.
 
+    var model;
+    if (Router.current().data)
+        model = Router.current().data();
 
-    if (Router.current().data && textEditor){
+    if (model && textEditor){
 
 
-        var themeData = Router.current().data().themeData;
+        var themeData;
+
+        if (model.instance)
+            themeData = model.instance.theme;
+
         //Place model on text editor
-        var result = Router.current().data().whole;
-        console.log(result);
-        console.log("TESTSERTESTSTSET");
+        var result = model.whole;
+
         textEditor.setValue(result);
         //Load theme settings;
         if(themeData){
@@ -218,9 +241,10 @@ Template.alloyEditor.onRendered(function () {
         }
 
         //Load graph JSON data in case of instance sharing.
-        if (Router.current().data().instance && cy){
+        if (model.instance && cy){
             $('#instanceViewer').show();
-            cy.add(Router.current().data().instance.elements);
+            //cy.add(Router.current().data().instance.elements);
+            cy.add(model.instance.graph.elements);
             updateElementSelectionContent();
         }
   }

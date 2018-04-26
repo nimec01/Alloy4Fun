@@ -8,11 +8,16 @@ editorLoadController = RouteController.extend({
     template : 'alloyEditor',
 
     subscriptions: function () {
-        //subscribe to curso editorLoad -> Model collection
+        //Model collection
         this.subscribe('editorLoad').wait();
-        this.subscribe('instanceLoad').wait();
 
-        //subscribe to cursor solutions. check server/publications/alloyLoadPublications
+        //Instance collection: for shareInstance
+        this.subscribe('instanceLoad', this.params._id).wait();
+
+        //Run collection: to retrieve the Model when in Share Instance
+        this.subscribe('runLoad').wait();
+
+        //Link Collection
         this.subscribe('solutions', this.params._id).wait();
     },
 
@@ -29,15 +34,36 @@ editorLoadController = RouteController.extend({
         var link = Link.findOne({_id: this.params._id});
         var model;
         var secrets = "";
-        var instanteId = Instance.findOne({_id: this.params._id});
+        var instance;
+
+        var model_id;
+        var isPrivate;
+
+
+        if (link) {  //from share Model
+            isPrivate=link.private;
+            model_id = link.model_id;
+        }
+
+        else{  //not from share Model
+            isPrivate=false;
+            instance=Instance.findOne({_id: this.params._id});
+
+            if(instance){ //from share Instance
+                run_id = instance.run_id;
+                run = Run.findOne({_id:run_id});
+                model_id = run.model;
+            }
+        }
 
         var themes = Theme.find({modelId : this.params._id}).fetch();
-        /*------- SECRETs handler ---------- */
-        if (link){
-            model = Model.findOne({_id: link.model_id});
+        /*------- SECRETs and LOCKS handler ---------- for ShareInstance and shareModel*/
+        if (model_id){
+            model = Model.findOne({_id: model_id});
             var v = model.whole;
             var i;
-            if (!link.private){ /*if the model is public*/
+            /*--------- SECRETS HANDLER------------*/
+            if (!isPrivate){ /*if the model is public*/
                 var nsecrets = 0;
                 while ((i = v.indexOf("//SECRET\n"))>=0) { /*while Contains secrets*/
                     var z = i;
@@ -93,28 +119,35 @@ editorLoadController = RouteController.extend({
                     }
                 }
 
-                return (model = {
-                    "whole": modelToEdit,
-                    "secrets": secrets,
-                    "lockedLines":lockedLines,
-                    "priv": false
-                });
+                return {
+                        "whole": modelToEdit,
+                        "secrets": secrets,
+                        "lockedLines":lockedLines,
+                        "priv": false,
+                        "instance":instance,
+                        "themes":themes
+                        };
 
-            }else {
-                return (model = {
-                    "whole": v,
-                    "secrets":"",
-                    "lockedLines":"",
-                    "priv": true
-                });
+            }
+            else { //private
+                return {
+                            "whole": v,
+                            "secrets":"",
+                            "lockedLines":"",
+                            "priv": true,
+                            "instance":instance,
+                            "themes":themes
+                        };
             }
         }else{
-            return (model = {
-                "whole": "Link não encontrado",
-                "secrets": "",
-                "lockedLines":"",
-                "priv":false
-            });
+            return {
+                    "whole": "Link não encontrado",
+                    "secrets": "",
+                    "lockedLines":"",
+                    "priv":false,
+                    "instance":undefined,
+                    "themes":undefined
+                    };
         }
 
     },

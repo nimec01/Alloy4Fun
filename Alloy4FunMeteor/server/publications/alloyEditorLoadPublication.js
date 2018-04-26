@@ -54,6 +54,32 @@ Meteor.publish('instanceLoad', function (_id) {
     }
     return this.ready();
 });
+
+Meteor.publish('runLoad', function () {
+
+    var selector = {
+        //_id: _id
+    };
+
+    var options = {
+        fields : {
+            model: 1,
+            command : 1
+        }
+    }
+
+
+    var result = Run.find(selector, options);
+
+    if (result) {
+        return result;
+    }
+    return this.ready();
+});
+
+
+
+
 //in controllers>solveChallengeCOntroller.js: this.subscribe('challenge', this.params._id).wait();
 //publish to solve challenge
 Meteor.publish('challenge', function (_id) {
