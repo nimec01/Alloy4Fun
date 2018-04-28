@@ -64,6 +64,8 @@ function initializeAlloyEditor(htmlElement){
                 $('.empty-univ').hide();
                 $('.permalink > button').prop('disabled', false);
             }
+            //marcar o //LOCKED e //SECRET
+            highlightLocksAndSecretsStartLine();
         }
         Session.set("currentInstance",undefined);
         Session.set("instances",undefined);

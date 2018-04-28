@@ -112,6 +112,10 @@ editorLoadController = RouteController.extend({
                                 modelToEdit+=lines[l]+"\n";
                                 l++;
                             }
+                            //acrescentamos uma linha para forcar a separacao de um eventual proximo locked
+                            //modelToEdit+="\n";
+                            //lockedLines.push(l + 1 - numLockedLines);
+                            //l++
                         }
                     }else {
                         modelToEdit+=line+"\n"; //add new line to the last line

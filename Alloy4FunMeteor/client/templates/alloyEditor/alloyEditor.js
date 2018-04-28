@@ -63,16 +63,39 @@ Template.alloyEditor.events({
                     /*//LOCKED insertion */
                     var modelToShare = "";
                     var i = 0, line, inLockBlock=false;
+                    var braces;
+                    var foundbraces=false;
                     while(line = textEditor.lineInfo(i++)){
                         if(line.gutterMarkers && line.gutterMarkers.breakpoints) {
                             if (!inLockBlock) {
                                 modelToShare += "\n//LOCKED";
                                 inLockBlock = true;
+                                foundbraces = false;
+                                braces=0;
+                            }
+                            if (inLockBlock){
+                                for(c=0;c<line.text.length;c++) {
+                                    switch (line.text.charAt(c)) {
+                                        case '{':
+                                            braces++;
+                                            foundbraces = true;
+                                            break;
+                                        case '}':
+                                            braces--;
+                                            break;
+                                    }
+                                }
                             }
                         }else {
                             inLockBlock = false;
+                            foundbraces = false;
                         }
                         modelToShare+="\n"+line.text;
+
+                        if (foundbraces && braces==0) {
+                            inLockBlock = false;
+                            modelToShare+="\n";
+                        }
                     }
                     modelToShare=stripLockedEmptyLines(modelToShare);
 
@@ -105,16 +128,39 @@ Template.alloyEditor.events({
                 /*//LOCKED insertion */
                 var modelToShare = "";
                 var i = 0, line, inLockBlock=false;
+                var braces;
+                var foundbraces=false;
                 while(line = textEditor.lineInfo(i++)){
                     if(line.gutterMarkers && line.gutterMarkers.breakpoints) {
                         if (!inLockBlock) {
                             modelToShare += "\n//LOCKED";
                             inLockBlock = true;
+                            foundbraces = false;
+                            braces=0;
+                        }
+                        if (inLockBlock){
+                            for(c=0;c<line.text.length;c++) {
+                                switch (line.text.charAt(c)) {
+                                    case '{':
+                                        braces++;
+                                        foundbraces = true;
+                                        break;
+                                    case '}':
+                                        braces--;
+                                        break;
+                                }
+                            }
                         }
                     }else {
                         inLockBlock = false;
+                        foundbraces = false;
                     }
                     modelToShare+="\n"+line.text;
+                    if (foundbraces && braces==0) {
+                        inLockBlock = false;
+                        modelToShare+="\n";
+                    }
+
                 }
                 modelToShare=stripLockedEmptyLines(modelToShare);
 

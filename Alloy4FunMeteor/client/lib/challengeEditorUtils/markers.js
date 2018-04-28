@@ -61,6 +61,28 @@ highlightLocksAndSecrets = function(){
     markBlocks(editorContent, startSecrets, endSecrets, "challenge-secret");
 };
 
+//Highlights secret blocks of code. APENAS A LINHA
+markLines = function(string, lines, className){
+    while(lines.length > 0){
+        var line = lines.shift();
+        textEditor.markText(textEditor.posFromIndex(line),textEditor.posFromIndex(line+8), {className: className});
+        //TODO para marcar ate ao fim do vbloco contar os braces
+    }
+};
+
+highlightLocksAndSecretsStartLine = function(){
+    //Clear previous marks.
+    textEditor.getAllMarks().forEach(function(mark){mark.clear()});
+    var editorContent = textEditor.getValue();
+
+    //SECRETS
+    var lockeds = getIndexesOf(/\/\/LOCKED/g, editorContent);
+    var secrets = getIndexesOf(/\/\/SECRET/g, editorContent);
+
+    markLines(editorContent, lockeds, "challenge-secret");
+    markLines(editorContent, secrets, "challenge-secret");
+};
+
 
 addErrorMarkerToGutter = function(message, lineNumber){
     var x = document.createElement("IMG");
