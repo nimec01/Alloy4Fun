@@ -72,7 +72,12 @@ markLines = function(string, lines, className){
 
 highlightLocksAndSecretsStartLine = function(){
     //Clear previous marks.
-    textEditor.getAllMarks().forEach(function(mark){mark.clear()});
+    textEditor.getAllMarks().forEach(
+        function(mark){
+            if (mark.className=="challenge-secret")
+                mark.clear();
+        }
+    );
     var editorContent = textEditor.getValue();
 
     //SECRETS

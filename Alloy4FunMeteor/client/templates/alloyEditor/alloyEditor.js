@@ -165,6 +165,7 @@ Template.alloyEditor.events({
                 modelToShare=stripLockedEmptyLines(modelToShare);
 
                 if (id = Router.current().params._id){   /* if its loaded through an URL its a derivationOf model */
+                  //so acontece num link publico
                   if((secrets = Router.current().data().secrets) && containsValidSecret(modelToShare)){
                     swal({
                             title: "This model contains information that cannot be shared!",
@@ -175,17 +176,48 @@ Template.alloyEditor.events({
                             confirmButtonText: "Yes, share it!",
                             closeOnConfirm: true
                         },function(){
-                          Meteor.call('genURL', modelToShare,"Original",false,Session.get("last_id"), themeData, handleGenURLEvent);
-                        }
-                        );
+                            Meteor.call('genURL', modelToShare,"Original",false,Session.get("last_id"), themeData, handleGenURLEvent);
+                          }
+                    );
 
-                  }else{ if(secrets.length == 0) Meteor.call('genURL', modelToShare, id,false,Session.get("last_id"), themeData, handleGenURLEvent);
-                         else Meteor.call('genURL',modelToShare + secrets, id,true,Session.get("last_id"), themeData,handleGenURLEvent)
-                       }
+                  }else{
+                      if(secrets.length == 0) {
+                          //se tiver um ou mais valid secret com run check e assert anonimos, pergunta
+                          if (containsValidSecretWithAnonymousCommand(modelToShare)){
+                              swal({
+                                      title: "This model contains an anonymous Command",
+                                      text: "Are you sure you want to share it?",
+                                      type: "warning",
+                                      showCancelButton: true,
+                                      confirmButtonColor: "#DD6B55",
+                                      confirmButtonText: "Yes, share it!",
+                                      closeOnConfirm: true
+                                  },function(){
+                                      Meteor.call('genURL', modelToShare, id, false, Session.get("last_id"), themeData, handleGenURLEvent);
+                                  }
+                              );
+                          }else
+                             Meteor.call('genURL', modelToShare, id, false, Session.get("last_id"), themeData, handleGenURLEvent);
+                      }else
+                          Meteor.call('genURL', modelToShare + secrets, id, true, Session.get("last_id"), themeData, handleGenURLEvent)
+                  }
                 }
                 else {   /* Otherwise its an original model*/
-                  Meteor.call('genURL', modelToShare,"Original",false,Session.get("last_id"),themeData, handleGenURLEvent);
-
+                    if (containsValidSecretWithAnonymousCommand(modelToShare)){
+                        swal({
+                                title: "This model contains an anonymous Command",
+                                text: "Are you sure you want to share it?",
+                                type: "warning",
+                                showCancelButton: true,
+                                confirmButtonColor: "#DD6B55",
+                                confirmButtonText: "Yes, share it!",
+                                closeOnConfirm: true
+                            },function(){
+                                Meteor.call('genURL', modelToShare,"Original",false,Session.get("last_id"),themeData, handleGenURLEvent);
+                            }
+                        );
+                    }else
+                        Meteor.call('genURL', modelToShare,"Original",false,Session.get("last_id"),themeData, handleGenURLEvent);
                 }
             }
           }
@@ -654,6 +686,7 @@ function handleGenInstanceURLEvent(err, result){
         url.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
         var anchor = document.createElement('a');
         anchor.href = "/editor/" +  result;
+        anchor.target = "_";
         anchor.className= "urlinfo";
         anchor.innerHTML =  window.location.origin +"/editor/" +  result;
         url.appendChild(anchor);
@@ -866,6 +899,22 @@ function stripLockedEmptyLines(model){
       }
       return false;
     }
+
+    function containsValidSecretWithAnonymousCommand(model){
+        var lastSecret=0;
+        while( (i = model.indexOf("//SECRET\n",lastSecret)) >= 0){
+            var s = model.substr(i+"//SECRET\n".length).trim();
+            //se o resto do texto comecar com a expressao abaixo entao contem
+            //um comando anonimo
+            if (s.match("^(assert|run|check)([ \t\n])*[{]")) {
+                return true;
+            }
+
+            lastSecret = i + 1 ;
+        }
+        return false;
+    }
+
  function isParagraph(word){
         var pattern_named = /^((one sig |sig |pred |fun |abstract sig )(\ )*[A-Za-z0-9]+)/;
         var pattern_nnamed = /^((fact|assert|run|check)(\ )*[A-Za-z0-9]*)/;

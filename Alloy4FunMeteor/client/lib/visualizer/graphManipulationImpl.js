@@ -15,7 +15,8 @@ updateGraph = function(instance){
     var atomElements = getAtoms(instance)
     cy.add(atomElements);
     cy.add(getEdges(instance));
-    if(atomElements.length==0)$(".empty-universe").show();
+    if(atomElements.length==0)
+        $(".empty-universe").show();
     else {
         $(".empty-universe").hide();
     }
