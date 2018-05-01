@@ -17,6 +17,10 @@ Schema.Model = new SimpleSchema({
     derivationOf : {
         type: String,
         optional : true
+    },
+    time : {
+        type : String,
+        optional : true
     }
 });
 
@@ -37,6 +41,10 @@ Schema.Run = new SimpleSchema({
     command : {
         type: String,
         optional: false
+    },
+    time : {
+        type : String,
+        optional : true
     }
 });
 

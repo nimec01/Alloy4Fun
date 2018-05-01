@@ -56,7 +56,8 @@ Meteor.methods({
         else if(last_id) derivatedOf = last_id; /*Save model derivation */
 
         model_id =  Model.insert({  whole: model,
-                                    derivationOf : derivatedOf
+                                    derivationOf : derivatedOf,
+                                    time : new Date().toLocaleString()
                                 });
 
         var sat = (result.unsat) ? false : true;
@@ -65,7 +66,9 @@ Meteor.methods({
           //we need the id of the inserted Document so we can refer to it when sharing the instance
           var runID = Run.insert({  sat : sat,
               model: model_id,
-              command : command
+              command : command,
+              time : new Date().toLocaleString()
+
           });
       }
 
@@ -106,7 +109,8 @@ Meteor.methods({
 
         var newModel_id  = Model.insert({ /*A Model is always created, regardless of having secrets or not */
                             whole: model,
-                            derivationOf : modeldOf
+                            derivationOf : modeldOf,
+                            time : new Date().toLocaleString()
                          });
 
         var public_link_id = Link.insert({   /*A public link is always created as well*/
