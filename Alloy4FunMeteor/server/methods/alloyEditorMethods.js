@@ -90,10 +90,19 @@ Meteor.methods({
 
         var modeldOf = "Original";
 
-        if (current_id != "Original" && !last_id){ /* if its not an original model */
+        // Aqui é que tenho que trabalhar, nesta condição
+        if(current_id != "Original" && !(Link.findOne({_id:current_id}))){
+            if(instance = Instance.findOne({_id:current_id})){
+              var aux = instance.run_id;
+              var run = Run.findOne({_id:aux});
+              modeldOf = run.model;
+            }
+        }
+        if (current_id != "Original" && !last_id && (modeldOf == "Original")){ /* if its not an original model */
+
           var link = Link.findOne({_id:current_id});
           modeldOf = link.model_id;
-        }else if(last_id && !(containsValidSecret(model) && !only_one_link) ) modeldOf = last_id;
+        }else if(last_id && !(containsValidSecret(model) && !only_one_link) && (modeldOf == "Original")) modeldOf = last_id;
 
         var newModel_id  = Model.insert({ /*A Model is always created, regardless of having secrets or not */
                             whole: model,

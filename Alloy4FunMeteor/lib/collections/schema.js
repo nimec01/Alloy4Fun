@@ -157,6 +157,8 @@ Schema.Theme = new SimpleSchema({
     //Edge Colors
 
 });
+
+//TODO colocar aqui esquema correto, model_id não está a ser utilizado
 /*
 Schema.Instance = new SimpleSchema({
     _id: {
