@@ -247,9 +247,11 @@ Template.alloyEditor.events({
         if (evt.toElement.id != "next") {
             if (!$("#next > button").is(":disabled")) {
                 var currentInstance = Session.get("currentInstance");
+
                 var instance = getCurrentInstance(currentInstance + 1);
+
                 if (instance) {
-                    Session.set("currentInstance", currentInstance + 1);
+                  Session.set("currentInstance", currentInstance + 1);
                 } else {
                     var command = Session.get("commands").length > 1?$('.command-selection > select option:selected').text():Session.get("commands")[0];
 
@@ -448,7 +450,8 @@ function handleInterpretModelEvent(err, result) {
           log.appendChild(paragraph);
           /* div with id=log will appendChild(log)*/
           $("#log")[0].appendChild(log);
-      }else {
+      }
+
           /* if the commandType != check */
           if(result.unsat){
               $('.empty-univ').fadeIn();
@@ -458,14 +461,12 @@ function handleInterpretModelEvent(err, result) {
               updateInstances(result);
               Session.set("currentInstance",0);
             }
-          }
 
           if(result.last_id) { Session.set("last_id",result.last_id);   }
 }}
 
 
 updateInstances = function(instance){
-
     if(!Session.get("instances")){
         var instances = [instance];
         Session.set("instances",instances);

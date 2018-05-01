@@ -17,6 +17,7 @@ Meteor.methods({
     'getInstance' : function (model, sessionId, instanceNumber, commandLabel, forceInterpretation,cid,last_id){
       commandLabel = commandLabel.toString();
 
+
       /* Normal behaviour */
       var args = {model: model, sessionId: sessionId, instanceNumber: instanceNumber, commandLabel: commandLabel, forceInterpretation: forceInterpretation};
 
@@ -34,7 +35,6 @@ Meteor.methods({
       }
 
       var resultObject = JSON.parse(result.return);
-
 
       /* ----- Command Type search --------*/
       var commandType = "unknown";
@@ -139,10 +139,6 @@ Meteor.methods({
     //'storeInstance' : function (model, themeData, instance){
     'storeInstance' : function (runID, themeData, instance){
 
-        console.log("storeInstance Theme:");
-        console.log(themeData);
-        console.log("storeInstance instance:");
-        console.log(instance);
 
 
         /*
