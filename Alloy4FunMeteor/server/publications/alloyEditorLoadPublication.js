@@ -31,7 +31,6 @@ Meteor.publish('editorLoad', function (/*_id*/) {//sem parametro para se consegu
     return this.ready();
 });
 
-
 Meteor.publish('instanceLoad', function (_id) {
 
     var selector = {
@@ -77,40 +76,7 @@ Meteor.publish('runLoad', function () {
     return this.ready();
 });
 
-
-
-
-//in controllers>solveChallengeCOntroller.js: this.subscribe('challenge', this.params._id).wait();
-//publish to solve challenge
-Meteor.publish('challenge', function (_id) {
-
-    //ID do challenge
-    // Selector: {_id : XXXXXX}
-    var selector = {
-        _id : _id
-    };
-
-    var options = {
-        fields: {
-            cut: 1,
-            "challenges.name" : 1,
-            solution: 1,
-            lockedLines: 1
-        }
-    };
-
-    //puts query return in result variable and is captured in "solveChallengeController.js"
-    var result = Challenge.find(selector, options);
-
-    if (result) {
-        return result;
-    }
-    return this.ready();
-});
-
-
-//publish for solutions [to be removed ahead]
-Meteor.publish('solutions', function (_id) {
+Meteor.publish('links', function (_id) {
 
     //ID do challenge
     // Selector: {_id : XXXXXX}

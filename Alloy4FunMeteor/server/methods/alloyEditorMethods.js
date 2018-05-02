@@ -5,22 +5,16 @@
 //url="http://alloy4funvm.di.uminho.pt:8080/Alloy4Fun/services/AlloyService?wsdl";
 url="http://localhost:8080/Alloy4Fun/services/AlloyService?wsdl";
 
-
 /* Meteor server methods */
 Meteor.methods({
-/*
-  Uses webservice to get a model instance
+/*  Uses webservice to get a model instance
       'forceInterpretation' : used to skip cache and force new model interpretation
       'cid' : link_id  , 'derivatedOf' model
-              "Original" otherwise
-*/
+              "Original" otherwise*/
     'getInstance' : function (model, sessionId, instanceNumber, commandLabel, forceInterpretation,cid,last_id){
       commandLabel = commandLabel.toString();
-
-
       /* Normal behaviour */
       var args = {model: model, sessionId: sessionId, instanceNumber: instanceNumber, commandLabel: commandLabel, forceInterpretation: forceInterpretation};
-
       try {
           var client = Soap.createClient(url);
           var result = client.getInstance(args);
@@ -33,7 +27,6 @@ Meteor.methods({
               throw new Meteor.Error(501, "We're sorry! The service is currently unavailable. Please try again later.");
           }
       }
-
       var resultObject = JSON.parse(result.return);
 
       /* ----- Command Type search --------*/
@@ -45,13 +38,11 @@ Meteor.methods({
       if(commandLabel.includes("check"))  {commandType = "check"; control = true;} /*if the command have no label */
       if(commandLabel.includes("run"))    {commandType = "run"; control = true;}
       if(commandLabel.includes("assert")) {commandType = "assert"; control = true;}
-
       if(commandType === "unknown"){ commandType = getCommandType(model,commandLabel);}   /*if the command have any label */
 
       /* ----- Store exec data --------*/
       if(instanceNumber == 0){
         var derivatedOf="Original";
-
         if(cid != "Original" && (link = Link.findOne({_id:cid})) && !last_id){ derivatedOf = link.model_id; }
         else if(last_id) derivatedOf = last_id; /*Save model derivation */
 
@@ -62,8 +53,6 @@ Meteor.methods({
 
         var sat = (result.unsat) ? false : true;
         if(control) command = commandType; else command = commandType + " " + commandLabel;
-
-          //we need the id of the inserted Document so we can refer to it when sharing the instance
           var runID = Run.insert({  sat : sat,
               model: model_id,
               command : command,
@@ -71,7 +60,6 @@ Meteor.methods({
 
           });
       }
-
       /* handle result*/
       if(resultObject.syntax_error){
           throw new Meteor.Error(502, resultObject);
@@ -85,10 +73,8 @@ Meteor.methods({
      },
 
 
-/*
-  Stores the model specified in the function argument, returns model url 'id'
-   used in Share Model option
-*/
+/*Stores the model specified in the function argument, returns model url 'id'
+   used in Share Model option*/
     'genURL' : function (model,current_id,only_one_link,last_id) {
 
         var modeldOf = "Original";
@@ -141,19 +127,9 @@ Meteor.methods({
         return result;
       },
 
-
-
-
-    /*
-      Stores model instance, returns url to make possible share the instance.
-       used in Share Instance option
-       //TODO
-    */
-    //'storeInstance' : function (model, themeData, instance){
+/*Stores model instance, returns url to make possible share the instance.
+  used in Share Instance option*/
     'storeInstance' : function (runID, themeData, instance){
-
-
-
         /*
             criar um instance que aponta para o run
             guardar no instance o theme e o o proprio "instance"
@@ -164,39 +140,13 @@ Meteor.methods({
             theme: themeData,
             date: new Date().toLocaleString()
 
-    });
+        });
 
         return instanceID;
     },
+  });
 
-    'getProjection' : function (sessid, frameInfo){
-        var args = {sessid: sessid, types : []};
-        for(var key in frameInfo){
-            args.types.push(key+frameInfo[key]);
-        }
-        try {
-            var client = Soap.createClient(url);
-            var result = client.getProjection(args);
-        }
-        catch (err) {
-            if(err.error === 'soap-creation') {
-                throw new Meteor.Error(500, "We're sorry! The service is currently unavailable. Please try again later.");
-            }
-            else if (err.error === 'soap-method') {
-                throw new Meteor.Error(501, "We're sorry! The service is currently unavailable. Please try again later.");
-            }
-        }
-        //verificar : return JSON.parse(result.return.toString());
-        //return JSON.parse(result.getProjectionReturn.toString());
-        return JSON.parse(result.return.toString());
-      },
-
-});
-
-
-
-
-/* ------- Methods  ------- */
+/* ------- Aux Methods  ------- */
     function findClosingBracketMatchIndex(str, pos) {
         if (str[pos] != '{') {
             throw new Error("No '{' at index " + pos);
@@ -217,9 +167,7 @@ Meteor.methods({
         return -1;    // No matching closing parenthesis
     }
 
-  /*
-    From 'model' get the command type with the label specified on 'commandLabel'
-  */
+    /*From 'model' get the command type with the label specified on 'commandLabel'*/
     function getCommandType(model,commandLabel) {
       var checkExp = RegExp("check(\ )+"+commandLabel,'g');
       var assertExp = RegExp("assert(\ )+"+commandLabel,'g');
@@ -232,9 +180,7 @@ Meteor.methods({
       return "unknown";
     }
 
-  /*
-    Check if the model contains some valid 'secret'
-  */
+    /*Check if the model contains some valid 'secret'*/
     function containsValidSecret(model){
 
       var i,j,lastSecret = 0;
@@ -250,9 +196,7 @@ Meteor.methods({
       return false;
     }
 
-    /*
-      Function that returns true if the word it's a valid paragraph, returns false otherwise
-    */
+    /*Function that returns true if the word it's a valid paragraph, returns false otherwise*/
     function isParagraph(word){
         var pattern_named = /^((one sig |sig |pred |fun |abstract sig )(\ )*[A-Za-z0-9]+)/;
         var pattern_nnamed = /^((fact|assert|run|check)(\ )*[A-Za-z0-9]*)/;

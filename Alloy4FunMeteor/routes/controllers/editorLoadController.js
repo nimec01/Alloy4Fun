@@ -18,7 +18,7 @@ editorLoadController = RouteController.extend({
         this.subscribe('runLoad').wait();
 
         //Link Collection
-        this.subscribe('solutions', this.params._id).wait();
+        this.subscribe('links', this.params._id).wait();
     },
 
     // Subscriptions or other things we want to "wait" on. This also
@@ -185,6 +185,8 @@ editorLoadController = RouteController.extend({
     }
 });
 
+
+/* ----------Aux functions used to parse data ---------*/
 function findParagraph(lines, l) {
     //locate the start of the next paragraph {
     var braces=0;
@@ -236,9 +238,6 @@ function findParagraph(lines, l) {
 
     return -1;
 }
-
-
-
 function findClosingBracketMatchIndex(str, pos) {
     if (str[pos] != '{') {
         throw new Error("No '{' at index " + pos);
@@ -259,9 +258,7 @@ function findClosingBracketMatchIndex(str, pos) {
     return -1;    // No matching closing parenthesis
 }
 
-/*
-  Function that returns true if the word it's a valid paragraph, returns false otherwise
-*/
+/*Function that returns true if the word it's a valid paragraph, returns false otherwise*/
 function isParagraph(word){
     var pattern_named = /^((one sig |sig |pred |fun |abstract sig )(\ )*[A-Za-z0-9]+)/;
     var pattern_nnamed = /^((fact|assert|run|check)(\ )*[A-Za-z0-9]*)/;

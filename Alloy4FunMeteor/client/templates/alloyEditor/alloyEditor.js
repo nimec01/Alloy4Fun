@@ -5,9 +5,7 @@
 import classie from 'classie';
 import 'qtip2/src/core.css';
 
-/*
-Each template has a local dictionary of helpers that are made available to it, and this call specifies helpers to add to the template’s dictionary.
-*/
+/*Each template has a local dictionary of helpers that are made available to it, and this call specifies helpers to add to the template’s dictionary.*/
 Template.alloyEditor.helpers({
     'drawInstance' : function (){
         var instanceNumber = Session.get("currentInstance");
@@ -37,12 +35,7 @@ Template.alloyEditor.helpers({
     },
 
 });
-
-/*
- Declare event handlers for instances of this template. Multiple calls add new event handlers in addition to the existing ones.
-*/
 Template.alloyEditor.events({
-  /* Exec button */
     'click #exec': function (evt) {
 
         if (evt.toElement.id != "exec")
@@ -109,11 +102,9 @@ Template.alloyEditor.events({
           }
 
     },
-  /* Command selection  */
     'change .command-selection > select' : function (){
         $("#exec > button").prop('disabled', false);
     },
-  /*Share button */
     'click #genUrl': function (evt) {
         if (evt.toElement.id != "genUrl"){
             var themeData = {
@@ -281,9 +272,7 @@ Template.alloyEditor.events({
         Meteor.call('storeInstance', runID, themeData, cy.json(), handleGenInstanceURLEvent);
     }
 });
-/*
-Callbacks added with this method are called once when an instance of Template.alloyEditor is rendered into DOM nodes and put into the document for the first time.
-*/
+/*Callbacks added with this method are called once when an instance of Template.alloyEditor is rendered into DOM nodes and put into the document for the first time.*/
 Template.alloyEditor.onRendered(function () {
     try{cy}catch(e){initGraphViewer("instance");}
     //Adds click effects to Buttons
@@ -292,22 +281,16 @@ Template.alloyEditor.onRendered(function () {
     hideButtons();
 
     //If there's subscribed data, process it.
-
     var model;
     if (Router.current().data)
         model = Router.current().data();
 
     if (model && textEditor){
-
-
         var themeData;
-
         if (model.instance)
             themeData = model.instance.theme;
-
         //Place model on text editor
         var result = model.whole;
-
         textEditor.setValue(result);
         //Load theme settings;
         if(themeData){
@@ -319,7 +302,6 @@ Template.alloyEditor.onRendered(function () {
             if(themeData.metaPrimSigs)metaPrimSigs = themeData.metaPrimSigs;
             if(themeData.metaSubsetSigs)metaSubsetSigs = themeData.metaSubsetSigs;
         }
-
         //Load graph JSON data in case of instance sharing.
         if (model.instance && cy){
             $('#instanceViewer').show();
@@ -334,12 +316,10 @@ Template.alloyEditor.onRendered(function () {
         //No longer necessary. Webservice automatically deletes session associated objects after a few hours idle.
     });
     try{cy}catch(e){initGraphViewer("instance");}
-
     //Right click menu styling
     $(".command-selection").hide();
     (function($){
         $(document).ready(function(){
-
             $('#cssmenu li.active').addClass('open').children('ul').show();
             $('#cssmenu li.has-sub>a').on('click', function(){
                 $(this).removeAttr('href');
@@ -366,18 +346,9 @@ Template.alloyEditor.onRendered(function () {
         lockLines(Router.current().data().lockedLines);
 });
 
-function lockLines(lockedLines){
-    lockedLines.forEach(function(n){
-        var info = textEditor.lineInfo(n);
-        textEditor.setGutterMarker(n-1, "breakpoints", info.gutterMarkers ? null : makeMarker());
-        textEditor.markText({line : n-1, ch: 0},{line: n , ch : 0}, { className: "challenge-lock", readOnly: true, inclusiveLeft: true, clearWhenEmpty:false});
-    });
-}
+/*------------- Server HANDLERS methods && Aux Functions ----------- */
 
-
-//------------- HANDLERS -----------
-
-// nextbtn event handler after getInstance(textEditor.getValue) , currentInstance + 1
+/* nextbtn event handler after getInstance(textEditor.getValue) , currentInstance + 1 */
 function handleNextInstanceEvent(err, result){
     if(err){
         swal(err.reason, "", "error");
@@ -394,12 +365,8 @@ function handleNextInstanceEvent(err, result){
 
 }
 
-
-
-
 /* Execbtn event handler
-      result: getInstance(textEditor.getValue,..)
-*/
+      result: getInstance(textEditor.getValue,..)*/
 function handleInterpretModelEvent(err, result) {
     $.unblockUI();
     $('#exec > button').prop('disabled', true);
@@ -465,34 +432,16 @@ function handleInterpretModelEvent(err, result) {
           if(result.last_id) { Session.set("last_id",result.last_id);   }
 }}
 
-
-updateInstances = function(instance){
-    if(!Session.get("instances")){
-        var instances = [instance];
-        Session.set("instances",instances);
-        Session.set("currentInstance",0);
-    }else {
-        var instances = Session.get("instances");
-        instances.push(instance);
-        Session.set("instances",instances);
-        Session.set("currentInstance",Session.get("currentInstance"));
-    }
-
-
-}
-
-
-// genUrlbtn event handler after genUrl method
+/* genUrlbtn event handler after genUrl method */
 function handleGenURLEvent(err, result) {
     if (!err) {
         // if the URL was generated successfully, create and append a new element to the HTML containing it.
-
         var url = document.createElement('div');
         url.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
         var anchor = document.createElement('a');
-        anchor.href = "/editor/" + result['public'];
+        anchor.href = "/" + result['public'];
         anchor.className = "urlinfo";
-        anchor.innerHTML = window.location.origin + "/editor/" + result['public'];
+        anchor.innerHTML = window.location.origin + "/" + result['public'];
         url.appendChild(anchor);
 
 
@@ -501,9 +450,9 @@ function handleGenURLEvent(err, result) {
             urlPrivate = document.createElement('div');
             urlPrivate.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
             var anchor = document.createElement('a');
-            anchor.href = "/editor/" + result['private'];
+            anchor.href = "/" + result['private'];
             anchor.className = "urlinfo";
-            anchor.innerHTML = window.location.origin + "/editor/" + result['private'];
+            anchor.innerHTML = window.location.origin + "/" + result['private'];
             urlPrivate.appendChild(anchor);
         }
 
@@ -543,133 +492,7 @@ function handleGenURLEvent(err, result) {
     }
 }
 
-
-
-/* saveAndShare event handler for the model type : challenge, uses storeChallenge method*/
-function handleShareChallenge(err, result){
-    if (err) {
-        if (err.error == 502) {
-            //Syntax error, add error marker to editor's gutter
-            addErrorMarkerToGutter(err.reason.msg, err.reason.line);
-            //Warn user
-            swal({
-                    title: "Challenge contains syntax errors",
-                    text: "Are you sure you want to share it?",
-                    type: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#DD6B55",
-                    confirmButtonText: "Yes, share it!",
-                    closeOnConfirm: true
-                },
-                //Action in user decides to share without removing syntax error
-                storeChallenge);
-        }
-    }else{storeChallenge();}
-}
-
-/* Method that stores a challenge, uses 'storeChallenge' server method and handleResponse with the result*/
-function storeChallenge(){
-    var error = false;
-    try{
-        checkSecretBlocks();
-    }catch(err){
-        error = true;
-        switch(err.number){
-            case 1:
-                swal("Error",err.message,"error");
-                break;
-            case 2:
-                addErrorMarkerToGutter(err.message, err.lineNumber);
-                swal("Error",err.message,"error");
-                break;
-        }
-    }
-
-    if(!error){Meteor.call('storeChallenge2',textEditor.getValue(), true, 'original', getLockedMarkers(), handleStoreChallengeResponse);
-  }
-}
-
-/*Method that handles the result from storeChallenge2 server call from storeChallenge method */
-function handleStoreChallengeResponse(err, result){
-
-    if(err){
-        if(err.error == 503) {
-            var x = document.createElement("IMG");
-            x.setAttribute("src", "/images/icons/error.png");
-            x.setAttribute("width", "15");
-            x.setAttribute("id", "error");
-            x.setAttribute("title", "Missing check name");
-            challengeEditor.setGutterMarker(parseInt(err.reason) - 1, "error-gutter", x);
-            $('#error').qtip({
-                // your options
-                show: '',
-                hide: {
-                    event: 'unfocus'
-                },
-                content: {
-                    prerender: true, // important
-                    text: 'Please name this check command.'
-                }
-            }).qtip('show');
-        }else if(err.error ==504){
-            //TODO: handle error
-        }
-    }else{
-      /* Result is a dictionary with 'private' and 'public' URLs*/
-        var url = document.createElement('div');
-        url.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
-
-        // Private link
-        var anchor = document.createElement('a');
-        anchor.href = "/editor/" +  result['private'];
-        anchor.className= "urlinfo";
-        anchor.innerHTML =  window.location.origin +"/editor/" +  result['private'];
-
-        // Paragrafo private link
-        var paragraph = document.createElement('p');
-
-        var text = document.createTextNode("Private Link:  ");
-        paragraph.appendChild(text);
-        paragraph.appendChild(anchor);
-
-        // Public link
-        var anchor2 = document.createElement('a');
-        anchor2.href = "/editor/" +  result['public'];
-        anchor2.className= "urlinfo";
-        anchor2.innerHTML =  window.location.origin +"/editor/" +  result['public'];
-
-        // Paragrafo public link
-        var paragraph2 = document.createElement('p');
-        var text2 = document.createTextNode("Public Link:  ");
-        paragraph2.appendChild(text2);
-
-
-        paragraph2.appendChild(anchor2);
-
-
-        // ClipBoard -- TODO ...
-        var clipboard = document.createElement('div');
-        clipboard.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
-        clipboard.innerHTML = "<button class='clipboardbutton cbutton cbutton--effect-boris'><img src='/images/icons/clipboard.png' /><i class='legend'>copy to clipboard</i></button></div>";
-
-        // No centro
-        var textcenter = document.createElement('div');
-        textcenter.className = "text-center";
-        textcenter.id = "permalink";
-        textcenter.appendChild(paragraph2);
-        textcenter.appendChild(paragraph);
-        textcenter.appendChild(clipboard);
-
-        // Adicionar ao template
-        document.getElementById('url-permalink').appendChild(textcenter);
-        $("#genUrl > button").prop('disabled', true);
-        zeroclipboard();
-
-    }
-}
-
-
-// prevbtn event handler after getInstance(textEditor.getValue) , currentInstance - 1
+/* prevbtn event handler after getInstance(textEditor.getValue) , currentInstance - 1 */
 function handlePreviousInstanceEvent(err, result){
     if(err){
         swal(err.reason, "", "error");
@@ -679,17 +502,18 @@ function handlePreviousInstanceEvent(err, result){
         Session.set("currentInstance",result.number);
     }
 }
-// geninstanceurlbtn event handler after storeInstance method
+
+/* geninstanceurlbtn event handler after storeInstance method */
 function handleGenInstanceURLEvent(err, result){
     if (!err) {
         // if the URL was generated successfully, create and append a new element to the HTML containing it.
         var url = document.createElement('div');
         url.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
         var anchor = document.createElement('a');
-        anchor.href = "/editor/" +  result;
+        anchor.href = "/" +  result;
         anchor.target = "_";
         anchor.className= "urlinfo";
-        anchor.innerHTML =  window.location.origin +"/editor/" +  result;
+        anchor.innerHTML =  window.location.origin +"/" +  result;
         url.appendChild(anchor);
 
         var clipboard = document.createElement('div');
@@ -708,6 +532,35 @@ function handleGenInstanceURLEvent(err, result){
         zeroclipboard();
     }
 }
+
+/* Functions used to update session instances*/
+updateInstances = function(instance){
+    if(!Session.get("instances")){
+        var instances = [instance];
+        Session.set("instances",instances);
+        Session.set("currentInstance",0);
+    }else {
+        var instances = Session.get("instances");
+        instances.push(instance);
+        Session.set("instances",instances);
+        Session.set("currentInstance",Session.get("currentInstance"));
+    }
+
+
+}
+getCurrentInstance = function (instanceNumber){
+    var instances = Session.get("instances");
+    var result = undefined;
+    instances.forEach(function(inst){
+        if (inst.number==instanceNumber){
+            result=inst;
+            return;
+        }
+    });
+    return result;
+};
+
+/*onRendered aux functions*/
 function buttonsEffects() {
 
     function mobilecheck() {
@@ -760,7 +613,6 @@ function hideButtons() {
     $('#prev > button').prop('disabled', true);
     $('.permalink > button').prop('disabled', true);
 }
-//Setup clipboard to copy the model's URL
 function zeroclipboard() {
     var client = new ZeroClipboard($(".clipboardbutton"));
     client.on("copy", function (event) {
@@ -768,77 +620,15 @@ function zeroclipboard() {
         clipboard.setData("text/plain", $(".urlinfo").html());
     });
 };
-// Get instance number defined by function argument
-getCurrentInstance = function (instanceNumber){
-    var instances = Session.get("instances");
-    var result = undefined;
-    instances.forEach(function(inst){
-        if (inst.number==instanceNumber){
-            result=inst;
-            return;
-        }
+function lockLines(lockedLines){
+    lockedLines.forEach(function(n){
+        var info = textEditor.lineInfo(n);
+        textEditor.setGutterMarker(n-1, "breakpoints", info.gutterMarkers ? null : makeMarker());
+        textEditor.markText({line : n-1, ch: 0},{line: n , ch : 0}, { className: "challenge-lock", readOnly: true, inclusiveLeft: true, clearWhenEmpty:false});
     });
-    return result;
-};
-
-/*Handler responsible to handle the result from assertChallenge call on Run Event */
-function handleResponse(err, result){
-    $.unblockUI();
-    $('#instanceViewer').hide();
-    $("#log").empty();
-    var command = $('.command-selection > select option:selected').text();
-    if(err){
-        if(err.error == 502) {
-            swal("Syntax Error!", "", "error");
-            var x = document.createElement("IMG");
-            x.setAttribute("src", "/images/icons/error.png");
-            x.setAttribute("width", "15");
-            x.setAttribute("id", "error");
-            x.setAttribute("title", err.reason.msg);
-            challengeEditor.setGutterMarker(err.reason.line - 1, "error-gutter", x);
-            challengeEditor.refresh();
-            $('#next > button').prop('disabled', true);
-            $('#prev > button').prop('disabled', true);
-        }
-    }else{
-      /*This method was defined in alloyEditor > alloyEditor.js */
-        updateInstances(result);
-
-        $("#instancenav").show();
-        var history = Session.get("modelHistory");
-
-        //Update history
-        if (history.changed) {
-            history.changed = false;
-            Meteor.call("storeDerivation", challengeEditor.getValue(), history.id, !result.unsat, handleStoreDerivation);
-        }
-
-        if(result.commandType && result.commandType == "check") {
-            var log = document.createElement('div');
-            log.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
-            var paragraph = document.createElement('p');
-
-            if (result.unsat) {
-                $('#instancenav').hide();
-                paragraph.innerHTML = "No counter-examples. " + command + " solved!";
-                paragraph.className = "log-complete";
-            } else {
-                paragraph.innerHTML = "Invalid solution, checking " + command + " revealed a counter-example.";
-                paragraph.className = "log-wrong";
-                updateGraph(result);
-            }
-
-            log.appendChild(paragraph);
-            $("#log")[0].appendChild(log);
-        }else{
-          /*Method defined in visualizer,
-            result : instance  */
-            updateGraph(result);
-        }
-
-    }
 }
-/*Returns the input text without special commands like "//START_SECRET & //END_SECRET"*/
+
+/*Parse Challenges aux functions*/
 function cleanSpecialCommands(str){
   var resultado = str.replace(/(\/\/START\_SECRET)|(\/\/END\_SECRET)/g,"") ;
   return (resultado);
@@ -862,7 +652,6 @@ function checkSecretBlocks(){
         }
       }
   }
-
 function stripLockedEmptyLines(model){
       var lines = model.split(/\r?\n/);
       var inEmptyBlock=false;
