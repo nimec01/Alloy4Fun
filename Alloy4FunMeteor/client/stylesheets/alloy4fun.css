@@ -623,3 +623,11 @@ input[disabled]{
 .cm-keyword-secret{
 
 }
+
+#headTitle{
+  margin-top : 0px;
+}
+
+#information{
+  margin-bottom: 10px;
+}

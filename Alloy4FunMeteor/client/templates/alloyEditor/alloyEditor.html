@@ -3,7 +3,7 @@
 
   <div class="row">
     <!-- page head -->
-      <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+      <div id="headTitle" class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
           <h1 class="page-header">Alloy
             <small>The modeling tool</small>
           </h1>
@@ -13,7 +13,7 @@
 
 
   <div>
-      <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+      <div id="information" class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
           <p>For more information about the language consult the <a target="_blank" href="http://alloy.mit.edu/alloy/documentation.html">documentation</a> or try the <a target="_blank" href="http://alloy.mit.edu/alloy/tutorials/online/">tutorial</a>. </p>
       </div>
 
@@ -92,7 +92,6 @@
 
             <!-- Instance Viewer -->
             <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                    <p class="empty-univ">Empty Universe.</p>
                         {{drawInstance}}
                     <div id="instanceViewer" class="instanceViewer col-lg-12 col-md-12 col-sm-12 col-xs-12">
                         {{> frameNavigation}}

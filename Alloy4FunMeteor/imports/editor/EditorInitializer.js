@@ -70,7 +70,11 @@ function initializeAlloyEditor(htmlElement){
         Session.set("currentInstance",undefined);
         Session.set("instances",undefined);
         Session.set("projectableTypes",undefined);
+
+
     });
+    //// REVIEW: Não funciona, objetivo seria aumentar o tamanho do editor, talvez o problema esteja no template html
+    // editor.setSize("100%","100%");
     return editor;
 }
 
