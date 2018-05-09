@@ -40,11 +40,20 @@ function initializeAlloyEditor(htmlElement){
         $(".qtip").remove();
         //[gutter] -> A gutter is the clear empty space between an element's boundaries and the element's content.
         editor.clearGutter("error-gutter");
+
         //Delete previous existing permalink elements if existent.
         var permalink = document.getElementById("permalink");
         if(permalink)
             permalink.remove();
+
+        //var instanceLink = document.getElementById("url-instance-permalink");
+        var instancel = document.getElementById("instance_permalink");
+        if(instancel)
+            instancel.remove();
+
+
         $("#genInstanceUrl").hide();
+
         if ($.trim(editor.getValue()) == '') {
             //When editor is empty
             Session.set("commands",[]);

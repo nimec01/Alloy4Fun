@@ -371,6 +371,14 @@ function handleInterpretModelEvent(err, result) {
     $.unblockUI();
     $('#exec > button').prop('disabled', true);
 
+    // Restart shareModel option
+    var permalink = document.getElementById("permalink");
+    if(permalink)
+        permalink.remove();
+    $("#genUrl > button").prop('disabled',false);
+
+
+
     $('#instanceViewer').hide();
     $("#log").empty();
     var command = $('.command-selection > select option:selected').text();
@@ -435,6 +443,7 @@ function handleInterpretModelEvent(err, result) {
 /* genUrlbtn event handler after genUrl method */
 function handleGenURLEvent(err, result) {
     if (!err) {
+
         // if the URL was generated successfully, create and append a new element to the HTML containing it.
         var url = document.createElement('div');
         url.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
@@ -523,7 +532,7 @@ function handleGenInstanceURLEvent(err, result){
 
         var textcenter = document.createElement('div');
         textcenter.className = "text-center";
-        textcenter.id = "permalink";
+        textcenter.id = "instance_permalink";
         textcenter.appendChild(url);
         textcenter.appendChild(clipboard);
 
