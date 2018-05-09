@@ -120,7 +120,7 @@ Meteor.methods({
         }else{
             result={
                 public: public_link_id,
-                last_id : newModel_id
+              //  last_id : newModel_id
             }
         }
 
