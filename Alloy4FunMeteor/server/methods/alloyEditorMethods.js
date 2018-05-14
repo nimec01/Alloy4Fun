@@ -12,6 +12,9 @@ Meteor.methods({
       'cid' : link_id  , 'derivatedOf' model
               "Original" otherwise*/
     'getInstance' : function (model, sessionId, instanceNumber, commandLabel, forceInterpretation,cid,last_id){
+
+      model=model.replace(/&/g,"&amp;"); //substituir todos os & por &amp; senao erro de parse do XML no servidor
+
       commandLabel = commandLabel.toString();
       /* Normal behaviour */
       var args = {model: model, sessionId: sessionId, instanceNumber: instanceNumber, commandLabel: commandLabel, forceInterpretation: forceInterpretation};
@@ -126,6 +129,36 @@ Meteor.methods({
 
         return result;
       },
+    'getProjection' : function (sessid, frameInfo){
+        var args = {sessid: sessid, type : []};
+        for(var key in frameInfo){
+            args.type.push(key+frameInfo[key]);
+        }
+/*        var t="";
+        for(var key in frameInfo){
+            t+="|"+key+frameInfo[key];
+        }
+        t=t.substring(1);
+        t="State0";
+
+        var args = {sessid: sessid, type: t};
+*/
+        try {
+            var client = Soap.createClient(url);
+            var result = client.getProjection(args);
+        }
+        catch (err) {
+            if(err.error === 'soap-creation') {
+                throw new Meteor.Error(500, "We're sorry! The service is currently unavailable. Please try again later.");
+            }
+            else if (err.error === 'soap-method') {
+                throw new Meteor.Error(501, "TYPE="+types+"-XXX");// "We're sorry! The service is currently unavailable. Please try again later.");
+            }
+        }
+        //verificar : return JSON.parse(result.return.toString());
+        //return JSON.parse(result.getProjectionReturn.toString());
+        return JSON.parse(result.return);//return JSON.parse(result.return.toString());
+    },
 
 /*Stores model instance, returns url to make possible share the instance.
   used in Share Instance option*/
