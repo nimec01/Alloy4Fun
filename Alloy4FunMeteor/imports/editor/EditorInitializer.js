@@ -53,6 +53,7 @@ function initializeAlloyEditor(htmlElement){
 
 
         $("#genInstanceUrl").hide();
+        $("#log").empty();
 
         if ($.trim(editor.getValue()) == '') {
             //When editor is empty
