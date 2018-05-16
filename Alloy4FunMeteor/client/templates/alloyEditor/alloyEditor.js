@@ -43,12 +43,12 @@ Template.alloyEditor.events({
           if (!$("#exec > button").is(":disabled")) {         /* if the button is available, check if there are commands to execute*/
                 var commandLabel = Session.get("commands").length > 1?$('.command-selection > select option:selected').text():Session.get("commands");
                 if (commandLabel.length == 0){
-                    $('#execbtn').qtip({
-                        show: {
-                            ready: true
-                        },
-                        content: 'There are no commands to execute.',
-                        hide: 'unfocus'
+                  swal({
+                      title: "",
+                      text: "There are no commands to execute",
+                      icon: "warning",
+                      buttons: true,
+                      dangerMode: true,
                     });
                 }
                 else {       /* Execute command */
@@ -176,7 +176,7 @@ Template.alloyEditor.events({
                           //se tiver um ou mais valid secret com run check e assert anonimos, pergunta
                           if (containsValidSecretWithAnonymousCommand(modelToShare)){
                               swal({
-                                      title: "This model contains an anonymous Command",
+                                      title: "This model contains an anonymous Command!",
                                       text: "Are you sure you want to share it?",
                                       type: "warning",
                                       showCancelButton: true,
@@ -196,7 +196,7 @@ Template.alloyEditor.events({
                 else {   /* Otherwise its an original model*/
                     if (containsValidSecretWithAnonymousCommand(modelToShare)){
                         swal({
-                                title: "This model contains an anonymous Command",
+                                title: "This model contains an anonymous Command!",
                                 text: "Are you sure you want to share it?",
                                 type: "warning",
                                 showCancelButton: true,

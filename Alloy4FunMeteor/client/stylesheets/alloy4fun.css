@@ -81,6 +81,7 @@ body{
 
 .sweet-alert{
     border-radius: 0px !important;
+    left: 51.5%!important;
 }
 
 .page-footer{
@@ -626,6 +627,9 @@ input[disabled]{
 
 #headTitle{
   margin-top : 0px;
+  text-align : center;
+  font-size : large;
+  margin-bottom : 10px;
 }
 
 #information{

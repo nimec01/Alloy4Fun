@@ -82,8 +82,6 @@ function initializeAlloyEditor(htmlElement){
 
 
     });
-    //// REVIEW: Não funciona, objetivo seria aumentar o tamanho do editor, talvez o problema esteja no template html
-    // editor.setSize("100%","100%");
     return editor;
 }
 
