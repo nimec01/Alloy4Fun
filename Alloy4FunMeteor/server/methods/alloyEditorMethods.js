@@ -30,7 +30,7 @@ Meteor.methods({
               throw new Meteor.Error(501, "We're sorry! The service is currently unavailable. Please try again later.");
           }
       }
-      var resultObject = JSON.parse(result.return);
+      var resultObject = JSON.parse(result[Object.keys(result)[0]]);
 
       /* ----- Command Type search --------*/
       var commandType = "unknown";
@@ -134,15 +134,6 @@ Meteor.methods({
         for(var key in frameInfo){
             args.type.push(key+frameInfo[key]);
         }
-/*        var t="";
-        for(var key in frameInfo){
-            t+="|"+key+frameInfo[key];
-        }
-        t=t.substring(1);
-        t="State0";
-
-        var args = {sessid: sessid, type: t};
-*/
         try {
             var client = Soap.createClient(url);
             var result = client.getProjection(args);
@@ -155,9 +146,7 @@ Meteor.methods({
                 throw new Meteor.Error(501, "TYPE="+types+"-XXX");// "We're sorry! The service is currently unavailable. Please try again later.");
             }
         }
-        //verificar : return JSON.parse(result.return.toString());
-        //return JSON.parse(result.getProjectionReturn.toString());
-        return JSON.parse(result.return);//return JSON.parse(result.return.toString());
+        return JSON.parse(result[Object.keys(result)[0]]);
     },
 
 /*Stores model instance, returns url to make possible share the instance.

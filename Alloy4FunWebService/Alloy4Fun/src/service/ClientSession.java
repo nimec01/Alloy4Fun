@@ -1,13 +1,16 @@
 package service;
 
-
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObjectBuilder;
+
 import edu.mit.csail.sdg.alloy4.Err;
-import edu.mit.csail.sdg.alloy4.Util;
 import edu.mit.csail.sdg.alloy4compiler.ast.ExprVar;
 import edu.mit.csail.sdg.alloy4compiler.ast.Sig;
 import edu.mit.csail.sdg.alloy4compiler.ast.Sig.Field;
@@ -32,10 +35,9 @@ public class ClientSession {
 	String sessid;
 	int iteration;
 	A4Solution ans;
-	File model; 
+	File model;
 
-	public ClientSession(A4Solution ans, File model, String sessid,
-			int instanceNumber) {
+	public ClientSession(A4Solution ans, File model, String sessid, int instanceNumber) {
 		this.ans = ans;
 		this.model = model;
 		this.iteration = instanceNumber;
@@ -47,7 +49,7 @@ public class ClientSession {
 		try {
 			for (int n = 0; n < this.iteration && aux.satisfiable(); n++) {
 				aux = aux.next();
-				
+
 			}
 		} catch (Exception e) {
 			this.iteration--;
@@ -60,66 +62,64 @@ public class ClientSession {
 			return null;
 		}
 	}
-	
-public String projectOver(String[] type){
-		
-		String projections = "[";
-		try{
-			
-			ans.writeXML("/tmp/"+sessid+".xml");
-			final String xmlFileName = Util.canon("/tmp/"+sessid+".xml");
-			File f = new File(xmlFileName);
-			
-			AlloyInstance myInstance = StaticInstanceReader.parseInstance(f);
-			VizState myState=new VizState(myInstance);
-			Map<AlloyType,AlloyAtom> map=new LinkedHashMap<AlloyType,AlloyAtom>();
-			for(AlloyAtom alloy_atom : myState.getOriginalInstance().getAllAtoms()){
-				String projection= "";
-				
-				for(String projectingType: type){
-					if(alloy_atom.toString().equals(projectingType))
+
+	public String projectOver(String[] type) {
+
+		JsonArrayBuilder jsonResponseBuilder = Json.createArrayBuilder();
+		try {
+			String tmpPath = System.getProperty("java.io.tmpdir");
+			String xmlPath = Paths.get(tmpPath, sessid + ".xml").toString();
+			ans.writeXML(xmlPath);
+			File xmlFile = new File(xmlPath);
+
+			AlloyInstance myInstance = StaticInstanceReader.parseInstance(xmlFile);
+			VizState myState = new VizState(myInstance);
+			Map<AlloyType, AlloyAtom> map = new LinkedHashMap<AlloyType, AlloyAtom>();
+			for (AlloyAtom alloy_atom : myState.getOriginalInstance().getAllAtoms()) {
+				for (String projectingType : type) {
+					if (alloy_atom.toString().equals(projectingType))
 						map.put(alloy_atom.getType(), alloy_atom);
 				}
-				if(!projection.equals("")){
-					if(!projections.equals("["))projections+=", ";
-					projections+="{ "+projection+" }";
-				}
 			}
-			
 			AlloyProjection currentProjection = new AlloyProjection(map);
 			AlloyInstance projected = StaticProjector.project(myInstance, currentProjection);
-			projections+=projectedInstance2JSON(projected);
-		}catch (Exception e){
+			jsonResponseBuilder.add(projectedInstance2JSON(projected));
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		if(projections.charAt(projections.length()-1)==',')projections= projections.substring(0, projections.length()-1);
-		return projections+"]";
+		return jsonResponseBuilder.build().toString();
 	}
-	
 
-	private String projectedInstance2JSON(AlloyInstance projected) {
+	private JsonObjectBuilder projectedInstance2JSON(AlloyInstance projected) {
+		JsonObjectBuilder projectionsJSON = Json.createObjectBuilder();
+
 		VizState vs = new VizState(projected);
 		vs.useOriginalName(true);
-		StringBuilder sb = new StringBuilder();
-		sb.append("{ \"atoms\" : [");
-		for(AlloyAtom a : projected.getAllAtoms())sb.append("\""+a.getVizName(vs, true)+"\",");
-		if(sb.charAt(sb.length()-1)==',')sb.deleteCharAt(sb.length()-1);
-		sb.append("], \"relations\" : [");
-		for(AlloyRelation r : projected.model.getRelations()){
-			sb.append("{ \"arity\" : "+r.getArity()+", \"relation\" : \""+r.getName()+"\", \"tuples\" : [");
-			for(AlloyTuple at: projected.relation2tuples(r)){
-			for(AlloyAtom atom: at.getAtoms()) {
-		         sb.append("\""+atom.getVizName(vs, true)+"\",");
-		      }
-			
+
+		JsonArrayBuilder jsonAtomsBuilder = Json.createArrayBuilder();
+		for (AlloyAtom a : projected.getAllAtoms())
+			jsonAtomsBuilder.add(a.getVizName(vs, true));
+		projectionsJSON.add("atoms", jsonAtomsBuilder);
+		
+		JsonArrayBuilder jsonRelationsBuilder = Json.createArrayBuilder();
+		for (AlloyRelation r : projected.model.getRelations()) {
+			JsonObjectBuilder relationJsonBuilder = Json.createObjectBuilder();
+			relationJsonBuilder.add("arity", r.getArity());
+			relationJsonBuilder.add("relation", r.getName());
+
+			JsonArrayBuilder relationTuplesJsonBuilder = Json.createArrayBuilder();
+			for (AlloyTuple at : projected.relation2tuples(r)) {
+				for (AlloyAtom atom : at.getAtoms()) {
+					relationTuplesJsonBuilder.add(atom.getVizName(vs, true));
+				}
 			}
-			if(sb.charAt(sb.length()-1)==',')sb.deleteCharAt(sb.length()-1);
-			sb.append("]},");
+			relationJsonBuilder.add("tuples", relationTuplesJsonBuilder);
+			jsonRelationsBuilder.add(relationJsonBuilder);
 		}
-		if(sb.charAt(sb.length()-1)==',')sb.deleteCharAt(sb.length()-1);
-		sb.append("]},");
-	return sb.toString();
-}
+		projectionsJSON.add("relations", jsonRelationsBuilder);
+		
+		return projectionsJSON;
+	}
 
 	public int getIteration() {
 		return iteration;
@@ -138,11 +138,11 @@ public String projectOver(String[] type){
 	}
 
 	public String toJson(A4Solution answer) {
-		
+
 		if (!answer.satisfiable())
 			return "{\"unsat\" : \"true\"}";
 		try {
-			
+
 			Instance sol = answer.debugExtractKInstance();
 			StringBuilder sb = new StringBuilder();
 			sb.append("{\"unsat\" : false , \"integers\" : [");
@@ -163,13 +163,13 @@ public String projectOver(String[] type){
 			for (Sig s : answer.getAllReachableSigs()) {
 				if (hasAtoms)
 					atoms += ", ";
-				atoms += "{\"type\" : \"" + s + "\",\"isSubsetSig\" : "+(s instanceof SubsetSig)
-						+", \"parent\" : \""+ ((s instanceof PrimSig)?((PrimSig)s).parent:"")
-						+"\", \"parents\" : "+ ((s instanceof SubsetSig)?((SubsetSig)s).parents.toString().replace("[", "[\"").replace("]","\"]").replace(",","\",\""):"[]")
-						+", \"isPrimSig\" : "+(s instanceof PrimSig)
-						+", \"values\" : [";
+				atoms += "{\"type\" : \"" + s + "\",\"isSubsetSig\" : " + (s instanceof SubsetSig) + ", \"parent\" : \""
+						+ ((s instanceof PrimSig) ? ((PrimSig) s).parent : "") + "\", \"parents\" : "
+						+ ((s instanceof SubsetSig) ? ((SubsetSig) s).parents.toString().replace("[", "[\"")
+								.replace("]", "\"]").replace(",", "\",\"") : "[]")
+						+ ", \"isPrimSig\" : " + (s instanceof PrimSig) + ", \"values\" : [";
 				Iterator<A4Tuple> it = answer.eval(s).iterator();
-				while (it.hasNext()) { 
+				while (it.hasNext()) {
 					atoms += "\"" + it.next() + "\"";
 					if (it.hasNext())
 						atoms += " , ";
@@ -178,15 +178,14 @@ public String projectOver(String[] type){
 				hasAtoms = true;
 
 				for (Field f : s.getFields()) {
-				
+
 					if (hasFields)
 						fields += ", ";
-					fields += "{\"type\" : \"" + s + "\", \"label\" : \""
-							+ f.label + "\"";
+					fields += "{\"type\" : \"" + s + "\", \"label\" : \"" + f.label + "\"";
 					it = answer.eval(f).iterator();
 					if (it.hasNext()) {
 						A4Tuple tuple = it.next();
-						
+
 						fields += ", \"arity\" : " + tuple.arity();
 						fields += ",  \"values\" : [" + tupleToJSON(tuple) + "";
 						if (it.hasNext())
@@ -210,13 +209,11 @@ public String projectOver(String[] type){
 
 			sb.append(", \"skolem\" : {");
 			Iterator<ExprVar> vars = answer.getAllSkolems().iterator();
-			while (vars.hasNext()){
+			while (vars.hasNext()) {
 				ExprVar v = vars.next();
-			//for (ExprVar v : answer.getAllSkolems()) {
-				sb.append("\"" + v.label + "\"")
-						.append(" : ")
-						.append(answer.eval(v).toString().replace("{", "\"")
-								.replace("}", "\""));
+				// for (ExprVar v : answer.getAllSkolems()) {
+				sb.append("\"" + v.label + "\"").append(" : ")
+						.append(answer.eval(v).toString().replace("{", "\"").replace("}", "\""));
 				if (vars.hasNext())
 					sb.append(", ");
 			}
@@ -234,7 +231,7 @@ public String projectOver(String[] type){
 			result += "\"" + tuple.atom(i) + "\", ";
 		result += "\"" + tuple.atom(i) + "\"";
 		result += "]";
-		
+
 		return result;
 	}
 }
