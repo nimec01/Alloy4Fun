@@ -1,6 +1,4 @@
 # Eclipse 
-.classpath
-alloy4.2.jar
 *.class
 
 # Mobile Tools for Java (J2ME)
@@ -45,9 +43,6 @@ tmp/
 local.properties
 .settings/
 .loadpath
-
-# Eclipse Core
-.project
 
 # External tool builders
 .externalToolBuilders/
