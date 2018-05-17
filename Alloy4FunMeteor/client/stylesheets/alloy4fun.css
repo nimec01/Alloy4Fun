@@ -626,12 +626,11 @@ input[disabled]{
 }
 
 #headTitle{
-  margin-top : 0px;
   text-align : center;
   font-size : large;
   margin-bottom : 10px;
 }
 
 #information{
-  margin-bottom: 10px;
+  margin-bottom: 15px;
 }
