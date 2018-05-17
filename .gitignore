@@ -1,24 +1,18 @@
-*.class
-node_modules
-
-mup.json
-.deploymeteor.config
-
 # Eclipse 
 .classpath
 alloy4.2.jar
+*.class
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
-
-# Package Files #
-*.war
-*.ear
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 
 #Meteor stuff
+mup.json
+.deploymeteor.config
+node_modules
 *.swp
 *.swo
 .idea
@@ -32,34 +26,21 @@ build/bundle
 
 #deployment
 bundle/
+#VSCODE
+.vscode/*
 
 # JAX-WS project
-.classpath
-*.class
-build
-WebContent
-
-*~
-
-*.class
-
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
-
-# Package Files #
-*.jar
 *.war
 *.ear
-
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
-
+build
+WebContent
+*~
+*.jar
 .metadata
 bin/
 tmp/
 *.tmp
 *.bak
-*.swp
 *~.nib
 local.properties
 .settings/
@@ -79,9 +60,6 @@ local.properties
 
 # CDT-specific (C/C++ Development Tooling)
 .cproject
-
-# JDT-specific (Eclipse Java Development Tools)
-.classpath
 
 # Java annotation processor (APT)
 .factorypath
@@ -103,4 +81,13 @@ local.properties
 
 # Code Recommenders
 .recommenders/
+
+*target*
+
+# eclipse specific git ignore
+bin/**
+tmp/**
+tmp/**/*
+
+
 
