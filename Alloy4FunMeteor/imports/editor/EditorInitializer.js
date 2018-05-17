@@ -83,6 +83,7 @@ function initializeAlloyEditor(htmlElement){
 
 
     });
+    editor.setSize("100%",400);
     return editor;
 }
 
