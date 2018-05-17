@@ -27,7 +27,7 @@ build/bundle
 #deployment
 bundle/
 #VSCODE
-.vscode/*
+.vscode
 
 # JAX-WS project
 *.war
