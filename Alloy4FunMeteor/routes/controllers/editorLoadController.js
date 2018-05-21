@@ -61,29 +61,44 @@ editorLoadController = RouteController.extend({
         if (model_id){
             model = Model.findOne({_id: model_id});
             var v = model.whole;
-            var i;
+            var i,z;
+
+            var teste;
             /*--------- SECRETS HANDLER------------*/
             if (!isPrivate){ /*if the model is public*/
                 var nsecrets = 0;
-                while ((i = v.indexOf("//SECRET\n"))>=0) { /*while Contains secrets*/
-                    var z = i;
+                while ((i = v.indexOf("//SECRET\n",i))>=0) { /*while Contains secrets*/
+                    teste = teste + "\ni = " + i;
+                    z = i;
                     var j = 0;
                     var word = "";
 
                     for(z; v[z]!= '\n';z++); z++; /*goto next line*/
-                    for(z;v && v[z]!='{';z++){ word += v[z];  j++;}
+                    for(z;v[z] && v[z]!='{';z++){ word += v[z];}
 
-                    if (!(isParagraph(word))) break; /*break case 'word' is not a paragraph */
+                    if (!(isParagraph(word))) {i++; teste = teste + "\nisParagraphBreak!"; continue; } /*break case 'word' is not a paragraph */
 
                     try{  /*if its a paragraph then } must match '}' */
                         var e = findClosingBracketMatchIndex(v,z);
                     }catch(err){
-                        break;
+                        i++;
+                        teste = teste + "\nerrorBreak!";
+                        continue;
                     }
 
                     secrets+="\n\n"+v.substr(i,(e-i)+1);
                     v = v.substr(0,i) + v.substr(e+1); /* remove secrets from v (whole model) */
+                    i++;
                 }
+
+                /*return {
+                        "whole": teste,
+                        "secrets": "",
+                        "lockedLines":"",
+                        "priv": false,
+                        "instance":"",
+                        "themes":""
+                      };*/
 
 
                 /*------------LOCK handler---------------*/
