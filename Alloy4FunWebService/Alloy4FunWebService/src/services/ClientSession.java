@@ -76,8 +76,10 @@ public class ClientSession {
 			VizState myState = new VizState(myInstance);
 			Map<AlloyType, AlloyAtom> map = new LinkedHashMap<AlloyType, AlloyAtom>();
 			for (AlloyAtom alloy_atom : myState.getOriginalInstance().getAllAtoms()) {
-				for (String projectingType : type) {
-					if (alloy_atom.toString().equals(projectingType))
+				for (String projectingType : type) {					
+					if (alloy_atom.toString().equals(projectingType) 
+						|| projectingType.startsWith(alloy_atom.toString())
+						)	
 						map.put(alloy_atom.getType(), alloy_atom);
 				}
 			}

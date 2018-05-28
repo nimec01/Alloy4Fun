@@ -31,9 +31,9 @@ public class AlloyService {
 	@WebMethod
 	public String getProjection(String sessid, String[] type) {
 		return answers.get(sessid).projectOver(type);
-	} 
+	}
 
-	@WebMethod 
+	@WebMethod
 	public String getInstance(String model, final String sessionId, int instanceNumber, String commandLabel,
 			boolean forceInterpretation) {
 		if (answers.containsKey(sessionId) && !forceInterpretation) {

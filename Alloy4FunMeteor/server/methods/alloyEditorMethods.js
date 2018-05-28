@@ -3,8 +3,8 @@
  */
 
 //url="http://alloy4funvm.di.uminho.pt:8080/Alloy4Fun/services/AlloyService?wsdl";
-//url="http://localhost:8080/Alloy4FunWebService/services/AlloyService?wsdl";
-url="http://localhost:8080/Alloy4Fun/services/AlloyService?wsdl";
+url="http://localhost:8080/Alloy4FunWebService/services/AlloyService?wsdl";
+//url="http://localhost:8080/Alloy4Fun/services/AlloyService?wsdl";
 
 /* Meteor server methods */
 Meteor.methods({
