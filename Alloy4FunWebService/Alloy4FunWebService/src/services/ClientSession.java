@@ -18,6 +18,7 @@ import edu.mit.csail.sdg.alloy4compiler.ast.Sig.PrimSig;
 import edu.mit.csail.sdg.alloy4compiler.ast.Sig.SubsetSig;
 import edu.mit.csail.sdg.alloy4compiler.translator.A4Solution;
 import edu.mit.csail.sdg.alloy4compiler.translator.A4Tuple;
+import edu.mit.csail.sdg.alloy4compiler.translator.A4TupleSet;
 import edu.mit.csail.sdg.alloy4viz.AlloyAtom;
 import edu.mit.csail.sdg.alloy4viz.AlloyInstance;
 import edu.mit.csail.sdg.alloy4viz.AlloyProjection;
@@ -49,14 +50,13 @@ public class ClientSession {
 		try {
 			for (int n = 0; n < this.iteration && aux.satisfiable(); n++) {
 				aux = aux.next();
-
 			}
 		} catch (Exception e) {
 			this.iteration--;
 			return e.getMessage();
 		}
 		try {
-			return toJson(aux);
+			return answerToJson(aux);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
@@ -137,101 +137,121 @@ public class ClientSession {
 		model.delete();
 	}
 
-	public String toJson(A4Solution answer) {
-
-		if (!answer.satisfiable())
-			return "{\"unsat\" : \"true\"}";
+	public String answerToJson(A4Solution answer) {
+		JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
+		
+		if (!answer.satisfiable()) {
+			instanceJSON.add("unsat", "true");
+			return instanceJSON.build().toString();
+		}
+			
 		try {
-
 			Instance sol = answer.debugExtractKInstance();
-			StringBuilder sb = new StringBuilder();
-			sb.append("{\"unsat\" : false , \"integers\" : [");
-			boolean firstTuple = true;
+			instanceJSON.add("unsat", false);
+			
+			JsonArrayBuilder integersArrayJSON = Json.createArrayBuilder();
 			for (IndexedEntry<TupleSet> e : sol.intTuples()) {
-				if (firstTuple)
-					firstTuple = false;
-				else
-					sb.append(", ");
 				Object atom = e.value().iterator().next().atom(0);
-				sb.append(atom);
+				integersArrayJSON.add(atom.toString());
 			}
-			sb.append("], ");
-			String atoms = "[", fields = "[";
-			boolean hasAtoms = false;
-			boolean hasFields = false;
+			instanceJSON.add("integers", integersArrayJSON);
+			
+			JsonArrayBuilder atomsJSON = Json.createArrayBuilder();
+			JsonArrayBuilder fieldsJSON = Json.createArrayBuilder();
 
-			for (Sig s : answer.getAllReachableSigs()) {
-				if (hasAtoms)
-					atoms += ", ";
-				atoms += "{\"type\" : \"" + s + "\",\"isSubsetSig\" : " + (s instanceof SubsetSig) + ", \"parent\" : \""
-						+ ((s instanceof PrimSig) ? ((PrimSig) s).parent : "") + "\", \"parents\" : "
-						+ ((s instanceof SubsetSig) ? ((SubsetSig) s).parents.toString().replace("[", "[\"")
-								.replace("]", "\"]").replace(",", "\",\"") : "[]")
-						+ ", \"isPrimSig\" : " + (s instanceof PrimSig) + ", \"values\" : [";
-				Iterator<A4Tuple> it = answer.eval(s).iterator();
-				while (it.hasNext()) {
-					atoms += "\"" + it.next() + "\"";
-					if (it.hasNext())
-						atoms += " , ";
-				}
-				atoms += "]}";
-				hasAtoms = true;
-
-				for (Field f : s.getFields()) {
-
-					if (hasFields)
-						fields += ", ";
-					fields += "{\"type\" : \"" + s + "\", \"label\" : \"" + f.label + "\"";
-					it = answer.eval(f).iterator();
-					if (it.hasNext()) {
-						A4Tuple tuple = it.next();
-
-						fields += ", \"arity\" : " + tuple.arity();
-						fields += ",  \"values\" : [" + tupleToJSON(tuple) + "";
-						if (it.hasNext())
-							fields += ", ";
-					} else
-						fields += ",  \"values\" : [";
-					while (it.hasNext()) {
-						A4Tuple tuple = it.next();
-						fields += tupleToJSON(tuple);
-						if (it.hasNext())
-							fields += ", ";
-					}
-					fields += "]}";
-					hasFields = true;
+			for (Sig signature : answer.getAllReachableSigs()) {
+				atomsJSON.add(sigToJSON(answer, signature));
+				
+				for (Field field : signature.getFields()) {
+					fieldsJSON.add(fieldToJSON(answer, signature, field));
 				}
 			}
-			atoms += "]";
-			fields += "]";
-			sb.append("\"atoms\" : " + atoms);
-			sb.append(", \"fields\" : " + fields);
+			instanceJSON.add("atoms", atomsJSON);
+			instanceJSON.add("fields", fieldsJSON);
 
-			sb.append(", \"skolem\" : {");
-			Iterator<ExprVar> vars = answer.getAllSkolems().iterator();
-			while (vars.hasNext()) {
-				ExprVar v = vars.next();
-				// for (ExprVar v : answer.getAllSkolems()) {
-				sb.append("\"" + v.label + "\"").append(" : ")
-						.append(answer.eval(v).toString().replace("{", "\"").replace("}", "\""));
-				if (vars.hasNext())
-					sb.append(", ");
-			}
-			sb.append("}}");
-			return sb.toString();
+			instanceJSON.add("skolem", skolemsToJSON(answer));
+			
+			return instanceJSON.build().toString();
 		} catch (Err er) {
-			return ("{\"err\" : \"Evaluator error occurred: " + er + "\"}");
+			JsonObjectBuilder errorJSON = Json.createObjectBuilder();
+			errorJSON.add("err", String.format("Evaluator error occurred: %s", er));
+			return errorJSON.build().toString();
 		}
 	}
 
-	public String tupleToJSON(A4Tuple tuple) {
-		String result = "[";
-		int i;
-		for (i = 0; i < tuple.arity() - 1; i++)
-			result += "\"" + tuple.atom(i) + "\", ";
-		result += "\"" + tuple.atom(i) + "\"";
-		result += "]";
+	private JsonObjectBuilder skolemsToJSON(A4Solution answer) throws Err {
+		JsonObjectBuilder skolemJSON = Json.createObjectBuilder();
+		for(ExprVar var : answer.getAllSkolems()) {
+			A4TupleSet tupleSet = (A4TupleSet)answer.eval(var);
+			JsonArrayBuilder varTuplesJSON = Json.createArrayBuilder();
+			for(A4Tuple tuple: tupleSet) {
+				varTuplesJSON.add(tupleToJSONArray(tuple));
+			}
+			skolemJSON.add(var.label, varTuplesJSON);
+		}
+		return skolemJSON;
+	}
 
-		return result;
+	private JsonObjectBuilder fieldToJSON(A4Solution answer, Sig signature, Field field) {
+		JsonObjectBuilder fieldJSON = Json.createObjectBuilder();
+		fieldJSON.add("type", signature.toString());
+		fieldJSON.add("label", field.label);
+		
+		Iterator<A4Tuple> tupleIt = answer.eval(field).iterator();
+		if(tupleIt.hasNext()) {
+			A4Tuple tuple = tupleIt.next();
+			fieldJSON.add("arity", tuple.arity());
+			
+			JsonArrayBuilder tupleValuesJSON = Json.createArrayBuilder();
+			tupleValuesJSON.add(tupleToJSONArray(tuple));
+			while(tupleIt.hasNext())tupleValuesJSON.add(tupleToJSONArray(tupleIt.next()));
+			fieldJSON.add("values", tupleValuesJSON);
+		}
+		else {
+			fieldJSON.add("values", Json.createArrayBuilder());
+		}
+		
+		return fieldJSON;
+	}
+
+	private JsonObjectBuilder sigToJSON(A4Solution answer, Sig signature) {
+		JsonObjectBuilder atomJSON = Json.createObjectBuilder();
+		atomJSON.add("type", signature.toString());
+		atomJSON.add("isSubsetSig", signature instanceof SubsetSig);
+		
+		String parent = "";
+		if(signature instanceof PrimSig) {
+			PrimSig primSignature = (PrimSig)signature;
+			if(primSignature.parent != null) {
+				parent = primSignature.parent.label;
+			}
+			else parent = "null";
+		}
+		atomJSON.add("parent", parent);
+		
+		JsonArrayBuilder atomParentsJSON = Json.createArrayBuilder();
+		if(signature instanceof SubsetSig) {
+			SubsetSig subsetSignature = (SubsetSig) signature;
+			for(Sig subsetSigParent : subsetSignature.parents) {
+				atomParentsJSON.add(subsetSigParent.label);
+			}
+		}
+		atomJSON.add("parents", atomParentsJSON);
+		atomJSON.add("isPrimSig", signature instanceof PrimSig);
+		
+		JsonArrayBuilder instancesJSON = Json.createArrayBuilder();
+		for(A4Tuple tuple : answer.eval(signature)) {
+			instancesJSON.add(tuple.atom(0));
+		}
+		atomJSON.add("values", instancesJSON);
+		
+		return atomJSON;
+	}
+
+	public JsonArrayBuilder tupleToJSONArray(A4Tuple tuple) {
+		JsonArrayBuilder tupleJSON = Json.createArrayBuilder();
+		for (int i = 0; i < tuple.arity(); i++)
+			tupleJSON.add( tuple.atom(i));
+		return tupleJSON;
 	}
 }

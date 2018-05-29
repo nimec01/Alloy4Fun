@@ -9,6 +9,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 import javax.jws.WebMethod;
 import javax.jws.WebService;
 
@@ -73,8 +75,12 @@ public class AlloyService {
 
 			} catch (Err e) {
 				String message = e.msg.replace("\"", "\'");
-				return ("{\"syntax_error\": true, \"line\":" + e.pos.y + ", \"column\": " + e.pos.x + ", \"msg\" :\""
-						+ message + "\"}").replace("\n", "");
+				JsonObjectBuilder errorJSON = Json.createObjectBuilder();
+				errorJSON.add("syntax_error", "true");
+				errorJSON.add("line", String.valueOf(e.pos.y));
+				errorJSON.add("column", String.valueOf(e.pos.x));
+				errorJSON.add("msg", message.replace("\n", ""));
+				return errorJSON.build().toString();
 			}
 
 			A4Options options = new A4Options();
@@ -101,8 +107,11 @@ public class AlloyService {
 						}, 7200, TimeUnit.SECONDS);
 						// System.out.println(answers.get(sessionId).getInstance());
 						return answers.get(sessionId).getInstance();
-					} else
-						return "{\"unsat\" : true}";
+					} else {
+						JsonObjectBuilder unsatJSON = Json.createObjectBuilder();
+						unsatJSON.add("unsat", "true");
+						return unsatJSON.build().toString();
+					}
 				}
 			}
 			return "";

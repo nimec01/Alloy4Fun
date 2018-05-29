@@ -280,7 +280,7 @@ initGraphViewer = function(element) {
                             return ele.data().label+"["+auxLabelExt+"]";
                         }
                     },
-                    'curve-style': 'unbundled-bezier',
+                    'curve-style': 'bezier',
                     'text-valign': 'center',
                     'text-outline-color': '#ff3300',
                     'edge-text-rotation': 'autorotate',
