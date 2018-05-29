@@ -55,7 +55,9 @@ addTypeToProjection = function (newType){
             .text(newType));
     }else throw newType+ " already being projected.";
     var atoms = lastFrame(newType);
-    if(atoms >1){
+    //FIXED o lastframe devovle o index do ultimo atom por isso
+    //abaixo tem de estar >=
+    if(atoms >=1){
         $("#nextFrame").addClass("enabled");
         $("#previousFrame").removeClass("enabled");
     }
