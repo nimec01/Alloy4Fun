@@ -20,6 +20,7 @@ import edu.mit.csail.sdg.alloy4compiler.translator.A4Solution;
 import edu.mit.csail.sdg.alloy4compiler.translator.A4Tuple;
 import edu.mit.csail.sdg.alloy4compiler.translator.A4TupleSet;
 import edu.mit.csail.sdg.alloy4viz.AlloyAtom;
+import edu.mit.csail.sdg.alloy4viz.AlloyElement;
 import edu.mit.csail.sdg.alloy4viz.AlloyInstance;
 import edu.mit.csail.sdg.alloy4viz.AlloyProjection;
 import edu.mit.csail.sdg.alloy4viz.AlloyRelation;
@@ -28,6 +29,7 @@ import edu.mit.csail.sdg.alloy4viz.AlloyType;
 import edu.mit.csail.sdg.alloy4viz.StaticInstanceReader;
 import edu.mit.csail.sdg.alloy4viz.StaticProjector;
 import edu.mit.csail.sdg.alloy4viz.VizState;
+import edu.mit.csail.sdg.alloy4viz.VizState.MString;
 import kodkod.instance.Instance;
 import kodkod.instance.TupleSet;
 import kodkod.util.ints.IndexedEntry;
@@ -99,8 +101,10 @@ public class ClientSession {
 		vs.useOriginalName(true);
 
 		JsonArrayBuilder jsonAtomsBuilder = Json.createArrayBuilder();
-		for (AlloyAtom a : projected.getAllAtoms())
-			jsonAtomsBuilder.add(a.getVizName(vs, true));
+		for (AlloyAtom a : projected.getAllAtoms()) {
+			jsonAtomsBuilder.add(a.getVizName(vs, true) );
+		}
+			
 		projectionsJSON.add("atoms", jsonAtomsBuilder);
 		
 		JsonArrayBuilder jsonRelationsBuilder = Json.createArrayBuilder();

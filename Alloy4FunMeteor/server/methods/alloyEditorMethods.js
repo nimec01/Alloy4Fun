@@ -19,7 +19,6 @@ Meteor.methods({
       commandLabel = commandLabel.toString();
       /* Normal behaviour */
       var args = {model: model, sessionId: sessionId, instanceNumber: instanceNumber, commandLabel: commandLabel, forceInterpretation: forceInterpretation};
-      console.log(args);
       try {
           var client = Soap.createClient(url);
           var result = client.getInstance(args);
@@ -32,7 +31,6 @@ Meteor.methods({
               throw new Meteor.Error(501, "We're sorry! The service is currently unavailable. Please try again later.");
           }
       }
-      console.log(result);
       var resultObject = JSON.parse(result[Object.keys(result)[0]]);
 
       /* ----- Command Type search --------*/
@@ -149,6 +147,7 @@ Meteor.methods({
                 throw new Meteor.Error(501, "TYPE="+types+"-XXX");// "We're sorry! The service is currently unavailable. Please try again later.");
             }
         }
+        
         return JSON.parse(result[Object.keys(result)[0]]);
     },
 
