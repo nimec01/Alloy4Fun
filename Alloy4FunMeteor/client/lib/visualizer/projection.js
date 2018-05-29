@@ -30,7 +30,6 @@ processProjection = function(err, projection){
 };
 
 updateProjection = function(frame){
-    console.log(frame);
     cy.nodes().remove();
     allAtoms.forEach(function(node){
         for(var i in frame.atoms){
