@@ -37,7 +37,11 @@ Template.alloyEditor.helpers({
 });
 Template.alloyEditor.events({
     'click #exec': function (evt) {
-
+        currentlyProjectedTypes = [];
+        currentFramePosition = {};
+        allAtoms = [];
+        atomPositions = {};
+        $(".frame-navigation").hide();
         if (evt.toElement.id != "exec")
 
           if (!$("#exec > button").is(":disabled")) {         /* if the button is available, check if there are commands to execute*/

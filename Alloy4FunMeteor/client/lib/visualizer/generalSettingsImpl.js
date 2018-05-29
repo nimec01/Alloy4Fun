@@ -3,7 +3,7 @@
  */
 
 currentLayout = "breadthfirst";
-nodeSpacing = 0.8;
+nodeSpacing = 0.1;
 layouts = {
     breadthfirst : {
         name: "breadthfirst",

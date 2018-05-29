@@ -62,8 +62,6 @@ Template.rightClickOptionsMenu.events({
     'click #rightClickProject' : function(){
         var selectedType = Session.get("rightClickTarget");
         try{
-            console.log(currentlyProjectedTypes)
-            console.log(currentlyProjectedTypes.indexOf(selectedType))
             if(currentlyProjectedTypes.indexOf(selectedType)==-1)addTypeToProjection(selectedType);
             else removeTypeFromProjection(selectedType);
             $("#optionsMenu").hide();
