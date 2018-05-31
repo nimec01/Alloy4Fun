@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="688b91af-36c0-4dd9-b412-32857ef82309" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/client/lib/visualizer/projection.js" afterPath="$PROJECT_DIR$/client/lib/visualizer/projection.js" />
-      <change beforePath="$PROJECT_DIR$/server/methods/alloyEditorMethods.js" afterPath="$PROJECT_DIR$/server/methods/alloyEditorMethods.js" />
-      <change beforePath="$PROJECT_DIR$/../Alloy4FunWebService/Alloy4FunWebService/src/services/AlloyService.java" afterPath="$PROJECT_DIR$/../Alloy4FunWebService/Alloy4FunWebService/src/services/AlloyService.java" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -51,8 +49,8 @@
       <file leaf-file-name="alloyEditor.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/client/templates/alloyEditor/alloyEditor.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="10341">
-              <caret line="386" column="29" lean-forward="true" selection-start-line="386" selection-start-column="29" selection-end-line="386" selection-end-column="29" />
+            <state relative-caret-position="10449">
+              <caret line="390" column="29" lean-forward="false" selection-start-line="390" selection-start-column="29" selection-end-line="390" selection-end-column="29" />
               <folding />
             </state>
           </provider>
@@ -62,7 +60,7 @@
         <entry file="file://$PROJECT_DIR$/client/templates/visSettings/frameNavigation/frameNavigation.js">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="1134">
-              <caret line="42" column="0" lean-forward="true" selection-start-line="42" selection-start-column="0" selection-end-line="42" selection-end-column="0" />
+              <caret line="42" column="0" lean-forward="false" selection-start-line="42" selection-start-column="0" selection-end-line="42" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -71,8 +69,8 @@
       <file leaf-file-name="alloyEditorMethods.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/server/methods/alloyEditorMethods.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="108">
-              <caret line="4" column="13" lean-forward="true" selection-start-line="4" selection-start-column="13" selection-end-line="13" selection-end-column="36" />
+            <state relative-caret-position="54">
+              <caret line="2" column="3" lean-forward="true" selection-start-line="2" selection-start-column="3" selection-end-line="2" selection-end-column="3" />
               <folding />
             </state>
           </provider>
@@ -91,8 +89,8 @@
       <file leaf-file-name="generalSettingsImpl.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/client/lib/visualizer/generalSettingsImpl.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="4266">
-              <caret line="158" column="0" lean-forward="true" selection-start-line="158" selection-start-column="0" selection-end-line="158" selection-end-column="0" />
+            <state relative-caret-position="3726">
+              <caret line="138" column="0" lean-forward="true" selection-start-line="138" selection-start-column="0" selection-end-line="138" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -111,8 +109,8 @@
       <file leaf-file-name="rightClickOptionsMenu.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/client/templates/visSettings/rightClickOptionsMenu.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1836">
-              <caret line="68" column="12" lean-forward="false" selection-start-line="68" selection-start-column="12" selection-end-line="68" selection-end-column="12" />
+            <state relative-caret-position="1782">
+              <caret line="66" column="12" lean-forward="false" selection-start-line="66" selection-start-column="12" selection-end-line="66" selection-end-column="12" />
               <folding />
             </state>
           </provider>
@@ -304,7 +302,10 @@
       <workItem from="1526983641489" duration="2856000" />
       <workItem from="1527003616755" duration="394000" />
       <workItem from="1527343269569" duration="8463000" />
-      <workItem from="1527543525526" duration="1666000" />
+      <workItem from="1527543525526" duration="2270000" />
+      <workItem from="1527608026129" duration="39000" />
+      <workItem from="1527688759645" duration="634000" />
+      <workItem from="1527697919747" duration="2411000" />
     </task>
     <task id="LOCAL-00001" summary="(ignore)">
       <created>1524597611542</created>
@@ -352,19 +353,19 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="94444000" />
+    <option name="totallyTimeSpent" value="98132000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-9" y="-9" width="1938" height="1048" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24114583" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.30104166" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Docker" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.17127071" sideWeight="0.50208336" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.13922653" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24751382" sideWeight="0.49791667" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="npm" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24751382" sideWeight="0.49791667" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32928178" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
@@ -678,14 +679,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/routes/routes.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="648">
-          <caret line="26" column="0" lean-forward="false" selection-start-line="26" selection-start-column="0" selection-end-line="26" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/routes/controllers/editorLoadController.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="513">
@@ -695,8 +688,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/client/templates/visSettings/rightClickOptionsMenu.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1836">
-          <caret line="68" column="12" lean-forward="false" selection-start-line="68" selection-start-column="12" selection-end-line="68" selection-end-column="12" />
+        <state relative-caret-position="1782">
+          <caret line="66" column="12" lean-forward="false" selection-start-line="66" selection-start-column="12" selection-end-line="66" selection-end-column="12" />
           <folding />
         </state>
       </provider>
@@ -741,16 +734,16 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/client/lib/visualizer/generalSettingsImpl.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="4266">
-          <caret line="158" column="0" lean-forward="true" selection-start-line="158" selection-start-column="0" selection-end-line="158" selection-end-column="0" />
+        <state relative-caret-position="3726">
+          <caret line="138" column="0" lean-forward="true" selection-start-line="138" selection-start-column="0" selection-end-line="138" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/client/templates/alloyEditor/alloyEditor.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="10341">
-          <caret line="386" column="29" lean-forward="true" selection-start-line="386" selection-start-column="29" selection-end-line="386" selection-end-column="29" />
+        <state relative-caret-position="10449">
+          <caret line="390" column="29" lean-forward="false" selection-start-line="390" selection-start-column="29" selection-end-line="390" selection-end-column="29" />
           <folding />
         </state>
       </provider>
@@ -758,7 +751,7 @@
     <entry file="file://$PROJECT_DIR$/client/templates/visSettings/frameNavigation/frameNavigation.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1134">
-          <caret line="42" column="0" lean-forward="true" selection-start-line="42" selection-start-column="0" selection-end-line="42" selection-end-column="0" />
+          <caret line="42" column="0" lean-forward="false" selection-start-line="42" selection-start-column="0" selection-end-line="42" selection-end-column="0" />
           <folding />
         </state>
       </provider>
@@ -771,10 +764,18 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/routes/routes.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="648">
+          <caret line="26" column="0" lean-forward="false" selection-start-line="26" selection-start-column="0" selection-end-line="26" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/server/methods/alloyEditorMethods.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="108">
-          <caret line="4" column="13" lean-forward="true" selection-start-line="4" selection-start-column="13" selection-end-line="13" selection-end-column="36" />
+        <state relative-caret-position="54">
+          <caret line="2" column="3" lean-forward="true" selection-start-line="2" selection-start-column="3" selection-end-line="2" selection-end-column="3" />
           <folding />
         </state>
       </provider>

@@ -69,6 +69,7 @@ public class ClientSession {
 
 		JsonArrayBuilder jsonResponseBuilder = Json.createArrayBuilder();
 		try {
+			
 			String tmpPath = System.getProperty("java.io.tmpdir");
 			String xmlPath = Paths.get(tmpPath, sessid + ".xml").toString();
 			ans.writeXML(xmlPath);
@@ -76,15 +77,21 @@ public class ClientSession {
 
 			AlloyInstance myInstance = StaticInstanceReader.parseInstance(xmlFile);
 			VizState myState = new VizState(myInstance);
+			//clonamos o myState para obter um theme a usar abaixo para obter o originalName
+			VizState theme= new VizState(myState);
+			theme.useOriginalName(true);
+			
 			Map<AlloyType, AlloyAtom> map = new LinkedHashMap<AlloyType, AlloyAtom>();
 			for (AlloyAtom alloy_atom : myState.getOriginalInstance().getAllAtoms()) {
 				for (String projectingType : type) {					
-					if (alloy_atom.toString().equals(projectingType) 
+					/*if (alloy_atom.toString().equals(projectingType) 
 						|| projectingType.startsWith(alloy_atom.toString())
-						)	
+						)*/
+					if (alloy_atom.getVizName(theme, true).replace("$","").equals(projectingType))
 						map.put(alloy_atom.getType(), alloy_atom);
-				}
+				}   
 			}
+			
 			AlloyProjection currentProjection = new AlloyProjection(map);
 			AlloyInstance projected = StaticProjector.project(myInstance, currentProjection);
 			jsonResponseBuilder.add(projectedInstance2JSON(projected));
