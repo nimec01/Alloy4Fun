@@ -381,7 +381,17 @@ function handleInterpretModelEvent(err, result) {
         permalink.remove();
     $("#genUrl > button").prop('disabled',false);
 
+    //clear projection combo box
+    var select = document.getElementsByClassName("framePickerTarget");
 
+    if (select)
+        select=select[0];
+    if (select){
+        var length = select.options.length;
+        for (i = 0; i < length; i++) {
+            select.remove(0);
+        }
+    }
 
     $('#instanceViewer').hide();
     $("#log").empty();
