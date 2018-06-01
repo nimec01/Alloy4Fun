@@ -4,6 +4,7 @@ import java.io.File;
 import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.json.Json;
@@ -24,6 +25,7 @@ import edu.mit.csail.sdg.alloy4viz.AlloyElement;
 import edu.mit.csail.sdg.alloy4viz.AlloyInstance;
 import edu.mit.csail.sdg.alloy4viz.AlloyProjection;
 import edu.mit.csail.sdg.alloy4viz.AlloyRelation;
+import edu.mit.csail.sdg.alloy4viz.AlloySet;
 import edu.mit.csail.sdg.alloy4viz.AlloyTuple;
 import edu.mit.csail.sdg.alloy4viz.AlloyType;
 import edu.mit.csail.sdg.alloy4viz.StaticInstanceReader;
@@ -91,6 +93,16 @@ public class ClientSession {
 						map.put(alloy_atom.getType(), alloy_atom);
 				}   
 			}
+
+			//subtitulo das relacoes com os atom projectados
+			/*for (AlloyAtom alloy_atom : myState.getOriginalInstance().getAllAtoms()) {
+				for(AlloyAtom map.values())
+						map.put(alloy_atom.getType(), alloy_atom);
+				   
+			}*/
+
+			
+			
 			
 			AlloyProjection currentProjection = new AlloyProjection(map);
 			AlloyInstance projected = StaticProjector.project(myInstance, currentProjection);
@@ -102,17 +114,36 @@ public class ClientSession {
 	}
 
 	private JsonObjectBuilder projectedInstance2JSON(AlloyInstance projected) {
-		JsonObjectBuilder projectionsJSON = Json.createObjectBuilder();
+		JsonObjectBuilder projectionsJSON = Json.createObjectBuilder();		
 
 		VizState vs = new VizState(projected);
 		vs.useOriginalName(true);
 
 		JsonArrayBuilder jsonAtomsBuilder = Json.createArrayBuilder();
-		for (AlloyAtom a : projected.getAllAtoms()) {
+		//20180601
+		JsonArrayBuilder jsonAtomsRelsBuilder = Json.createArrayBuilder(); 
+		for (AlloyAtom a : projected.getAllAtoms()) {			
 			jsonAtomsBuilder.add(a.getVizName(vs, true) );
+			
+			//20180601 relations to other atoms
+			JsonObjectBuilder atomRel = Json.createObjectBuilder();
+			atomRel.add("atom", a.getVizName(vs, true));
+			JsonArrayBuilder jsonAtomRelsBuilder = Json.createArrayBuilder();
+			List<AlloySet> sets = projected.atom2sets(a);
+			if (sets!=null) {
+				for(AlloySet set: sets) {
+					jsonAtomRelsBuilder.add(set.getName());
+				}				
+			}
+			atomRel.add("relations", jsonAtomRelsBuilder);
+			jsonAtomsRelsBuilder.add(atomRel);
+			//20180601
 		}
 			
 		projectionsJSON.add("atoms", jsonAtomsBuilder);
+		
+		 //20180601objeto com os atomos e as relacaoes
+		projectionsJSON.add("atom_rels", jsonAtomsRelsBuilder);
 		
 		JsonArrayBuilder jsonRelationsBuilder = Json.createArrayBuilder();
 		for (AlloyRelation r : projected.model.getRelations()) {
