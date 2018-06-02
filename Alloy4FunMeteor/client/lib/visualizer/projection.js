@@ -32,8 +32,28 @@ processProjection = function(err, projection){
 updateProjection = function(frame){
     cy.nodes().remove();
     allAtoms.forEach(function(node){
-        for(var i in frame.atoms){
-            if (node.data().id == frame.atoms[i])cy.add(node);
+        for(var i in frame.atoms) {
+            if (node.data().id == frame.atoms[i]) {
+                //para cada atom, vemos se temos relations no vetor atom_rels
+                //da projecao (frame)
+                for (var ar = 0; ar<frame.atom_rels.length;ar++){
+                    if (frame.atom_rels[ar].atom==node.data().id){
+                        //se o array subsetSigs nao tiver la criamos
+                        if (!node.data().subsetSigs){
+                            node.data().subsetSigs=[];
+                        }
+                        //este atom tem relations
+                        //acrescentam todas aos subsetSigs para que o modulo
+                        //do grafo as inclua abaixo do nome do atomo
+                        for (var r=0; r<frame.atom_rels[ar].relations.length;r++){
+                            node.data().subsetSigs.push(frame.atom_rels[ar].relations[r]);
+                        }
+                        break;
+                    }
+                }
+
+                cy.add(node);
+            }
         }
     });
     var edges = getProjectionEdges(frame.relations);
