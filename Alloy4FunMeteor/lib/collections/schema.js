@@ -5,24 +5,7 @@
 var Schema = {};
 
 //Models created through the editor feature.
-/*Schema.Model = new SimpleSchema({
-    //The id can be appended to the editor's URL to load that particular model into it.
-    _id: {
-        type: String,
-        optional: false
-    },
-    model: {
-        type: String,
-        optional: false
-    },
-    instance: {
-        type : Object,
-        optional : true
-    }
-});*/
-
-//Challenges created through the challenge creation page.
-Schema.Challenge = new SimpleSchema({
+Schema.Model = new SimpleSchema({
     _id: {
         type: String,
         optional: false
@@ -31,47 +14,13 @@ Schema.Challenge = new SimpleSchema({
         type: String,
         optional: false
     },
-    lockedLines: {
-        type : Array,
-        optional : true
-    },
-    "lockedLines.$" : {
-        type: Number
-    },
-    cut : {
-        type: String,
-        optional : false,
-        autoValue : function () {
-            return this.field("whole").value.replace(/\/\/START_SECRET(?:(?!\/\/END_SECRET)[^/])*\/\/END_SECRET/g, "").replace(/\/\/START_LOCK/g, "\n").replace(/\/\/END_LOCK/g, "\n");
-        }
-    },
-    challenges : {
-        type : Array,
-        optional : true
-    },
-    "challenges.$" : {
-        type : Object
-    },
-    "challenges.$.name" : {
-        type : String
-    },
-    "challenges.$.value" : {
-        type : String
-    },
-    "challenges.$.commandType" : {
-        type : String
-    },
-    password : {
-        type: String,
-        optional : true
-    },
     derivationOf : {
         type: String,
-        optional : false
+        optional : true
     },
-    public : {
-        type : Boolean,
-        optional : false
+    time : {
+        type : String,
+        optional : true
     }
 });
 
@@ -84,9 +33,18 @@ Schema.Run = new SimpleSchema({
         type: Boolean,
         optional: false
     },
+    // Atenção aqui fica o model_id != "model" : Alterar
     model : {
         type: String,
         optional : false
+    },
+    command : {
+        type: String,
+        optional: false
+    },
+    time : {
+        type : String,
+        optional : true
     }
 });
 
@@ -101,7 +59,7 @@ Schema.Theme = new SimpleSchema({
         optional: false
     },
 
-    //Node Colors 
+    //Node Colors
     nodeColors: {
         type : Array,
         optional : true
@@ -115,7 +73,7 @@ Schema.Theme = new SimpleSchema({
     "nodeColors.color":{
         type: String
     },
-    
+
     //Node Shapes
     nodeShapes: {
         type : Array,
@@ -167,7 +125,7 @@ Schema.Theme = new SimpleSchema({
         type: String
     },
 
-    
+
     //Edge Colors
     edgeColors: {
         type : Array,
@@ -203,28 +161,60 @@ Schema.Theme = new SimpleSchema({
         type: String,
         optional : false
     },
-    
+
     //Edge Colors
-    
+
 });
 
-/*Schema.Instance = new SimpleSchema({
+//TODO colocar aqui esquema correto, model_id não está a ser utilizado
+/*
+Schema.Instance = new SimpleSchema({
     _id: {
         type: String,
         optional: false
     },
-    run : {
+/*    model : {
+        type: String,
+        optional : false
+    },* /
+    run_id : {
         type: String,
         optional : false
     },
     graph : {
         type : Object,
-        optional : false
+        optional : false,
+        blackbox: true
+    },
+    theme : {
+        type : Object,
+        optional : false,
+        blackbox: true
     }
 })*/
 
-//Model.attachSchema(Schema.Model);
-Challenge.attachSchema(Schema.Challenge);
+
+
+/* Link merely links to Models. When a challenge is created two links are provided. One public and another private.
+* This corresponds to two Link instances (with different _ids obvs) but both have the same model_id as they both
+* point to same model. */
+Schema.Link = new SimpleSchema({
+   _id: {
+      type : String,
+      optional : false
+   },
+   private: {
+        type : Boolean,
+        optional : false
+  },
+    model_id:{
+        type : String,
+        optional : false
+    }
+});
+
+Model.attachSchema(Schema.Model);
 Run.attachSchema(Schema.Run);
 Theme.attachSchema(Schema.Theme);
+Link.attachSchema(Schema.Link);
 //Instance.attachSchema(Schema.Instance);

@@ -5,6 +5,7 @@
 import classie from 'classie';
 import 'qtip2/src/core.css';
 
+/*Each template has a local dictionary of helpers that are made available to it, and this call specifies helpers to add to the template’s dictionary.*/
 Template.alloyEditor.helpers({
     'drawInstance' : function (){
         var instanceNumber = Session.get("currentInstance");
@@ -31,33 +32,198 @@ Template.alloyEditor.helpers({
     'getType' : function (){
         var target = Session.get("targetNode");
         if (target) return target.label.split("$")[0];
-    }
-});
+    },
 
+});
 Template.alloyEditor.events({
     'click #exec': function (evt) {
-        if (evt.toElement.id != "exec") {
-            if (!$("#exec > button").is(":disabled")) {
-                var command = Session.get("commands").length > 1?$('.command-selection > select option:selected').text():Session.get("commands");
-                if (command.length == 0){
-                    $('#execbtn').qtip({
-                        show: {
-                            ready: true
-                        },
-                        content: 'There are no commands to execute.',
-                        hide: 'unfocus'
+        currentlyProjectedTypes = [];
+        currentFramePosition = {};
+        allAtoms = [];
+        atomPositions = {};
+        $(".frame-navigation").hide();
+        if (evt.toElement.id != "exec")
+
+          if (!$("#exec > button").is(":disabled")) {         /* if the button is available, check if there are commands to execute*/
+                var commandLabel = Session.get("commands").length > 1?$('.command-selection > select option:selected').text():Session.get("commands");
+                if (commandLabel.length == 0){
+                  swal({
+                      title: "",
+                      text: "There are no commands to execute",
+                      icon: "warning",
+                      buttons: true,
+                      dangerMode: true,
                     });
+<<<<<<< HEAD
                 }else {
                     console.log("test");
                     Meteor.call('getInstance', textEditor.getValue(), Meteor.default_connection._lastSessionId, 0,command, true, handleInterpretModelEvent);
                 }
                 $("#exec > button").prop('disabled', true);
+=======
+                }
+                else {       /* Execute command */
+
+                    /*//LOCKED insertion */
+                    var modelToShare = "";
+                    var i = 0, line, inLockBlock=false;
+                    var braces;
+                    var foundbraces=false;
+                    while(line = textEditor.lineInfo(i++)){
+                        if(line.gutterMarkers && line.gutterMarkers.breakpoints) {
+                            if (!inLockBlock) {
+                                modelToShare += "\n//LOCKED";
+                                inLockBlock = true;
+                                foundbraces = false;
+                                braces=0;
+                            }
+                            if (inLockBlock){
+                                for(c=0;c<line.text.length;c++) {
+                                    switch (line.text.charAt(c)) {
+                                        case '{':
+                                            braces++;
+                                            foundbraces = true;
+                                            break;
+                                        case '}':
+                                            braces--;
+                                            break;
+                                    }
+                                }
+                            }
+                        }else {
+                            inLockBlock = false;
+                            foundbraces = false;
+                        }
+                        modelToShare+="\n"+line.text;
+
+                        if (foundbraces && braces==0) {
+                            inLockBlock = false;
+                            modelToShare+="\n";
+                        }
+                    }
+                    modelToShare=stripLockedEmptyLines(modelToShare);
+
+                    var secrets = "";
+                    if(!(id = Router.current().params._id)){ id ="Original";}
+                    if((id!="Original") && Router.current().data().secrets) secrets = Router.current().data().secrets;
+                    Meteor.call('getInstance', (modelToShare/*textEditor.getValue()*/ + secrets), Meteor.default_connection._lastSessionId, 0,commandLabel, true,id, Session.get("last_id"),handleInterpretModelEvent);
+                }
+                $("#exec > button").prop('disabled', true);  /* available buttons */
+>>>>>>> 9d1c38c963c7d51a48a7106c5821b5a3bd846f98
                 $("#next > button").prop('disabled', false);
-            }
-        }
+          }
+
     },
     'change .command-selection > select' : function (){
         $("#exec > button").prop('disabled', false);
+    },
+    'click #genUrl': function (evt) {
+        if (evt.toElement.id != "genUrl"){
+            var themeData = {
+                atomSettings : atomSettings,
+                relationSettings: relationSettings,
+                generalSettings : generalSettings,
+                currentFramePosition : currentFramePosition,
+                currentlyProjectedTypes : currentlyProjectedTypes
+            };
+            if (!$("#genUrl > button").is(":disabled")){
+
+                /*//LOCKED insertion */
+                var modelToShare = "";
+                var i = 0, line, inLockBlock=false;
+                var braces;
+                var foundbraces=false;
+                while(line = textEditor.lineInfo(i++)){
+                    if(line.gutterMarkers && line.gutterMarkers.breakpoints) {
+                        if (!inLockBlock) {
+                            modelToShare += "\n//LOCKED";
+                            inLockBlock = true;
+                            foundbraces = false;
+                            braces=0;
+                        }
+                        if (inLockBlock){
+                            for(c=0;c<line.text.length;c++) {
+                                switch (line.text.charAt(c)) {
+                                    case '{':
+                                        braces++;
+                                        foundbraces = true;
+                                        break;
+                                    case '}':
+                                        braces--;
+                                        break;
+                                }
+                            }
+                        }
+                    }else {
+                        inLockBlock = false;
+                        foundbraces = false;
+                    }
+                    modelToShare+="\n"+line.text;
+                    if (foundbraces && braces==0) {
+                        inLockBlock = false;
+                        modelToShare+="\n";
+                    }
+
+                }
+                modelToShare=stripLockedEmptyLines(modelToShare);
+
+                if (id = Router.current().params._id){   /* if its loaded through an URL its a derivationOf model */
+                  //so acontece num link publico
+                  if((secrets = Router.current().data().secrets) && containsValidSecret(modelToShare)){
+                    swal({
+                            title: "This model contains information that cannot be shared!",
+                            text: "Are you sure you want to share it?",
+                            type: "warning",
+                            showCancelButton: true,
+                            confirmButtonColor: "#DD6B55",
+                            confirmButtonText: "Yes, share it!",
+                            closeOnConfirm: true
+                        },function(){
+                            Meteor.call('genURL', modelToShare,"Original",false,Session.get("last_id"), themeData, handleGenURLEvent);
+                          }
+                    );
+
+                  }else{
+                      if(secrets.length == 0) {
+                          //se tiver um ou mais valid secret com run check e assert anonimos, pergunta
+                          if (containsValidSecretWithAnonymousCommand(modelToShare)){
+                              swal({
+                                      title: "This model contains an anonymous Command!",
+                                      text: "Are you sure you want to share it?",
+                                      type: "warning",
+                                      showCancelButton: true,
+                                      confirmButtonColor: "#DD6B55",
+                                      confirmButtonText: "Yes, share it!",
+                                      closeOnConfirm: true
+                                  },function(){
+                                      Meteor.call('genURL', modelToShare, id, false, Session.get("last_id"), themeData, handleGenURLEvent);
+                                  }
+                              );
+                          }else
+                             Meteor.call('genURL', modelToShare, id, false, Session.get("last_id"), themeData, handleGenURLEvent);
+                      }else
+                          Meteor.call('genURL', modelToShare + secrets, id, true, Session.get("last_id"), themeData, handleGenURLEvent)
+                  }
+                }
+                else {   /* Otherwise its an original model*/
+                    if (containsValidSecretWithAnonymousCommand(modelToShare)){
+                        swal({
+                                title: "This model contains an anonymous Command!",
+                                text: "Are you sure you want to share it?",
+                                type: "warning",
+                                showCancelButton: true,
+                                confirmButtonColor: "#DD6B55",
+                                confirmButtonText: "Yes, share it!",
+                                closeOnConfirm: true
+                            },function(){
+                                Meteor.call('genURL', modelToShare,"Original",false,Session.get("last_id"),themeData, handleGenURLEvent);
+                            }
+                        );
+                    }else
+                        Meteor.call('genURL', modelToShare,"Original",false,Session.get("last_id"),themeData, handleGenURLEvent);
+                }
+            }
+          }
     },
     'click #prev': function (evt) {
         if (evt.toElement.id != "prev") {
@@ -69,7 +235,11 @@ Template.alloyEditor.events({
                         Session.set("currentInstance", currentInstance - 1);
                     } else {
                         var command = Session.get("commands").length > 1?$('.command-selection > select option:selected').text():Session.get("commands")[0];
-                        Meteor.call('getInstance', textEditor.getValue(), Meteor.default_connection._lastSessionId, currentInstance - 1, command, true, handlePreviousInstanceEvent);
+
+                        id = Router.current().params._id;
+                        if (!id) {id = "Original";}
+
+                        Meteor.call('getInstance', textEditor.getValue(), Meteor.default_connection._lastSessionId, currentInstance - 1, command, true,id,null, handlePreviousInstanceEvent);
                     }
                     $("#next > button").prop('disabled', false);
                 }
@@ -80,27 +250,20 @@ Template.alloyEditor.events({
         if (evt.toElement.id != "next") {
             if (!$("#next > button").is(":disabled")) {
                 var currentInstance = Session.get("currentInstance");
+
                 var instance = getCurrentInstance(currentInstance + 1);
+
                 if (instance) {
-                    Session.set("currentInstance", currentInstance + 1);
+                  Session.set("currentInstance", currentInstance + 1);
                 } else {
                     var command = Session.get("commands").length > 1?$('.command-selection > select option:selected').text():Session.get("commands")[0];
-                    Meteor.call('getInstance', textEditor.getValue(), Meteor.default_connection._lastSessionId, currentInstance + 1, command, false, handleNextInstanceEvent);
+
+                    id = Router.current().params._id;
+                    if (!id) {id = "Original";}
+                    Meteor.call('getInstance', textEditor.getValue(), Meteor.default_connection._lastSessionId, currentInstance + 1, command, false,id,null, handleNextInstanceEvent);
                 }
                 $("#prev > button").prop('disabled', false);
             }
-        }
-    },
-    'click #genUrl': function (evt) {
-        if (evt.toElement.id != "genUrl") {
-            var themeData = {
-                atomSettings : atomSettings,
-                relationSettings: relationSettings,
-                generalSettings : generalSettings,
-                currentFramePosition : currentFramePosition,
-                currentlyProjectedTypes : currentlyProjectedTypes
-            };
-            if (!$("#genUrl > button").is(":disabled"))Meteor.call('genURL', textEditor.getValue(), themeData,  handleGenURLEvent);
         }
     },
     'click #genInstanceUrl': function () {
@@ -113,10 +276,15 @@ Template.alloyEditor.events({
             metaPrimSigs : metaPrimSigs,
             metaSubsetSigs : metaSubsetSigs
         };
-        Meteor.call('storeInstance', textEditor.getValue(), themeData, cy.json(), handleGenInstanceURLEvent);
+
+        //obter o id do Run correspondente à instancia atual no browser
+        var runID = Session.get("instances")[0/*Session.get("currentInstance")*/].runID;
+
+        //Meteor.call('storeInstance', textEditor.getValue(), themeData, cy.json(), handleGenInstanceURLEvent);
+        Meteor.call('storeInstance', runID, themeData, cy.json(), handleGenInstanceURLEvent);
     }
 });
-
+/*Callbacks added with this method are called once when an instance of Template.alloyEditor is rendered into DOM nodes and put into the document for the first time.*/
 Template.alloyEditor.onRendered(function () {
     try{cy}catch(e){initGraphViewer("instance");}
     //Adds click effects to Buttons
@@ -125,10 +293,17 @@ Template.alloyEditor.onRendered(function () {
     hideButtons();
 
     //If there's subscribed data, process it.
-    if (Router.current().data && textEditor){
-        var themeData = Router.current().data().themeData;
+    var model;
+    if (Router.current().data)
+        model = Router.current().data();
+
+    if (model && textEditor){
+        var themeData;
+        if (model.instance)
+            themeData = model.instance.theme;
         //Place model on text editor
-        textEditor.setValue(Router.current().data().model)
+        var result = model.whole;
+        textEditor.setValue(result);
         //Load theme settings;
         if(themeData){
             atomSettings = themeData.atomSettings;
@@ -139,26 +314,24 @@ Template.alloyEditor.onRendered(function () {
             if(themeData.metaPrimSigs)metaPrimSigs = themeData.metaPrimSigs;
             if(themeData.metaSubsetSigs)metaSubsetSigs = themeData.metaSubsetSigs;
         }
-
         //Load graph JSON data in case of instance sharing.
-        if (Router.current().data().instance && cy){
+        if (model.instance && cy){
             $('#instanceViewer').show();
-            cy.add(Router.current().data().instance.elements);
+            //cy.add(Router.current().data().instance.elements);
+            cy.add(model.instance.graph.elements);
             updateElementSelectionContent();
         }
-    }
+  }
 
     //On tab/browser closure, terminate the user's session.
     $(window).bind("beforeunload", function (e) {
         //No longer necessary. Webservice automatically deletes session associated objects after a few hours idle.
     });
     try{cy}catch(e){initGraphViewer("instance");}
-
     //Right click menu styling
     $(".command-selection").hide();
     (function($){
         $(document).ready(function(){
-
             $('#cssmenu li.active').addClass('open').children('ul').show();
             $('#cssmenu li.has-sub>a').on('click', function(){
                 $(this).removeAttr('href');
@@ -181,10 +354,13 @@ Template.alloyEditor.onRendered(function () {
         });
     })(jQuery);
     $('#optionsMenu').hide();
-
-
+    if (Router.current().data().lockedLines)
+        lockLines(Router.current().data().lockedLines);
 });
 
+/*------------- Server HANDLERS methods && Aux Functions ----------- */
+
+/* nextbtn event handler after getInstance(textEditor.getValue) , currentInstance + 1 */
 function handleNextInstanceEvent(err, result){
     if(err){
         swal(err.reason, "", "error");
@@ -201,36 +377,34 @@ function handleNextInstanceEvent(err, result){
 
 }
 
-
-function handleGenInstanceURLEvent(err, result){
-    if (!err) {
-        // if the URL was generated successfully, create and append a new element to the HTML containing it.
-        var url = document.createElement('div');
-        url.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
-        var anchor = document.createElement('a');
-        anchor.href = "/editor/" +  result;
-        anchor.className= "urlinfo";
-        anchor.innerHTML =  window.location.origin +"/editor/" +  result;
-        url.appendChild(anchor);
-
-        var clipboard = document.createElement('div');
-        clipboard.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
-        clipboard.innerHTML = "<button class='clipboardbutton cbutton cbutton--effect-boris'><img src='/images/icons/clipboard.png' /><i class='legend'>copy to clipboard</i></button></div>";
-
-        var textcenter = document.createElement('div');
-        textcenter.className = "text-center";
-        textcenter.id = "permalink";
-        textcenter.appendChild(url);
-        textcenter.appendChild(clipboard);
-
-        document.getElementById('url-instance-permalink').appendChild(textcenter);
-        $("#genInstanceUrl > button").prop('disabled', true);
-        zeroclipboard();
-    }
-}
-
+/* Execbtn event handler
+      result: getInstance(textEditor.getValue,..)*/
 function handleInterpretModelEvent(err, result) {
+    $.unblockUI();
     $('#exec > button').prop('disabled', true);
+
+    // Restart shareModel option
+    var permalink = document.getElementById("permalink");
+    if(permalink)
+        permalink.remove();
+    $("#genUrl > button").prop('disabled',false);
+
+    //clear projection combo box
+    var select = document.getElementsByClassName("framePickerTarget");
+
+    if (select)
+        select=select[0];
+    if (select){
+        var length = select.options.length;
+        for (i = 0; i < length; i++) {
+            select.remove(0);
+        }
+    }
+
+    $('#instanceViewer').hide();
+    $("#log").empty();
+    var command = $('.command-selection > select option:selected').text();
+
     if (err) {
         if(err.error == 502){
             swal("Syntax Error!", "", "error");
@@ -246,17 +420,110 @@ function handleInterpretModelEvent(err, result) {
         }
     }
     else {
-        if(result.unsat){
-            $('.empty-univ').fadeIn();
-            $('#instanceViewer').hide();
-            $("#genInstanceUrl").hide();
-        } else {
-            updateInstances(result);
-            Session.set("currentInstance",0);
+      if(result.commandType && result.commandType == "check") {
+          /* if the commandType == check */
+
+          var log = document.createElement('div');
+          log.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
+          var paragraph = document.createElement('p');
+
+
+          if (result.unsat) {
+
+              $('#instancenav').hide();
+
+              paragraph.innerHTML = "No counter-examples. " + command + " solved!";
+              paragraph.className = "log-complete";
+
+
+          } else {
+
+              paragraph.innerHTML = "Invalid solution, checking " + command + " revealed a counter-example.";
+              paragraph.className = "log-wrong";
+              updateGraph(result);
+
+          }
+
+          log.appendChild(paragraph);
+          /* div with id=log will appendChild(log)*/
+          $("#log")[0].appendChild(log);
+      }
+
+          /* if the commandType != check */
+          if(result.unsat){
+              $('.empty-univ').fadeIn();
+              $('#instanceViewer').hide();
+              $("#genInstanceUrl").hide();
+          } else {
+              updateInstances(result);
+              Session.set("currentInstance",0);
+            }
+
+          if(result.last_id) { Session.set("last_id",result.last_id);   }
+}}
+
+/* genUrlbtn event handler after genUrl method */
+function handleGenURLEvent(err, result) {
+    if (!err) {
+
+        // if the URL was generated successfully, create and append a new element to the HTML containing it.
+        var url = document.createElement('div');
+        url.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
+        var anchor = document.createElement('a');
+        anchor.href = "/" + result['public'];
+        anchor.className = "urlinfo";
+        anchor.innerHTML = window.location.origin + "/" + result['public'];
+        url.appendChild(anchor);
+
+
+        var urlPrivate = "";
+        if (result['private'] !== undefined) {
+            urlPrivate = document.createElement('div');
+            urlPrivate.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
+            var anchor = document.createElement('a');
+            anchor.href = "/" + result['private'];
+            anchor.className = "urlinfo";
+            anchor.innerHTML = window.location.origin + "/" + result['private'];
+            urlPrivate.appendChild(anchor);
         }
+
+        var clipboard = document.createElement('div');
+        clipboard.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
+        clipboard.innerHTML = "<button class='clipboardbutton cbutton cbutton--effect-boris'><img src='/images/icons/clipboard.png' /><i class='legend'>copy to clipboard</i></button></div>";
+
+        var textcenter = document.createElement('div');
+        textcenter.className = "text-center";
+        textcenter.id = "permalink";
+
+        if (result['private']!==undefined) {
+            var paragraph = document.createElement('p');
+
+            var text = document.createTextNode("Public Link:  ");
+            paragraph.appendChild(text);
+            paragraph.appendChild(url);
+
+            textcenter.appendChild(paragraph);
+            paragraph = document.createElement('p');
+
+            text = document.createTextNode("Private Link:  ");
+            paragraph.appendChild(text);
+            paragraph.appendChild(urlPrivate);
+            textcenter.appendChild(paragraph);
+        }else{
+            textcenter.appendChild(url);
+        }
+
+        textcenter.appendChild(clipboard);
+
+        document.getElementById('url-permalink').appendChild(textcenter);
+        $("#genUrl > button").prop('disabled', true);
+        zeroclipboard();
+
+        if(result.last_id){ Session.set("last_id",result.last_id);}
     }
 }
 
+/* prevbtn event handler after getInstance(textEditor.getValue) , currentInstance - 1 */
 function handlePreviousInstanceEvent(err, result){
     if(err){
         swal(err.reason, "", "error");
@@ -267,6 +534,37 @@ function handlePreviousInstanceEvent(err, result){
     }
 }
 
+/* geninstanceurlbtn event handler after storeInstance method */
+function handleGenInstanceURLEvent(err, result){
+    if (!err) {
+        // if the URL was generated successfully, create and append a new element to the HTML containing it.
+        var url = document.createElement('div');
+        url.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
+        var anchor = document.createElement('a');
+        anchor.href = "/" +  result;
+        anchor.target = "_";
+        anchor.className= "urlinfo";
+        anchor.innerHTML =  window.location.origin +"/" +  result;
+        url.appendChild(anchor);
+
+        var clipboard = document.createElement('div');
+        clipboard.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
+        clipboard.innerHTML = "<button class='clipboardbutton cbutton cbutton--effect-boris'><img src='/images/icons/clipboard.png' /><i class='legend'>copy to clipboard</i></button></div>";
+
+
+        var textcenter = document.createElement('div');
+        textcenter.className = "text-center";
+        textcenter.id = "instance_permalink";
+        textcenter.appendChild(url);
+        textcenter.appendChild(clipboard);
+
+        document.getElementById('url-instance-permalink').appendChild(textcenter);
+        $("#genInstanceUrl > button").prop('disabled', true);
+        zeroclipboard();
+    }
+}
+
+/* Functions used to update session instances*/
 updateInstances = function(instance){
     if(!Session.get("instances")){
         var instances = [instance];
@@ -278,34 +576,22 @@ updateInstances = function(instance){
         Session.set("instances",instances);
         Session.set("currentInstance",Session.get("currentInstance"));
     }
+
+
 }
+getCurrentInstance = function (instanceNumber){
+    var instances = Session.get("instances");
+    var result = undefined;
+    instances.forEach(function(inst){
+        if (inst.number==instanceNumber){
+            result=inst;
+            return;
+        }
+    });
+    return result;
+};
 
-function handleGenURLEvent(err, result) {
-    if (!err) {
-        // if the URL was generated successfully, create and append a new element to the HTML containing it.
-        var url = document.createElement('div');
-        url.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
-        var anchor = document.createElement('a');
-        anchor.href = "/editor/" +  result;
-        anchor.className= "urlinfo";
-        anchor.innerHTML =  window.location.origin +"/editor/" +  result;
-        url.appendChild(anchor);
-
-        var clipboard = document.createElement('div');
-        clipboard.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
-        clipboard.innerHTML = "<button class='clipboardbutton cbutton cbutton--effect-boris'><img src='/images/icons/clipboard.png' /><i class='legend'>copy to clipboard</i></button></div>";
-
-        var textcenter = document.createElement('div');
-        textcenter.className = "text-center";
-        textcenter.id = "permalink";
-        textcenter.appendChild(url);
-        textcenter.appendChild(clipboard);
-
-        document.getElementById('url-permalink').appendChild(textcenter);
-        $("#genUrl > button").prop('disabled', true);
-        zeroclipboard();
-    }
-}
+/*onRendered aux functions*/
 function buttonsEffects() {
 
     function mobilecheck() {
@@ -352,15 +638,12 @@ function buttonsEffects() {
         });
     });
 }
-
 function hideButtons() {
     $('#exec > button').prop('disabled', true);
     $('#next > button').prop('disabled', true);
     $('#prev > button').prop('disabled', true);
     $('.permalink > button').prop('disabled', true);
 }
-
-//Setup clipboard to copy the model's URL
 function zeroclipboard() {
     var client = new ZeroClipboard($(".clipboardbutton"));
     client.on("copy", function (event) {
@@ -368,18 +651,114 @@ function zeroclipboard() {
         clipboard.setData("text/plain", $(".urlinfo").html());
     });
 };
-
-
-getCurrentInstance = function (instanceNumber){
-    var instances = Session.get("instances");
-    var result = undefined;
-    instances.forEach(function(inst){
-        if (inst.number==instanceNumber){
-            result=inst;
-            return;
-        }
+function lockLines(lockedLines){
+    lockedLines.forEach(function(n){
+        var info = textEditor.lineInfo(n);
+        textEditor.setGutterMarker(n-1, "breakpoints", info.gutterMarkers ? null : makeMarker());
+        textEditor.markText({line : n-1, ch: 0},{line: n , ch : 0}, { className: "challenge-lock", readOnly: true, inclusiveLeft: true, clearWhenEmpty:false});
     });
-    return result;
-};
+}
 
+/*Parse Challenges aux functions*/
+function cleanSpecialCommands(str){
+  var resultado = str.replace(/(\/\/START\_SECRET)|(\/\/END\_SECRET)/g,"") ;
+  return (resultado);
 
+}
+function checkSecretBlocks(){
+    var challenge= textEditor.getValue();
+
+    var secretsStart = getIndexesOf(/\/\/START_SECRET/gi, challenge);
+    var secretsEnd = getIndexesOf(/\/\/END_SECRET/gi, challenge);
+
+    if(secretsStart.length != secretsEnd.length){
+        throw {number : 1, message : "Different number of SECRET open and closing tags! (//START_SECRET .. //END_SECRET)"};
+    }
+
+    while(secretsStart.length>0){
+        var secretStart = secretsStart.shift();
+        var secretEnd = secretsEnd.shift();
+        if(secretStart > secretEnd) {
+            throw {number : 2,lineNumber : textEditor.posFromIndex(secretEnd).line+1, message : "END tag before any START ! (//START_SECRET .. //END_SECRET)"};
+        }
+      }
+  }
+function stripLockedEmptyLines(model){
+      var lines = model.split(/\r?\n/);
+      var inEmptyBlock=false;
+      var result="";
+      var l=0;
+      while (l<lines.length) {
+          if (lines[l].trim()=="//LOCKED") {
+              inEmptyBlock = true;
+              result+=lines[l]+"\n";
+          }else if (!inEmptyBlock || !lines[l].trim().length==0) {
+              result += lines[l] + "\n";
+              //found line with contents
+              inEmptyBlock=false;
+          }
+
+          l++;
+      }
+      return result;
+  }
+
+  /*
+    Check if the model contains some valid 'secret'
+  */
+ function containsValidSecret(model){
+
+      var i,j,lastSecret = 0;
+      var paragraph = "";
+      while( (i = model.indexOf("//SECRET\n",lastSecret)) >= 0){
+        for(var z = i+("//SECRET\n".length) ; (z<model.length && model[z]!='{'); z++){
+            paragraph = paragraph + model[z];
+        }
+        if(!isParagraph(paragraph)) {paragraph = ""; lastSecret = i + 1 ; continue;}
+        if( findClosingBracketMatchIndex(model, z) != -1) {return true;}
+        lastSecret = i + 1 ;
+      }
+      return false;
+    }
+
+    function containsValidSecretWithAnonymousCommand(model){
+        var lastSecret=0;
+        while( (i = model.indexOf("//SECRET\n",lastSecret)) >= 0){
+            var s = model.substr(i+"//SECRET\n".length).trim();
+            //se o resto do texto comecar com a expressao abaixo entao contem
+            //um comando anonimo
+            if (s.match("^(assert|run|check)([ \t\n])*[{]")) {
+                return true;
+            }
+
+            lastSecret = i + 1 ;
+        }
+        return false;
+    }
+
+ function isParagraph(word){
+        var pattern_named = /^((one sig |sig |pred |fun |abstract sig )(\ )*[A-Za-z0-9]+)/;
+        var pattern_nnamed = /^((fact|assert|run|check)(\ )*[A-Za-z0-9]*)/;
+        if(word.match(pattern_named) == null && word.match(pattern_nnamed) == null) return false ;
+        else return true;
+    }
+
+ function findClosingBracketMatchIndex(str, pos) {
+        if (str[pos] != '{') {
+            throw new Error("No '{' at index " + pos);
+        }
+        var depth = 1;
+        for (var i = pos + 1; i < str.length; i++) {
+            switch (str[i]) {
+                case '{':
+                    depth++;
+                    break;
+                case '}':
+                    if (--depth == 0) {
+                        return i;
+                    }
+                    break;
+            }
+        }
+        return -1;    // No matching closing parenthesis
+    }

@@ -15,7 +15,8 @@ updateGraph = function(instance){
     var atomElements = getAtoms(instance)
     cy.add(atomElements);
     cy.add(getEdges(instance));
-    if(atomElements.length==0)$(".empty-universe").show();
+    if(atomElements.length==0)
+        $(".empty-universe").show();
     else {
         $(".empty-universe").hide();
     }
@@ -279,6 +280,7 @@ initGraphViewer = function(element) {
                             return ele.data().label+"["+auxLabelExt+"]";
                         }
                     },
+                    'curve-style': 'bezier',
                     'text-valign': 'center',
                     'text-outline-color': '#ff3300',
                     'edge-text-rotation': 'autorotate',
