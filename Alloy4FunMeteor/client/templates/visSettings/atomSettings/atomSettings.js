@@ -192,7 +192,7 @@ Template.atomSettings.events({
     "change #projectOverSig" : function(event){
         var selectedType = Session.get("selectedType");
         try{
-            if($(event.target).is(':checked'))addTypeToProjection(selectedType);
+            if(event.currentTarget.checked)addTypeToProjection(selectedType);
             else removeTypeFromProjection(selectedType);
         }catch(err){
             console.log(err);

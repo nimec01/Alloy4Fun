@@ -1,6 +1,9 @@
 /**
  * Created by josep on 09/02/2016.
+  -- Possivel código inutilizado
  */
+
+
 
 Template.instanceViewer.helpers({
 
@@ -26,7 +29,3 @@ Template.instanceViewer.events({
 Template.instanceViewer.onRendered(function () {
 
 });
-
-
-
-

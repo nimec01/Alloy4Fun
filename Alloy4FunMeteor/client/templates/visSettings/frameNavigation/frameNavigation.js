@@ -25,13 +25,15 @@ Template.frameNavigation.events({
             $("#previousFrame.enabled").removeClass("enabled");
         }
         $("#nextFrame").addClass("enabled");
-        $(".frame-position").html(currentFramePositionToString());
+        $(".current-frame").html(currentFramePositionToString());
         savePositions();
         project();
     },
     'change .framePickerTarget' : function(event){
         var selectedType = event.target.value;
+        console.log( "currentFramePosition: " + currentFramePosition)
         var currentAtom = currentFramePosition[selectedType];
+        console.log("currentAtom: " +currentAtom)
         $("#nextFrame").addClass("enabled");
         $("#previousFrame").addClass("enabled");
         if(currentAtom == lastFrame(selectedType))$("#nextFrame").removeClass("enabled");
@@ -44,5 +46,6 @@ Template.frameNavigation.onRendered(function(){
 });
 
 lastFrame = function(type){
+    console.log(allAtoms.nodes("[type='"+type+"']").length-1)
   return allAtoms.nodes("[type='"+type+"']").length-1;
 };

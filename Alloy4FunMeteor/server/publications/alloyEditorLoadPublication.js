@@ -2,7 +2,36 @@
  * Created by josep on 10/02/2016.
  */
 
-Meteor.publish('editorLoad', function (_id) {
+
+//publish and subscribe method is used so that clients can only access specific data from the database
+//to access is necessary to "subscribe"
+
+
+Meteor.publish('editorLoad', function (/*_id*/) {//sem parametro para se conseguir aceder
+
+    var selector = {
+        //_id: _id
+    };
+
+    var options = {
+        fields : {
+            _id: 1,
+            whole: 1,
+            derivationOf: 1
+        }
+    }
+
+    //empty selector access all Models (required to get the specific Model with the ModelId)
+    var result = Model.find(selector, options);
+    //var result = Model.find(selector, options);
+
+    if (result) {
+        return result;
+    }
+    return this.ready();
+});
+
+Meteor.publish('instanceLoad', function (_id) {
 
     var selector = {
         _id: _id
@@ -10,14 +39,36 @@ Meteor.publish('editorLoad', function (_id) {
 
     var options = {
         fields : {
+            run_id: 1,
+            graph : 1,
+            theme : 1
+        }
+    }
+
+
+    var result = Instance.find(selector, options);
+
+    if (result) {
+        return result;
+    }
+    return this.ready();
+});
+
+Meteor.publish('runLoad', function () {
+
+    var selector = {
+        //_id: _id
+    };
+
+    var options = {
+        fields : {
             model: 1,
-            instance : 1,
-            themeData : 1
+            command : 1
         }
     }
 
 
-    var result = Model.find(selector, options);
+    var result = Run.find(selector, options);
 
     if (result) {
         return result;
@@ -25,44 +76,26 @@ Meteor.publish('editorLoad', function (_id) {
     return this.ready();
 });
 
-Meteor.publish('challenge', function (_id) {
+Meteor.publish('links', function (_id) {
+
+    //ID do challenge
+    // Selector: {_id : XXXXXX}
     var selector = {
         _id : _id
     };
 
     var options = {
         fields: {
-            cut: 1,
-            "challenges.name" : 1,
-            solution: 1,
-            lockedLines: 1
+            model_id: 1,
+            private: 1
         }
     };
 
-    var result = Challenge.find(selector, options);
+    //puts query return in result variable and is captured in "editLoadController.js"
+    var result = Link.find(selector, options);
 
     if (result) {
         return result;
     }
-    return this.ready();
-});
-
-Meteor.publish('editChallenge', function (_id, password){
-    var selector = {
-        _id : _id
-    };
-
-    var options = {
-        fields: {
-            whole : 1,
-            password : 1,
-            lockedLines : 1
-        }
-    };
-
-    var result = Challenge.find(selector, options);
-    if(password == result.fetch()[0].password) {
-        return result;
-    }else throw new Meteor.Error(505, "Wrong password");
     return this.ready();
 });
