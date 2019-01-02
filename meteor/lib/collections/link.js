@@ -4,9 +4,9 @@
  * This corresponds to two Link instances (with different _ids) 
  * but both have the same model_id as they both point to same model. 
  */
-Link = new Meteor.Collection('Link');
+_Link = new Meteor.Collection('Link');
 
-Link.attachSchema(new SimpleSchema({
+_Link.attachSchema(new SimpleSchema({
     _id: {
         type: String,
         optional: false
@@ -20,3 +20,5 @@ Link.attachSchema(new SimpleSchema({
         optional: false
     }
 }))
+
+export let Link = _Link;

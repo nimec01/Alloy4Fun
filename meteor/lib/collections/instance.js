@@ -2,11 +2,11 @@
  * An instance was generated from a command with ref to the model
  */
 
-Instance = new Meteor.Collection('Instance');
+_Instance = new Meteor.Collection('Instance');
 
 //TODO: colocar aqui esquema correto, model_id não está a ser utilizado
 
-/*Instance.attachSchema(new SimpleSchema({
+/*_Instance.attachSchema(new SimpleSchema({
     _id: {
         type: String,
         optional: false
@@ -30,3 +30,5 @@ Instance = new Meteor.Collection('Instance');
         blackbox: true
     }
 }))*/
+
+export let Instance = _Instance;
