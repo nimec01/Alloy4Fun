@@ -1,6 +1,8 @@
 import CodeMirror from 'codemirror';
 import * as simpleMode from 'codemirror/addon/mode/simple';
-export {defineAlloyMode};
+export {
+    defineAlloyMode
+};
 
 function defineAlloyMode() {
     //Defines syntax highlighting rules, allowing Code Mirror to support new languages, like Alloy.
@@ -24,6 +26,9 @@ function defineAlloyMode() {
             token: "atom",
             //Rule that only applies if the match is at the start of some line(workaround).
             sol: true
+        }, {
+            regex: /\/\/SECRET.*/,
+            token: "secret"
         }, {
             regex: /\/\*/,
             token: "comment",
@@ -51,19 +56,18 @@ function defineAlloyMode() {
         }, {
             regex: /[})]/,
             dedent: true
-        }
-        ],
+        }],
         //Modes allow applying a different set of rules to different contexts.
         comment: [{
-            //When the comment block end tag is found...
-            regex: /.*?\*\//,
-            token: "comment",
-            //...go back to start mode.
-            next: "start"
-        }, {
-            regex: /.*/,
-            token: "comment"
-        }
+                //When the comment block end tag is found...
+                regex: /.*?\*\//,
+                token: "comment",
+                //...go back to start mode.
+                next: "start"
+            }, {
+                regex: /.*/,
+                token: "comment"
+            }
 
         ],
         //Simple Mode additional settings, check documentation for more information.
