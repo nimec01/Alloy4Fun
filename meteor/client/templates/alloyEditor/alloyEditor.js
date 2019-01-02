@@ -90,7 +90,6 @@ Template.alloyEditor.events({
                             modelToShare += "\n";
                         }
                     }
-                    modelToShare = stripLockedEmptyLines(modelToShare);
 
                     var secrets = "";
                     if (!(id = Router.current().params._id)) {
@@ -157,7 +156,6 @@ Template.alloyEditor.events({
                     }
 
                 }
-                modelToShare = stripLockedEmptyLines(modelToShare);
 
                 if (id = Router.current().params._id) { /* if its loaded through an URL its a derivationOf model */
                     //so acontece num link publico
@@ -672,25 +670,6 @@ function zeroclipboard() {
     });
 };
 
-function stripLockedEmptyLines(model) {
-    var lines = model.split(/\r?\n/);
-    var inEmptyBlock = false;
-    var result = "";
-    var l = 0;
-    while (l < lines.length) {
-        if (lines[l].trim() == "//LOCKED") {
-            inEmptyBlock = true;
-            result += lines[l] + "\n";
-        } else if (!inEmptyBlock || !lines[l].trim().length == 0) {
-            result += lines[l] + "\n";
-            //found line with contents
-            inEmptyBlock = false;
-        }
-
-        l++;
-    }
-    return result;
-}
 
 /*
   Check if the model contains some valid 'secret'
