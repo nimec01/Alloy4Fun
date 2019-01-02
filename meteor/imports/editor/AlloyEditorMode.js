@@ -1,3 +1,9 @@
+/**
+ * This file specifies the syntax highlighting rules for the codemirror editor
+ * each rule is composed by regex and token, which allows for css rules on the tokens
+ * such as .cm.comment {...} and also to refer to those tokens after parsing the syntax
+ */
+
 import CodeMirror from 'codemirror';
 import * as simpleMode from 'codemirror/addon/mode/simple';
 export {
@@ -5,7 +11,6 @@ export {
 };
 
 function defineAlloyMode() {
-    //Defines syntax highlighting rules, allowing Code Mirror to support new languages, like Alloy.
     CodeMirror.defineSimpleMode("alloy", {
         start: [{
             regex: /(\W)(abstract|fun|all|iff|check|but|else|assert|extends|set|fact|implies|module|open|sig|and|disj|for|in|no|or|as|Int|pred|sum|exactly|iden|let|not|run|univ)(?:\b)/,
@@ -27,8 +32,9 @@ function defineAlloyMode() {
             //Rule that only applies if the match is at the start of some line(workaround).
             sol: true
         }, {
-            regex: /\/\/SECRET.*/,
-            token: "secret"
+            regex: /^\/\/SECRET$/mg,
+            token: "secret",
+            sol: true
         }, {
             regex: /\/\*/,
             token: "comment",
@@ -45,7 +51,6 @@ function defineAlloyMode() {
             regex: /(\s+|\||{|})[0-9]+](?:\b)/,
             token: [null, "number"]
         }, {
-            //For some reason " ^ " doesn't work as supposed (line start). A workaround was necessary to correctly identify numbers on the beginning of the line.
             regex: /(\s+|\||{|})[0-9]+](?:\b)/,
             token: "number",
             //Rule that only applies if the match is at the start of some line(workaround).
