@@ -1,6 +1,5 @@
 import CodeMirror from 'codemirror';
 import {defineAlloyMode} from '/imports/editor/AlloyEditorMode';
-import {defineAlloyChallengeMode} from '/imports/editor/AlloyChallengeMode';
 import 'codemirror/theme/twilight.css';
 import 'codemirror/lib/codemirror.css';
 import 'qtip2';
