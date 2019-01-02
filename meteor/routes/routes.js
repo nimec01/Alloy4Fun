@@ -1,4 +1,9 @@
-/*Default page behaviours*/
+/**
+ * Defines the routes for the application
+ */
+
+
+// global route settings
 Router.configure({
     //Template displayed while loading data.
     loadingTemplate: 'loading',
@@ -6,12 +11,14 @@ Router.configure({
     notFoundTemplate: 'notFound'
 });
 
+// route settings for default endpoint "/"
 Router.route('/', {
     name: 'editor',
     template: 'alloyEditor',
     where: 'client'
 });
 
+// route settings for endpoint with model id "/:_id"
 Router.route('/:_id', {
     name: 'editorLoad',
     template: 'alloyEditor',
