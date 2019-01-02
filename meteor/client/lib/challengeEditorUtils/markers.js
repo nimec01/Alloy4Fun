@@ -1,15 +1,3 @@
-//20180406 switched challengeEditor to textEditor
-//Places lock markers
-setLockedLines = function(lockedLines){
-    if(lockedLines)
-        lockedLines.forEach(function(n){
-            //var info = challengeEditor.lineInfo(n);
-            var info = textEditor.lineInfo(n);
-            //var info = challengeEditor.lineInfo(n);
-            textEditor.setGutterMarker(n-1, "breakpoints", info.gutterMarkers ? null : makeMarker());
-        });
-};
-
 // Returns a list containing indexes of string which match the regex.
 getIndexesOf = function(regex, string){
     var result = [];
@@ -17,20 +5,6 @@ getIndexesOf = function(regex, string){
     while (match = regex.exec(string))
         result.push(match.index);
     return result;
-};
-
-//Returns lines marked with a lock
-getLockedMarkers = function(){
-   var lockedLines = [];
-
-  /*
-    var i = 0, line;
-    var lockedLines = [];
-    while(line = challengeEditor.lineInfo(i++)){
-        if(line.gutterMarkers && line.gutterMarkers.breakpoints)lockedLines.push(i);
-    }
-  */
-    return lockedLines;
 };
 
 // Highlights blocks of code given the start and finishing indexes and a css class name.
