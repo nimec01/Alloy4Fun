@@ -2,6 +2,7 @@
  * This file specifies the syntax highlighting rules for the codemirror editor
  * each rule is composed by regex and token, which allows for css rules on the tokens
  * such as .cm.comment {...} and also to refer to those tokens after parsing the syntax
+ * Additionaly "sol: true" attribute means that the match should happen only at line start
  */
 
 import CodeMirror from 'codemirror';
@@ -14,22 +15,17 @@ function defineAlloyMode() {
     CodeMirror.defineSimpleMode("alloy", {
         start: [{
             regex: /(\W)(abstract|fun|all|iff|check|but|else|assert|extends|set|fact|implies|module|open|sig|and|disj|for|in|no|or|as|Int|pred|sum|exactly|iden|let|not|run|univ)(?:\b)/,
-            //Token value refers to regex captured matching groups.
             token: [null, "keyword"]
         }, {
-            //For some reason " ^ " doesn't work as supposed (line start). A workaround was necessary to correctly identify keywords on the beginning of the line.
             regex: /(abstract|fun|all|iff|check|but|else|assert|extends|set|fact|implies|module|open|sig|and|disj|for|in|no|or|as|Int|pred|sum|exactly|iden|let|not|run|univ)(?:\b)/,
             token: "keyword",
-            //Rule that only applies if the match is at the start of some line(workaround).
             sol: true
         }, {
             regex: /(\W)(one|lone|none|some)(?:\b)/,
             token: [null, "atom"]
         }, {
-            //For some reason " ^ " doesn't work as supposed (line start). A workaround was necessary to correctly identify atoms on the beginning of the line.
             regex: /(one|lone|none|some)(?:\b)/,
             token: "atom",
-            //Rule that only applies if the match is at the start of some line(workaround).
             sol: true
         }, {
             regex: /^\/\/SECRET$/mg,
@@ -38,8 +34,7 @@ function defineAlloyMode() {
         }, {
             regex: /\/\*/,
             token: "comment",
-            //Jump to comment mode.
-            next: "comment"
+            next: "comment" //Jump to comment mode.
         }, {
             regex: /(\+\+ )|=>|=<|->|>=|\|\||<:|:>/,
             token: "operator"
@@ -67,8 +62,7 @@ function defineAlloyMode() {
                 //When the comment block end tag is found...
                 regex: /.*?\*\//,
                 token: "comment",
-                //...go back to start mode.
-                next: "start"
+                next: "start" //...go back to start mode.
             }, {
                 regex: /.*/,
                 token: "comment"
