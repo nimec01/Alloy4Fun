@@ -29,7 +29,7 @@ var options = {
   Initialization of the code editor and associated buttons.
 */
 function initializeAlloyEditor(htmlElement){
-    defineAlloyMode();
+    defineAlloyMode(); //specify syntax highlighting
 
     var editor = initializeEditor(htmlElement, "alloy");
     //Text change event for the editor on alloy4fun/editor page
@@ -71,8 +71,6 @@ function initializeAlloyEditor(htmlElement){
                 $('.empty-univ').hide();
                 $('.permalink > button').prop('disabled', false);
             }
-            //marcar o //LOCKED e //SECRET
-            highlightLocksAndSecretsStartLine();
         }
         Session.set("currentInstance",undefined);
         Session.set("instances",undefined);

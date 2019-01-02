@@ -355,28 +355,6 @@ body {
     background-color: rgba(113, 29, 30, 0.31);
 }
 
-.challenge-lock {
-    background-color: rgba(191, 57, 60, 0.2);
-}
-
-.lock-block {
-    background-color: #ca7841;
-}
-
-.lock-header {
-    color: rgba(191, 57, 60, 0.8) !important;
-}
-
-
-.lock-gutter {
-    color: rgba(191, 57, 60, 0.2);
-}
-
-.lock-resize {
-    position: relative;
-    right: 5px;
-}
-
 .margin-top10px {
     margin-top: 10px;
 }
@@ -401,17 +379,6 @@ body {
 
 .missing-field:-ms-input-placeholder {
     /* IE 10+ */
-    color: #dd4632;
-}
-
-.lock-password {
-    color: #565D58;
-    font-size: 20px;
-    position: relative;
-    top: 5px;
-}
-
-.lock-password.wrong {
     color: #dd4632;
 }
 

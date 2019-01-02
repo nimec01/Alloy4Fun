@@ -277,12 +277,12 @@ Template.alloyEditor.events({
     },
     'click #validateModel': function() { // click on the validate button
         Meteor.call('validate', textEditor.getValue(), (err, res) => {
-            if(err)console.error("Unable to connect to server")
-            else{
+            if (err) console.error("Unable to connect to server")
+            else {
                 res = JSON.parse(res);
-                if(!res.success){
+                if (!res.success) {
                     addErrorMarkerToGutter(res.errorMessage, res.errorLocation.line)
-                }else{ // success
+                } else { // success
                     swal({
                         title: "The Model is Valid!",
                         text: "You're doing great!",
@@ -370,8 +370,6 @@ Template.alloyEditor.onRendered(function() {
         });
     })(jQuery);
     $('#optionsMenu').hide();
-    if (Router.current().data().lockedLines) // TODO: this only works on /{id} not /
-        lockLines(Router.current().data().lockedLines);
 });
 
 /*------------- Server HANDLERS methods && Aux Functions ----------- */
@@ -673,60 +671,6 @@ function zeroclipboard() {
         clipboard.setData("text/plain", $(".urlinfo").html());
     });
 };
-
-
-// TODO Remove this because it's not to be used any longer
-function lockLines(lockedLines) {
-    lockedLines.forEach(function(n) {
-        var info = textEditor.lineInfo(n);
-        textEditor.setGutterMarker(n - 1, "breakpoints", info.gutterMarkers ? null : makeMarker());
-        textEditor.markText({
-            line: n - 1,
-            ch: 0
-        }, {
-            line: n,
-            ch: 0
-        }, {
-            className: "challenge-lock",
-            readOnly: true,
-            inclusiveLeft: true,
-            clearWhenEmpty: false
-        });
-    });
-}
-
-/*Parse Challenges aux functions*/
-function cleanSpecialCommands(str) {
-    var resultado = str.replace(/(\/\/START\_SECRET)|(\/\/END\_SECRET)/g, "");
-    return (resultado);
-
-}
-
-function checkSecretBlocks() {
-    var challenge = textEditor.getValue();
-
-    var secretsStart = getIndexesOf(/\/\/START_SECRET/gi, challenge);
-    var secretsEnd = getIndexesOf(/\/\/END_SECRET/gi, challenge);
-
-    if (secretsStart.length != secretsEnd.length) {
-        throw {
-            number: 1,
-            message: "Different number of SECRET open and closing tags! (//START_SECRET .. //END_SECRET)"
-        };
-    }
-
-    while (secretsStart.length > 0) {
-        var secretStart = secretsStart.shift();
-        var secretEnd = secretsEnd.shift();
-        if (secretStart > secretEnd) {
-            throw {
-                number: 2,
-                lineNumber: textEditor.posFromIndex(secretEnd).line + 1,
-                message: "END tag before any START ! (//START_SECRET .. //END_SECRET)"
-            };
-        }
-    }
-}
 
 function stripLockedEmptyLines(model) {
     var lines = model.split(/\r?\n/);
