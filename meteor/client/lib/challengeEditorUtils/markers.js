@@ -1,6 +1,3 @@
-/**
- * Created by José Pereira on 2/8/2017.
- */
 //20180406 switched challengeEditor to textEditor
 //Places lock markers
 setLockedLines = function(lockedLines){

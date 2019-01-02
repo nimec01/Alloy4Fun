@@ -1,7 +1,3 @@
-/**
- * Created by josep on 03/08/2016.
- */
-
 generalSettings = {};
 
 setOriginalAtomNamesValue = function (value){

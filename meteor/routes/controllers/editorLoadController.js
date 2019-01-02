@@ -1,8 +1,3 @@
-/**
- * Created by josep on 10/02/2016.
- */
-
-
 editorLoadController = RouteController.extend({
 
     template : 'alloyEditor',

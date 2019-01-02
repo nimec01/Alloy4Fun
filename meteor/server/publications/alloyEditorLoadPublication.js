@@ -1,8 +1,3 @@
-/**
- * Created by josep on 10/02/2016.
- */
-
-
 //publish and subscribe method is used so that clients can only access specific data from the database
 //to access is necessary to "subscribe"
 

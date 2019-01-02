@@ -1,8 +1,3 @@
-/**
- * Created by Jpereira on 17-02-2016.
- */
-
-
 Template.visSettings.helpers({
 });
 

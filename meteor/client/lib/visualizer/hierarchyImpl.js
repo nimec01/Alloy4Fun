@@ -1,7 +1,3 @@
-/**
- * Created by josep on 05/08/2016.
- */
-
 metaPrimSigs= [{type: "univ", parent : null}];
 metaSubsetSigs = [];
 

@@ -1,7 +1,3 @@
-/**
- * Created by josep on 10/02/2016.
- */
-
 var Schema = {};
 
 /**

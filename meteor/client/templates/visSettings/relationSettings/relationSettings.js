@@ -1,8 +1,3 @@
-/**
- * Created by josep on 27/07/2016.
- */
-
-
 Template.relationSettings.helpers({
     getRelation : function(){
         return Session.get("selectedRelation");

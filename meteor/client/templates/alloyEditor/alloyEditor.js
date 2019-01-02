@@ -1,7 +1,3 @@
-/**
- * Created by josep on 09/02/2016.
- */
-
 import classie from 'classie';
 import 'qtip2/src/core.css';
 

@@ -1,7 +1,3 @@
-/**
- * Created by josep on 04/08/2016.
- */
-
 Template.elementSelection.helpers({
 
 });

@@ -1,5 +1,4 @@
 /**
- * Created by josep on 09/02/2016.
  * This template is used for displaying the counter-example instances
  * when models are not satisified
  */

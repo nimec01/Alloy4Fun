@@ -1,7 +1,3 @@
-/**
- * Created by josep on 28/07/2016.
- */
-
 atomSettings = {};
 atomSettings.nodeColors = [{type: "univ", color: "#68DB53"}];
 atomSettings.nodeShapes =[{type: "univ", shape: "ellipse"}];

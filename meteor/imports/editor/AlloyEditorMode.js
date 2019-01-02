@@ -1,6 +1,3 @@
-/**
- * Created by José Pereira on 11/3/2016.
- */
 import CodeMirror from 'codemirror';
 import * as simpleMode from 'codemirror/addon/mode/simple';
 export {defineAlloyMode};

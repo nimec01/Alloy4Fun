@@ -1,7 +1,3 @@
-/**
- * Created by josep on 17/08/2016.
- */
-
 Template.frameNavigation.helpers({
 
 });

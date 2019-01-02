@@ -1,7 +1,3 @@
-/**
- * Created by josep on 07/02/2016.
- */
-
 /*Default page behaviours*/
 Router.configure({
     //Template displayed while loading data.

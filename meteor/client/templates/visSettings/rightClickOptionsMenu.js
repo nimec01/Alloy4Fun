@@ -1,7 +1,3 @@
-/**
- * Created by josep on 31/08/2016.
- */
-
 Template.rightClickOptionsMenu.helpers({
     'getRightClickTargetType' : function(){
         return Session.get("rightClickTarget");

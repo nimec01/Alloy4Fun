@@ -1,7 +1,3 @@
-/**
- * Created by josep on 20/08/2016.
- */
-
 currentLayout = "breadthfirst";
 nodeSpacing = 0.1;
 layouts = {

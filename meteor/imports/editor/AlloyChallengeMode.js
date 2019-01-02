@@ -1,7 +1,3 @@
-/**
- * Created by José Pereira on 2/7/2017.
- */
-
 import CodeMirror from 'codemirror';
 import * as simpleMode from 'codemirror/addon/mode/simple';
 export {defineAlloyChallengeMode};

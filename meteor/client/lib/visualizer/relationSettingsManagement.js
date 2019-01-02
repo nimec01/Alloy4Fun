@@ -1,7 +1,3 @@
-/**
- * Created by josep on 29/07/2016.
- */
-
 relationSettings = {};
 
 getRelationColor = function(relationType){

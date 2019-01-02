@@ -1,7 +1,3 @@
-/**
- * Created by josep on 12/08/2016.
- */
-
 currentlyProjectedTypes = [];
 currentFramePosition = {};
 allAtoms = [];

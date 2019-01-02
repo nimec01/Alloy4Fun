@@ -1,7 +1,3 @@
-/**
- * Created by josep on 29/08/2016.
- */
-
 import cytoscape from 'cytoscape';
 
 updateGraph = function(instance){

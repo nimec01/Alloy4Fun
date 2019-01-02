@@ -1,6 +1,3 @@
-/**
- * Created by José Pereira on 11/1/2016.
- */
 import CodeMirror from 'codemirror';
 import {defineAlloyMode} from '/imports/editor/AlloyEditorMode';
 import {defineAlloyChallengeMode} from '/imports/editor/AlloyChallengeMode';
