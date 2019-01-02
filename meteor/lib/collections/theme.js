@@ -3,9 +3,9 @@
  * Must me saved so that shared models can keep the instances appearance
  */
 
-_Theme = new Meteor.Collection('Theme');
+Theme = new Meteor.Collection('Theme');
 
-_Theme.attachSchema(new SimpleSchema({
+Theme.attachSchema(new SimpleSchema({
     _id: {
         type: String,
         optional: false
@@ -119,4 +119,6 @@ _Theme.attachSchema(new SimpleSchema({
     }
 }))
 
-export let Theme = _Theme;
+export {
+    Theme
+};

@@ -3,9 +3,9 @@
  * An Alloy model
  */
 
-_Model = new Meteor.Collection('Model');
+Model = new Meteor.Collection('Model');
 
-_Model.attachSchema(new SimpleSchema({
+Model.attachSchema(new SimpleSchema({
     _id: {
         type: String,
         optional: false
@@ -22,4 +22,6 @@ _Model.attachSchema(new SimpleSchema({
     }
 }))
 
-export let Model = _Model;
+export {
+    Model
+};

@@ -3,9 +3,9 @@
  * Saves the model, the command itself and the result
  */
 
-_Run = new Meteor.Collection('Run');
+Run = new Meteor.Collection('Run');
 
-_Run.attachSchema(new SimpleSchema({
+Run.attachSchema(new SimpleSchema({
     _id: {
         type: String,
         optional: false
@@ -27,4 +27,6 @@ _Run.attachSchema(new SimpleSchema({
     }
 }))
 
-export let Run = _Run;
+export {
+    Run
+};
