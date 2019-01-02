@@ -226,7 +226,7 @@ initGraphViewer = function(element) {
                         }
                     },
                     'text-valign': 'center',
-                    'text-outline-color': '#black',
+                    'text-outline-color': 'black',
                     'shape' : function(ele){
                         if(ele.data().subsetSigs.length>0){
                             var i=0;
