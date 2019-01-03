@@ -70,6 +70,7 @@ function initializeAlloyEditor(htmlElement){
                 $('#prev > button').prop('disabled', true);
                 $('.empty-univ').hide();
                 $('.permalink > button').prop('disabled', false);
+                $("#validateModel > button").prop('disabled', false);
             }
         }
         Session.set("currentInstance",undefined);
