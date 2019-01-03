@@ -4,7 +4,8 @@ import {
 } from "../../lib/editor/clipboard"
 
 export {
-    clickGenUrl
+    clickGenUrl,
+    containsValidSecretWithAnonymousCommand
 };
 
 /**
@@ -78,9 +79,9 @@ function clickGenUrl(evt) {
 
 
 function containsValidSecretWithAnonymousCommand(model) {
-    var lastSecret = 0;
+    let lastSecret = 0;
     while ((i = model.indexOf("//SECRET\n", lastSecret)) >= 0) {
-        var s = model.substr(i + "//SECRET\n".length).trim();
+        let s = model.substr(i + "//SECRET\n".length).trim();
         // if the remaning text matches the regex below than it has an anonymous command
         if (s.match("^(assert|run|check)([ \t\n])*[{]")) return true;
         lastSecret = i + 1;
@@ -93,10 +94,10 @@ function containsValidSecretWithAnonymousCommand(model) {
 function handleGenURLEvent(err, result) {
     if (err) return
     // if the URL was generated successfully, create and append a new element to the HTML containing it.
-    var url = getAnchorWithLink(result['public'], "public link");
-    var urlPrivate = getAnchorWithLink(result['private'], "private link");
+    let url = getAnchorWithLink(result['public'], "public link");
+    let urlPrivate = getAnchorWithLink(result['private'], "private link");
 
-    var textcenter = document.createElement('div');
+    let textcenter = document.createElement('div');
     textcenter.className = "text-center";
     textcenter.id = "permalink";
     textcenter.appendChild(url);
