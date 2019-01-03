@@ -1,0 +1,24 @@
+machine:
+  node:
+    version: 8.9.3
+working_directory: ~/meteor
+dependencies:
+  cache_directories:
+    - "~/.npm"
+    - "~/.meteor"
+    - "node_modules"
+    - "./.meteor/local/build"
+    - "./.meteor/local/bundler-cache"
+    - "./.meteor/local/isopacks"
+    - "./.meteor/local/plugin-cache"
+    - "/opt/circleci/nodejs/v8.9.3/bin"
+    - "/opt/circleci/nodejs/v8.9.3/lib/node_modules"
+checkout:
+  post:
+    - git submodule update --init
+test:
+  pre:
+    - mkdir -p $CIRCLE_TEST_REPORTS/cucumber
+  override:
+    - echo "done"
+    #- ./tests/acceptance_run
