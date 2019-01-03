@@ -81,12 +81,8 @@ function containsValidSecretWithAnonymousCommand(model) {
     var lastSecret = 0;
     while ((i = model.indexOf("//SECRET\n", lastSecret)) >= 0) {
         var s = model.substr(i + "//SECRET\n".length).trim();
-        //se o resto do texto comecar com a expressao abaixo entao contem
-        //um comando anonimo
-        if (s.match("^(assert|run|check)([ \t\n])*[{]")) {
-            return true;
-        }
-
+        // if the remaning text matches the regex below than it has an anonymous command
+        if (s.match("^(assert|run|check)([ \t\n])*[{]")) return true;
         lastSecret = i + 1;
     }
     return false;
@@ -95,23 +91,22 @@ function containsValidSecretWithAnonymousCommand(model) {
 
 /* genUrlbtn event handler after genUrl method */
 function handleGenURLEvent(err, result) {
-    if (!err) {
-        // if the URL was generated successfully, create and append a new element to the HTML containing it.
-        var url = getAnchorWithLink(result['public'], "public link");
-        var urlPrivate = getAnchorWithLink(result['private'], "private link");
+    if (err) return
+    // if the URL was generated successfully, create and append a new element to the HTML containing it.
+    var url = getAnchorWithLink(result['public'], "public link");
+    var urlPrivate = getAnchorWithLink(result['private'], "private link");
 
-        var textcenter = document.createElement('div');
-        textcenter.className = "text-center";
-        textcenter.id = "permalink";
-        textcenter.appendChild(url);
-        if (urlPrivate) textcenter.appendChild(urlPrivate);
+    var textcenter = document.createElement('div');
+    textcenter.className = "text-center";
+    textcenter.id = "permalink";
+    textcenter.appendChild(url);
+    if (urlPrivate) textcenter.appendChild(urlPrivate);
 
-        document.getElementById('url-permalink').appendChild(textcenter);
-        $("#genUrl > button").prop('disabled', true);
-        zeroclipboard();
+    document.getElementById('url-permalink').appendChild(textcenter);
+    $("#genUrl > button").prop('disabled', true);
+    zeroclipboard();
 
-        if (result.last_id) {
-            Session.set("last_id", result.last_id);
-        }
+    if (result.last_id) {
+        Session.set("last_id", result.last_id);
     }
 }
