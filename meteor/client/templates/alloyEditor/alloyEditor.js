@@ -120,49 +120,13 @@ Template.alloyEditor.events({
                 currentFramePosition: currentFramePosition,
                 currentlyProjectedTypes: currentlyProjectedTypes
             };
-            if (!$("#genUrl > button").is(":disabled")) {
+            if (!$("#genUrl > button").is(":disabled")) { //if button is not disabled
+                console.log(textEditor.getValue());
+                var modelToShare = textEditor.getValue();
 
-                /*//LOCKED insertion */
-                var modelToShare = "";
-                var i = 0,
-                    line, inLockBlock = false;
-                var braces;
-                var foundbraces = false;
-                while (line = textEditor.lineInfo(i++)) {
-                    if (line.gutterMarkers && line.gutterMarkers.breakpoints) {
-                        if (!inLockBlock) {
-                            modelToShare += "\n//LOCKED";
-                            inLockBlock = true;
-                            foundbraces = false;
-                            braces = 0;
-                        }
-                        if (inLockBlock) {
-                            for (c = 0; c < line.text.length; c++) {
-                                switch (line.text.charAt(c)) {
-                                    case '{':
-                                        braces++;
-                                        foundbraces = true;
-                                        break;
-                                    case '}':
-                                        braces--;
-                                        break;
-                                }
-                            }
-                        }
-                    } else {
-                        inLockBlock = false;
-                        foundbraces = false;
-                    }
-                    modelToShare += "\n" + line.text;
-                    if (foundbraces && braces == 0) {
-                        inLockBlock = false;
-                        modelToShare += "\n";
-                    }
-
-                }
-
-                if (id = Router.current().params._id) { /* if its loaded through an URL its a derivationOf model */
+                if (id = Router.current().params._id) {//if its loaded through an URL its a derivationOf model
                     //so acontece num link publico
+                    //handle SECRETs
                     if ((secrets = Router.current().data().secrets) && containsValidSecret(modelToShare)) {
                         swal({
                             title: "This model contains information that cannot be shared!",
@@ -175,7 +139,6 @@ Template.alloyEditor.events({
                         }, function() {
                             Meteor.call('genURL', modelToShare, "Original", false, Session.get("last_id"), themeData, handleGenURLEvent);
                         });
-
                     } else {
                         if (secrets.length == 0) {
                             //se tiver um ou mais valid secret com run check e assert anonimos, pergunta
@@ -196,7 +159,7 @@ Template.alloyEditor.events({
                         } else
                             Meteor.call('genURL', modelToShare + secrets, id, true, Session.get("last_id"), themeData, handleGenURLEvent)
                     }
-                } else { /* Otherwise its an original model*/
+                } else { // Otherwise this a new model (not based in any other)
                     if (containsValidSecretWithAnonymousCommand(modelToShare)) {
                         swal({
                             title: "This model contains an anonymous Command!",
@@ -663,6 +626,7 @@ function hideButtons() {
     $('#exec > button').prop('disabled', true);
     $('#next > button').prop('disabled', true);
     $('#prev > button').prop('disabled', true);
+    $('#validateModel > button').prop('disabled', true);
     $('.permalink > button').prop('disabled', true);
 }
 
