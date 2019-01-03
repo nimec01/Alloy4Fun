@@ -1,3 +1,8 @@
+import {
+    Model
+} from '../../lib/collections/model'
+
+
 /**
  * Meteor method to get a model instance
  * This will call the API (webService)
