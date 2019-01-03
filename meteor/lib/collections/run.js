@@ -8,25 +8,23 @@ Run = new Meteor.Collection('Run');
 Run.attachSchema(new SimpleSchema({
     _id: {
         type: String,
-        optional: false
+        optional: false,
     },
     sat: { // was the command satisfied?
         type: Boolean,
-        optional: false
+        optional: false,
     },
     model: { // TODO: Atenção aqui fica o model_id != "model" : Alterar
         type: String,
-        optional: false
+        optional: false,
     },
     command: { // name of the command that was executed
         type: String,
-        optional: false
+        optional: false,
     },
     time: {
-        type: String
-    }
-}))
+        type: String,
+    },
+}));
 
-export {
-    Run
-};
+export { Run };

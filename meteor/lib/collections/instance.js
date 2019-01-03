@@ -4,7 +4,7 @@
 
 Instance = new Meteor.Collection('Instance');
 
-//TODO: colocar aqui esquema correto, model_id não está a ser utilizado
+// TODO: colocar aqui esquema correto, model_id não está a ser utilizado
 
 /*
 Instance.attachSchema(new SimpleSchema({
@@ -30,8 +30,6 @@ Instance.attachSchema(new SimpleSchema({
         optional: false,
         blackbox: true
     }
-}))*/
+})) */
 
-export {
-    Instance
-};
+export { Instance };

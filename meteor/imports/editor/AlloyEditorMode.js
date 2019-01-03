@@ -7,73 +7,72 @@
 
 import CodeMirror from 'codemirror';
 import * as simpleMode from 'codemirror/addon/mode/simple';
-export {
-    defineAlloyMode
-};
+
+export { defineAlloyMode };
 
 function defineAlloyMode() {
-    CodeMirror.defineSimpleMode("alloy", {
+    CodeMirror.defineSimpleMode('alloy', {
         start: [{
             regex: /(\W)(abstract|fun|all|iff|check|but|else|assert|extends|set|fact|implies|module|open|sig|and|disj|for|in|no|or|as|Int|pred|sum|exactly|iden|let|not|run|univ)(?:\b)/,
-            token: [null, "keyword"]
+            token: [null, 'keyword'],
         }, {
             regex: /(abstract|fun|all|iff|check|but|else|assert|extends|set|fact|implies|module|open|sig|and|disj|for|in|no|or|as|Int|pred|sum|exactly|iden|let|not|run|univ)(?:\b)/,
-            token: "keyword",
-            sol: true
+            token: 'keyword',
+            sol: true,
         }, {
             regex: /(\W)(one|lone|none|some)(?:\b)/,
-            token: [null, "atom"]
+            token: [null, 'atom'],
         }, {
             regex: /(one|lone|none|some)(?:\b)/,
-            token: "atom",
-            sol: true
+            token: 'atom',
+            sol: true,
         }, {
             regex: /^\/\/SECRET$/mg,
-            token: "secret",
-            sol: true
+            token: 'secret',
+            sol: true,
         }, {
             regex: /\/\*/,
-            token: "comment",
-            next: "comment" //Jump to comment mode.
+            token: 'comment',
+            next: 'comment', // Jump to comment mode.
         }, {
             regex: /(\+\+ )|=>|=<|->|>=|\|\||<:|:>/,
-            token: "operator"
+            token: 'operator',
         }, {
-            //Line comment.
+            // Line comment.
             regex: /\/\/.*/,
-            token: "comment"
+            token: 'comment',
         }, {
             regex: /(\s+|\||{|})[0-9]+](?:\b)/,
-            token: [null, "number"]
+            token: [null, 'number'],
         }, {
             regex: /(\s+|\||{|})[0-9]+](?:\b)/,
-            token: "number",
-            //Rule that only applies if the match is at the start of some line(workaround).
-            sol: true
+            token: 'number',
+            // Rule that only applies if the match is at the start of some line(workaround).
+            sol: true,
         }, {
             regex: /[{(]/,
-            indent: true
+            indent: true,
         }, {
             regex: /[})]/,
-            dedent: true
+            dedent: true,
         }],
-        //Modes allow applying a different set of rules to different contexts.
+        // Modes allow applying a different set of rules to different contexts.
         comment: [{
-                //When the comment block end tag is found...
-                regex: /.*?\*\//,
-                token: "comment",
-                next: "start" //...go back to start mode.
-            }, {
-                regex: /.*/,
-                token: "comment"
-            }
+            // When the comment block end tag is found...
+            regex: /.*?\*\//,
+            token: 'comment',
+            next: 'start', // ...go back to start mode.
+        }, {
+            regex: /.*/,
+            token: 'comment',
+        },
 
         ],
-        //Simple Mode additional settings, check documentation for more information.
+        // Simple Mode additional settings, check documentation for more information.
         meta: {
-            //Prevent indentation inside comments.
-            dontIndentStates: ["comment"],
-            lineComment: "//"
-        }
+            // Prevent indentation inside comments.
+            dontIndentStates: ['comment'],
+            lineComment: '//',
+        },
     });
 }

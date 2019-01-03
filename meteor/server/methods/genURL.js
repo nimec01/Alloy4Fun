@@ -3,76 +3,67 @@
  * Stores the model specified in the function argument
  * @return The 'id' of the model link, used in Share Model option
  */
-import {
-    Model
-} from '../../lib/collections/model'
-import {
-    Link
-} from '../../lib/collections/link'
-import {
-    isParagraph
-} from "../../lib/editor/text"
+import { Model } from '../../lib/collections/model';
+import { Link } from '../../lib/collections/link';
+import { isParagraph } from '../../lib/editor/text';
 
 Meteor.methods({
-    genURL: function(model, current_id, only_one_link, last_id) {
-
-        var modeldOf = "Original";
+    genURL(model, current_id, only_one_link, last_id) {
+        let modeldOf = 'Original';
 
         // TODO: figure out what this means: "Aqui é que tenho que trabalhar, nesta condição"
-        if (current_id != "Original" && !(Link.findOne({
-                _id: current_id
-            }))) {
+        if (current_id != 'Original' && !(Link.findOne({
+            _id: current_id,
+        }))) {
             if (instance = Instance.findOne({
-                    _id: current_id
-                })) {
-                var aux = instance.run_id;
-                var run = Run.findOne({
-                    _id: aux
+                _id: current_id,
+            })) {
+                const aux = instance.run_id;
+                const run = Run.findOne({
+                    _id: aux,
                 });
                 modeldOf = run.model;
             }
         }
-        if (current_id != "Original" && !last_id && (modeldOf == "Original")) { /* if its not an original model */
-
-            var link = Link.findOne({
-                _id: current_id
+        if (current_id != 'Original' && !last_id && (modeldOf == 'Original')) { /* if its not an original model */
+            const link = Link.findOne({
+                _id: current_id,
             });
             modeldOf = link.model_id;
-        } else if (last_id && !(containsValidSecret(model) && !only_one_link) && (modeldOf == "Original")) modeldOf = last_id;
+        } else if (last_id && !(containsValidSecret(model) && !only_one_link) && (modeldOf == 'Original')) modeldOf = last_id;
 
-        var newModel_id = Model.insert({ /*A Model is always created, regardless of having secrets or not */
+        const newModel_id = Model.insert({ /* A Model is always created, regardless of having secrets or not */
             whole: model,
             derivationOf: modeldOf,
-            time: new Date().toLocaleString()
+            time: new Date().toLocaleString(),
         });
 
-        var public_link_id = Link.insert({ /*A public link is always created as well*/
+        const public_link_id = Link.insert({ /* A public link is always created as well */
             model_id: newModel_id,
-            private: false
+            private: false,
         });
 
         var result;
 
-        if ((containsValidSecret(model) && !only_one_link)) { /* assert result and returns*/
-
-            var private_link_id = Link.insert({
+        if ((containsValidSecret(model) && !only_one_link)) { /* assert result and returns */
+            const private_link_id = Link.insert({
                 model_id: newModel_id,
-                private: true
+                private: true,
             });
             var result = {
                 public: public_link_id,
                 private: private_link_id,
-                last_id: newModel_id
-            }
+                last_id: newModel_id,
+            };
         } else {
             result = {
                 public: public_link_id,
                 //  last_id : newModel_id
-            }
+            };
         }
 
         return result;
-    }
+    },
 });
 
 
@@ -81,36 +72,36 @@ Meteor.methods({
 
 function findClosingBracketMatchIndex(str, pos) {
     if (str[pos] != '{') {
-        throw new Error("No '{' at index " + pos);
+        throw new Error(`No '{' at index ${pos}`);
     }
-    var depth = 1;
-    for (var i = pos + 1; i < str.length; i++) {
+    let depth = 1;
+    for (let i = pos + 1; i < str.length; i++) {
         switch (str[i]) {
-            case '{':
-                depth++;
-                break;
-            case '}':
-                if (--depth == 0) {
-                    return i;
-                }
-                break;
+        case '{':
+            depth++;
+            break;
+        case '}':
+            if (--depth == 0) {
+                return i;
+            }
+            break;
         }
     }
     return -1; // No matching closing parenthesis
 }
 
-/*Check if the model contains some valid 'secret'*/
+/* Check if the model contains some valid 'secret' */
 function containsValidSecret(model) {
-
-    var i, j, lastSecret = 0;
-    var paragraph = "";
-    while ((i = model.indexOf("//SECRET\n", lastSecret)) >= 0) {
-        for (var z = i + ("//SECRET\n".length);
+    let i; let j; let
+        lastSecret = 0;
+    let paragraph = '';
+    while ((i = model.indexOf('//SECRET\n', lastSecret)) >= 0) {
+        for (var z = i + ('//SECRET\n'.length);
             (z < model.length && model[z] != '{'); z++) {
-            paragraph = paragraph + model[z];
+            paragraph += model[z];
         }
         if (!isParagraph(paragraph)) {
-            paragraph = "";
+            paragraph = '';
             lastSecret = i + 1;
             continue;
         }

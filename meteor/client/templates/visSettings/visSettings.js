@@ -2,16 +2,14 @@ Template.visSettings.helpers({
 });
 
 Template.visSettings.events({
-    'click #settings-button': function () {
+    'click #settings-button'() {
         $('.settings-panel').toggleClass('open');
-    }
+    },
 });
 
-Template.visSettings.onRendered(function () {
-    //Add styling to scroll bar on theme settings
+Template.visSettings.onRendered(() => {
+    // Add styling to scroll bar on theme settings
     $('.scroll-settings').slimScroll({
-        height: '380px'
+        height: '380px',
     });
-
 });
-

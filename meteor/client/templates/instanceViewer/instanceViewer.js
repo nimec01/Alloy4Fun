@@ -4,14 +4,12 @@
  */
 
 
-
 function getCurrentInstance(instanceNumber) {
-    var instances = Session.get("instances");
-    var result = undefined;
-    instances.forEach(function(inst) {
+    const instances = Session.get('instances');
+    let result;
+    instances.forEach((inst) => {
         if (inst.number == instanceNumber) {
             result = inst;
-            return;
         }
     });
     return result;

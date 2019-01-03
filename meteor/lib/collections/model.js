@@ -8,20 +8,18 @@ Model = new Meteor.Collection('Model');
 Model.attachSchema(new SimpleSchema({
     _id: {
         type: String,
-        optional: false
+        optional: false,
     },
     whole: { // has all of the code
         type: String,
-        optional: false
+        optional: false,
     },
     derivationOf: { // which model does it derive from
-        type: String
+        type: String,
     },
     time: {
-        type: String
-    }
-}))
+        type: String,
+    },
+}));
 
-export {
-    Model
-};
+export { Model };

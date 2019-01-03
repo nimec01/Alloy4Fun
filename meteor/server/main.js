@@ -1,16 +1,14 @@
-import {
-    Meteor
-} from 'meteor/meteor';
+import { Meteor } from 'meteor/meteor';
 
-import '../server/methods/validate'
-import '../server/methods/genURL'
-import '../server/methods/getInstance'
-import '../server/methods/getProjection'
-import '../server/methods/shareInstance'
+import './methods/validate';
+import './methods/genURL';
+import './methods/getInstance';
+import './methods/getProjection';
+import './methods/shareInstance';
 
 Meteor.startup(() => {
     // code to run on server at startup
 
     Todos = new Mongo.Collection('todos');
-    console.log("MONGO IS ALIVE");
+    console.log('MONGO IS ALIVE');
 });

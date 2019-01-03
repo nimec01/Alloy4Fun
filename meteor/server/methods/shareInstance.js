@@ -9,13 +9,13 @@
  * @return url to make possible share the instance
  */
 Meteor.methods({
-    storeInstance: function(runID, themeData, instance) {
-        var instanceID = Instance.insert({
+    storeInstance(runID, themeData, instance) {
+        const instanceID = Instance.insert({
             run_id: runID,
             graph: instance,
             theme: themeData,
-            date: new Date().toLocaleString()
+            date: new Date().toLocaleString(),
         });
         return instanceID;
-    }
+    },
 });
