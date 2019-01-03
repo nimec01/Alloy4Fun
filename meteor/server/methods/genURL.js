@@ -9,6 +9,9 @@ import {
 import {
     Link
 } from '../../lib/collections/link'
+import {
+    isParagraph
+} from "../../lib/editor/text"
 
 Meteor.methods({
     genURL: function(model, current_id, only_one_link, last_id) {
@@ -117,12 +120,4 @@ function containsValidSecret(model) {
         lastSecret = i + 1;
     }
     return false;
-}
-
-/*Function that returns true if the word it's a valid paragraph, returns false otherwise*/
-function isParagraph(word) {
-    var pattern_named = /^((one sig |sig |pred |fun |abstract sig )(\ )*[A-Za-z0-9]+)/;
-    var pattern_nnamed = /^((fact|assert|run|check)(\ )*[A-Za-z0-9]*)/;
-    if (word.match(pattern_named) == null && word.match(pattern_nnamed) == null) return false;
-    else return true;
 }

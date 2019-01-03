@@ -1,5 +1,9 @@
 import classie from 'classie';
 import 'qtip2/src/core.css';
+import {
+    isParagraph
+} from "../../../lib/editor/text"
+
 
 /*Each template has a local dictionary of helpers that are made available to it, and this call specifies helpers to add to the template’s dictionary.*/
 Template.alloyEditor.helpers({
@@ -709,13 +713,6 @@ function containsValidSecretWithAnonymousCommand(model) {
         lastSecret = i + 1;
     }
     return false;
-}
-
-function isParagraph(word) {
-    var pattern_named = /^((one sig |sig |pred |fun |abstract sig )(\ )*[A-Za-z0-9]+)/;
-    var pattern_nnamed = /^((fact|assert|run|check)(\ )*[A-Za-z0-9]*)/;
-    if (word.match(pattern_named) == null && word.match(pattern_nnamed) == null) return false;
-    else return true;
 }
 
 function findClosingBracketMatchIndex(str, pos) {
