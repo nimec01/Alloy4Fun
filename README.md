@@ -26,3 +26,6 @@ To run with hot code (outside docker): `cd meteor/ && npm start` (This will run 
 
 ## Development
 The easiest way to deploy is to run meteor locally and the service and database in docker (if a lot of changes have to be made to the service, you can updated it as well)
+
+## Future
+To consider linter errors into `npm test` update the [package.json](meteor/package.json) file to have another `script` namely: `"pretest": "npm run lint --silent"`. This is currently disabled as there were too many errors to handle and also due to lack of specification of which linter rules should be followed, these can be found and updated in the future in the `eslintConfig` parameter of the [package.json](meteor/package.json) file.
