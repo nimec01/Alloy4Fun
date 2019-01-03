@@ -4,6 +4,7 @@ import java.util.Iterator;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 import javax.ws.rs.POST;
@@ -49,6 +50,8 @@ public class AlloyGetInstances {
 
 		CompModule world = CompUtil.parseEverything_fromString(rep, req.model);
 
+		JsonArrayBuilder solsArrayJSON = Json.createArrayBuilder();
+		
 		A4Options opt = new A4Options();
 		opt.solver = A4Options.SatSolver.SAT4J;
 		String res = "ups";
@@ -65,18 +68,14 @@ public class AlloyGetInstances {
 						try {
 							for (int n = 0; n < req.numberOfInstances && aux.satisfiable(); n++) {
 								aux = aux.next();
+								solsArrayJSON.add(answerToJson(aux));
 							}
 						} catch (Exception e) {
 							// this.iteration--;
 							System.out.println("There probably aren't that many solutions!");
 							res = e.getMessage();
 						}
-						try {
-							res = answerToJson(aux);
-						} catch (Exception e) {
-							e.printStackTrace();
-							return null;
-						}
+						res = solsArrayJSON.build().toString();
 					} else {
 						res = "unsat";
 					}
@@ -103,12 +102,12 @@ public class AlloyGetInstances {
 		return req;
 	}
 
-	public String answerToJson(A4Solution answer) {
+	public JsonObject answerToJson(A4Solution answer) {
 		JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
 
 		if (!answer.satisfiable()) {
 			instanceJSON.add("unsat", "true");
-			return instanceJSON.build().toString();
+			return instanceJSON.build();
 		}
 
 		try {
@@ -137,11 +136,11 @@ public class AlloyGetInstances {
 
 			instanceJSON.add("skolem", skolemsToJSON(answer));
 
-			return instanceJSON.build().toString();
+			return instanceJSON.build();
 		} catch (Err er) {
 			JsonObjectBuilder errorJSON = Json.createObjectBuilder();
 			errorJSON.add("err", String.format("Evaluator error occurred: %s", er));
-			return errorJSON.build().toString();
+			return errorJSON.build();
 		}
 	}
 
