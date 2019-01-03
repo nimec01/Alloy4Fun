@@ -29,11 +29,9 @@ buildNumber.properties
 *.iws
 out/
 api/\.classpath
-
 api/\.project
-
 api/\.settings/
-
 api/bin/
 
-Alloy4FunMeteor/\.meteor/
+# others
+alloy-examples
