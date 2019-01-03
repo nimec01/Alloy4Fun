@@ -40,8 +40,7 @@ function initializeAlloyEditor(htmlElement){
 
         //Delete previous existing permalink elements if existent.
         var permalink = document.getElementById("permalink");
-        if(permalink)
-            permalink.remove();
+        if(permalink) permalink.remove();
 
         //var instanceLink = document.getElementById("url-instance-permalink");
         var instancel = document.getElementById("instance_permalink");
