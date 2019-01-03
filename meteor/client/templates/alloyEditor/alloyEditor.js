@@ -3,7 +3,12 @@ import 'qtip2/src/core.css';
 import {
     isParagraph
 } from "../../../lib/editor/text"
-
+import {
+    clickGenUrl
+} from "./genUrl"
+import {
+    zeroclipboard, getAnchorWithLink
+} from "../../lib/editor/clipboard"
 
 /*Each template has a local dictionary of helpers that are made available to it, and this call specifies helpers to add to the template’s dictionary.*/
 Template.alloyEditor.helpers({
@@ -111,73 +116,7 @@ Template.alloyEditor.events({
     'change .command-selection > select': function() {
         $("#exec > button").prop('disabled', false);
     },
-    'click #genUrl': function(evt) {
-        if (evt.toElement.id != "genUrl") {
-            var themeData = {
-                atomSettings: atomSettings,
-                relationSettings: relationSettings,
-                generalSettings: generalSettings,
-                currentFramePosition: currentFramePosition,
-                currentlyProjectedTypes: currentlyProjectedTypes
-            };
-            if (!$("#genUrl > button").is(":disabled")) { //if button is not disabled
-                console.log(textEditor.getValue());
-                var modelToShare = textEditor.getValue();
-
-                if (id = Router.current().params._id) {//if its loaded through an URL its a derivationOf model
-                    //so acontece num link publico
-                    //handle SECRETs
-                    if ((secrets = Router.current().data().secrets) && containsValidSecret(modelToShare)) {
-                        swal({
-                            title: "This model contains information that cannot be shared!",
-                            text: "Are you sure you want to share it?",
-                            type: "warning",
-                            showCancelButton: true,
-                            confirmButtonColor: "#DD6B55",
-                            confirmButtonText: "Yes, share it!",
-                            closeOnConfirm: true
-                        }, function() {
-                            Meteor.call('genURL', modelToShare, "Original", false, Session.get("last_id"), themeData, handleGenURLEvent);
-                        });
-                    } else {
-                        if (secrets.length == 0) {
-                            //se tiver um ou mais valid secret com run check e assert anonimos, pergunta
-                            if (containsValidSecretWithAnonymousCommand(modelToShare)) {
-                                swal({
-                                    title: "This model contains an anonymous Command!",
-                                    text: "Are you sure you want to share it?",
-                                    type: "warning",
-                                    showCancelButton: true,
-                                    confirmButtonColor: "#DD6B55",
-                                    confirmButtonText: "Yes, share it!",
-                                    closeOnConfirm: true
-                                }, function() {
-                                    Meteor.call('genURL', modelToShare, id, false, Session.get("last_id"), themeData, handleGenURLEvent);
-                                });
-                            } else
-                                Meteor.call('genURL', modelToShare, id, false, Session.get("last_id"), themeData, handleGenURLEvent);
-                        } else
-                            Meteor.call('genURL', modelToShare + secrets, id, true, Session.get("last_id"), themeData, handleGenURLEvent)
-                    }
-                } else { // Otherwise this a new model (not based in any other)
-                    if (containsValidSecretWithAnonymousCommand(modelToShare)) {
-                        swal({
-                            title: "This model contains an anonymous Command!",
-                            text: "Are you sure you want to share it?",
-                            type: "warning",
-                            showCancelButton: true,
-                            confirmButtonColor: "#DD6B55",
-                            confirmButtonText: "Yes, share it!",
-                            closeOnConfirm: true
-                        }, function() {
-                            Meteor.call('genURL', modelToShare, "Original", false, Session.get("last_id"), themeData, handleGenURLEvent);
-                        });
-                    } else
-                        Meteor.call('genURL', modelToShare, "Original", false, Session.get("last_id"), themeData, handleGenURLEvent);
-                }
-            }
-        }
-    },
+    'click #genUrl': clickGenUrl,
     'click #prev': function(evt) {
         if (evt.toElement.id != "prev") {
             if (!$("#prev > button").is(":disabled")) {
@@ -363,8 +302,7 @@ function handleInterpretModelEvent(err, result) {
 
     // Restart shareModel option
     var permalink = document.getElementById("permalink");
-    if (permalink)
-        permalink.remove();
+    if (permalink) permalink.remove();
     $("#genUrl > button").prop('disabled', false);
 
     //clear projection combo box
@@ -442,68 +380,6 @@ function handleInterpretModelEvent(err, result) {
     }
 }
 
-/* genUrlbtn event handler after genUrl method */
-function handleGenURLEvent(err, result) {
-    if (!err) {
-
-        // if the URL was generated successfully, create and append a new element to the HTML containing it.
-        var url = document.createElement('div');
-        url.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
-        var anchor = document.createElement('a');
-        anchor.href = "/" + result['public'];
-        anchor.className = "urlinfo";
-        anchor.innerHTML = window.location.origin + "/" + result['public'];
-        url.appendChild(anchor);
-
-
-        var urlPrivate = "";
-        if (result['private'] !== undefined) {
-            urlPrivate = document.createElement('div');
-            urlPrivate.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
-            var anchor = document.createElement('a');
-            anchor.href = "/" + result['private'];
-            anchor.className = "urlinfo";
-            anchor.innerHTML = window.location.origin + "/" + result['private'];
-            urlPrivate.appendChild(anchor);
-        }
-
-        var clipboard = document.createElement('div');
-        clipboard.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
-        clipboard.innerHTML = "<button class='clipboardbutton cbutton cbutton--effect-boris'><img src='/images/icons/clipboard.png' /><i class='legend'>copy to clipboard</i></button></div>";
-
-        var textcenter = document.createElement('div');
-        textcenter.className = "text-center";
-        textcenter.id = "permalink";
-
-        if (result['private'] !== undefined) {
-            var paragraph = document.createElement('p');
-
-            var text = document.createTextNode("Public Link:  ");
-            paragraph.appendChild(text);
-            paragraph.appendChild(url);
-
-            textcenter.appendChild(paragraph);
-            paragraph = document.createElement('p');
-
-            text = document.createTextNode("Private Link:  ");
-            paragraph.appendChild(text);
-            paragraph.appendChild(urlPrivate);
-            textcenter.appendChild(paragraph);
-        } else {
-            textcenter.appendChild(url);
-        }
-
-        textcenter.appendChild(clipboard);
-
-        document.getElementById('url-permalink').appendChild(textcenter);
-        $("#genUrl > button").prop('disabled', true);
-        zeroclipboard();
-
-        if (result.last_id) {
-            Session.set("last_id", result.last_id);
-        }
-    }
-}
 
 /* prevbtn event handler after getInstance(textEditor.getValue) , currentInstance - 1 */
 function handlePreviousInstanceEvent(err, result) {
@@ -520,14 +396,7 @@ function handlePreviousInstanceEvent(err, result) {
 function handleGenInstanceURLEvent(err, result) {
     if (!err) {
         // if the URL was generated successfully, create and append a new element to the HTML containing it.
-        var url = document.createElement('div');
-        url.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
-        var anchor = document.createElement('a');
-        anchor.href = "/" + result;
-        anchor.target = "_";
-        anchor.className = "urlinfo";
-        anchor.innerHTML = window.location.origin + "/" + result;
-        url.appendChild(anchor);
+        var url = getAnchorWithLink(result, "instance link");
 
         var clipboard = document.createElement('div');
         clipboard.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
@@ -630,13 +499,6 @@ function hideButtons() {
     $('.permalink > button').prop('disabled', true);
 }
 
-function zeroclipboard() {
-    var client = new ZeroClipboard($(".clipboardbutton"));
-    client.on("copy", function(event) {
-        var clipboard = event.clipboardData;
-        clipboard.setData("text/plain", $(".urlinfo").html());
-    });
-};
 
 
 /*
@@ -664,20 +526,6 @@ function containsValidSecret(model) {
     return false;
 }
 
-function containsValidSecretWithAnonymousCommand(model) {
-    var lastSecret = 0;
-    while ((i = model.indexOf("//SECRET\n", lastSecret)) >= 0) {
-        var s = model.substr(i + "//SECRET\n".length).trim();
-        //se o resto do texto comecar com a expressao abaixo entao contem
-        //um comando anonimo
-        if (s.match("^(assert|run|check)([ \t\n])*[{]")) {
-            return true;
-        }
-
-        lastSecret = i + 1;
-    }
-    return false;
-}
 
 function findClosingBracketMatchIndex(str, pos) {
     if (str[pos] != '{') {
