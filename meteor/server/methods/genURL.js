@@ -1,8 +1,3 @@
-/**
- * Meteor method to get a model share URL
- * Stores the model specified in the function argument
- * @return The 'id' of the model link, used in Share Model option
- */
 import {
     Model
 } from '../../lib/collections/model'
@@ -13,6 +8,11 @@ import {
     isParagraph
 } from "../../lib/editor/text"
 
+/**
+ * Meteor method to get a model share URL
+ * Stores the model specified in the function argument
+ * @return The 'id' of the model link, used in Share Model option
+ */
 Meteor.methods({
     genURL: function(model, current_id, only_one_link, last_id) {
 
