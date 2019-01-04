@@ -1,12 +1,15 @@
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -17,7 +20,6 @@ import org.json.JSONObject;
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.ast.Command;
-import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.ExprVar;
 import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.ast.Sig.Field;
@@ -46,8 +48,6 @@ public class AlloyGetInstances {
 		File tempFile = File.createTempFile("a4f", "als");
 		tempFile.deleteOnExit();
 
-		File tmpAls = CompUtil.flushModelToFile(req.model, null);
-
 		CompModule world = CompUtil.parseEverything_fromString(rep, req.model);
 
 		JsonArrayBuilder solsArrayJSON = Json.createArrayBuilder();
@@ -67,8 +67,16 @@ public class AlloyGetInstances {
 						A4Solution aux = ans;
 						try {
 							for (int n = 0; n < req.numberOfInstances && aux.satisfiable(); n++) {
+								UUID uuid = UUID.randomUUID();
+								solsArrayJSON.add(answerToJson(uuid, aux));
+								RestApplication.answers.put(uuid, aux);
+								ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+								scheduler.schedule(new Runnable() {
+									public void run() {
+										RestApplication.answers.remove(uuid);
+									}
+								}, 7200, TimeUnit.SECONDS);
 								aux = aux.next();
-								solsArrayJSON.add(answerToJson(aux));
 							}
 						} catch (Exception e) {
 							// this.iteration--;
@@ -102,7 +110,7 @@ public class AlloyGetInstances {
 		return req;
 	}
 
-	public JsonObject answerToJson(A4Solution answer) {
+	public JsonObject answerToJson(UUID uuid, A4Solution answer) {
 		JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
 
 		if (!answer.satisfiable()) {
@@ -111,6 +119,7 @@ public class AlloyGetInstances {
 		}
 
 		try {
+			instanceJSON.add("uuid", uuid.toString());
 			Instance sol = answer.debugExtractKInstance();
 			instanceJSON.add("unsat", false);
 
