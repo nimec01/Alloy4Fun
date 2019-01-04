@@ -14,64 +14,33 @@ import {
  * @return The 'id' of the model link, used in Share Model option
  */
 Meteor.methods({
-    genURL: function(model, current_id, only_one_link, last_id) {
-
-        var modeldOf = "Original";
-
-        // TODO: figure out what this means: "Aqui é que tenho que trabalhar, nesta condição"
-        if (current_id != "Original" && !(Link.findOne({
-                _id: current_id
-            }))) {
-            if (instance = Instance.findOne({
-                    _id: current_id
-                })) {
-                var aux = instance.run_id;
-                var run = Run.findOne({
-                    _id: aux
-                });
-                modeldOf = run.model;
-            }
-        }
-        if (current_id != "Original" && !last_id && (modeldOf == "Original")) { /* if its not an original model */
-
-            var link = Link.findOne({
-                _id: current_id
-            });
-            modeldOf = link.model_id;
-        } else if (last_id && !(containsValidSecret(model) && !only_one_link) && (modeldOf == "Original")) modeldOf = last_id;
-
-        var newModel_id = Model.insert({ /*A Model is always created, regardless of having secrets or not */
-            whole: model,
-            derivationOf: modeldOf,
+    genURL: function(code, last_id) {
+        // A Model is always created, regardless of having secrets or not
+        let model_id = Model.insert({
+            whole: code,
+            derivationOf: last_id || "Original",
             time: new Date().toLocaleString()
         });
-
-        var public_link_id = Link.insert({ /*A public link is always created as well*/
-            model_id: newModel_id,
+        //Generate the public link
+        let public_link_id = Link.insert({
+            model_id: model_id,
             private: false
         });
 
-        var result;
-
-        if ((containsValidSecret(model) && !only_one_link)) { /* assert result and returns*/
-
-            var private_link_id = Link.insert({
-                model_id: newModel_id,
+        //Generate private link if SECRET is present
+        let private_link_id
+        if(containsValidSecret(code)){
+            private_link_id = Link.insert({
+                model_id: model_id,
                 private: true
             });
-            var result = {
-                public: public_link_id,
-                private: private_link_id,
-                last_id: newModel_id
-            }
-        } else {
-            result = {
-                public: public_link_id,
-                //  last_id : newModel_id
-            }
         }
 
-        return result;
+        return {
+            public: public_link_id,
+            private: private_link_id, // will be undefined if no secret is present
+            last_id: model_id
+        }
     }
 });
 
@@ -79,22 +48,22 @@ Meteor.methods({
 // Helper functions
 
 
-function findClosingBracketMatchIndex(str, pos) {
-    if (str[pos] != '{') {
-        throw new Error("No '{' at index " + pos);
-    }
-    var depth = 1;
-    for (var i = pos + 1; i < str.length; i++) {
-        switch (str[i]) {
-            case '{':
-                depth++;
-                break;
-            case '}':
-                if (--depth == 0) {
-                    return i;
-                }
-                break;
-        }
-    }
-    return -1; // No matching closing parenthesis
-}
+// function findClosingBracketMatchIndex(str, pos) {
+//     if (str[pos] != '{') {
+//         throw new Error("No '{' at index " + pos);
+//     }
+//     var depth = 1;
+//     for (var i = pos + 1; i < str.length; i++) {
+//         switch (str[i]) {
+//             case '{':
+//                 depth++;
+//                 break;
+//             case '}':
+//                 if (--depth == 0) {
+//                     return i;
+//                 }
+//                 break;
+//         }
+//     }
+//     return -1; // No matching closing parenthesis
+// }
