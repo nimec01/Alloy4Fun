@@ -2,36 +2,48 @@ import {
     isParagraph
 } from "../../lib/editor/text"
 
+import {
+    Model
+} from "../../lib/collections/model"
+import {
+    Link
+} from "../../lib/collections/link"
+import {
+    Theme
+} from "../../lib/collections/theme"
+
+
 editorLoadController = RouteController.extend({
 
     template: 'alloyEditor',
 
+    // see http://iron-meteor.github.io/iron-router/#subscriptions
     subscriptions: function() {
-        //Model collection
-        this.subscribe('editorLoad').wait();
-
-        //Instance collection: for shareInstance
-        this.subscribe('instanceLoad', this.params._id).wait();
-
-        //Run collection: to retrieve the Model when in Share Instance
-        this.subscribe('runLoad').wait();
-
-        //Link Collection
-        this.subscribe('links', this.params._id).wait();
+        this.subscribe('link', this.params._id).wait()
     },
 
-    // Subscriptions or other things we want to "wait" on. This also
-    // automatically uses the loading hook. That's the only difference between
-    // this option and the subscriptions option above.
-    // return Meteor.subscribe('post', this.params._id);
-
+    // see http://iron-meteor.github.io/iron-router/#the-waiton-option
     waitOn: function() {},
 
     data: function() {
+        console.log(this.params._id);
+        let data = Model.findOne(this.params._id)
+        console.log("data is: ", data);
+        
+        //if data is undefined return error message
+        return data || {
+            whole: "Unable to retrieve Model from Link"
+        };
+
+
+
+        console.log("getting data for id: ", this.params._id);
         var priv = false;
-        var link = Link.findOne({
-            _id: this.params._id
-        });
+        var link = Link.findOne(this.params._id);
+        console.log("link is: ", link);
+
+
+
         var model;
         var secrets = "";
         var instance;
@@ -57,6 +69,7 @@ editorLoadController = RouteController.extend({
                 model_id = run.model;
             }
         }
+        console.log(model_id);
 
         var themes = Theme.find({
             modelId: this.params._id
@@ -172,7 +185,7 @@ editorLoadController = RouteController.extend({
             }
         } else {
             return {
-                "whole": "Link não encontrado",
+                "whole": "Link not found",
                 "secrets": "",
                 "lockedLines": "",
                 "priv": false,
@@ -180,7 +193,6 @@ editorLoadController = RouteController.extend({
                 "themes": undefined
             };
         }
-
     },
 
     // You can provide any of the hook options
