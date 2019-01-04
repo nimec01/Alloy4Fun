@@ -357,31 +357,8 @@ function handleGenInstanceURLEvent(err, result) {
     }
 }
 
-/* Functions used to update session instances*/
-updateInstances = function (instance) {
-    if (!Session.get("instances")) {
-        var instances = [instance];
-        Session.set("instances", instances);
-        Session.set("currentInstance", 0);
-    } else {
-        var instances = Session.get("instances");
-        instances.push(instance);
-        Session.set("instances", instances);
-        Session.set("currentInstance", Session.get("currentInstance"));
-    }
-
-
-}
 getCurrentInstance = function (instanceNumber) {
-    var instances = Session.get("instances");
-    var result = undefined;
-    instances.forEach(function (inst) {
-        if (inst.number == instanceNumber) {
-            result = inst;
-            return;
-        }
-    });
-    return result;
+    return instances[instanceNumber]
 };
 
 /*onRendered aux functions*/
