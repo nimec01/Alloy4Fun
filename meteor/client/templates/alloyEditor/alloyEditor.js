@@ -58,7 +58,7 @@ Template.alloyEditor.events({
         $(".frame-navigation").hide();
 
         if (!$("#exec > button").is(":disabled")) { /* if the button is available, check if there are commands to execute*/
-            var commandLabel = Session.get("commands").length > 1 ? $('.command-selection > select option:selected').text() : Session.get("commands");
+            var commandLabel = Session.get("commands").length > 1 ? $('.command-selection > select option:selected').text() : Session.get("commands")[0];
             if (commandLabel.length == 0) {
                 swal({
                     title: "",
@@ -149,7 +149,7 @@ Template.alloyEditor.events({
                 if (!res.success) {
                     addErrorMarkerToGutter(res.errorMessage, res.errorLocation.line);
                     swal({
-                        title: "There is at least an error!",
+                        title: "There is at least an error on line "+res.errorLocation.line+"!",
                         text: "The corresponding line has been highlighted in the text area!",
                         type: "error"
                     });
@@ -157,7 +157,7 @@ Template.alloyEditor.events({
                     swal({
                         title: "The Model is Valid!",
                         text: "You're doing great!",
-                        type: "info"
+                        type: "success"
                     });
                 }
             }
@@ -310,6 +310,10 @@ function handleInterpretModelEvent(err, result) {
             $('.empty-univ').fadeIn();
             $('#instanceViewer').hide();
             $("#genInstanceUrl").hide();
+        }
+
+        if (result.syntax_error) {
+            swal("There is a syntax error!", "Please validate your model.", "error");
         }
     }
 }
