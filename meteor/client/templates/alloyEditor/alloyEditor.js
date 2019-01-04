@@ -1,8 +1,6 @@
 import classie from 'classie';
 import 'qtip2/src/core.css';
-import {
-    isParagraph
-} from "../../../lib/editor/text"
+
 import {
     clickGenUrl
 } from "./genUrl"
@@ -129,9 +127,11 @@ Template.alloyEditor.events({
             metaPrimSigs: metaPrimSigs,
             metaSubsetSigs: metaSubsetSigs
         };
-
+        console.log(Session.get("instances"));
+        console.log(instances);
         //obter o id do Run correspondente à instancia atual no browser
         var runID = Session.get("instances")[0 /*Session.get("currentInstance")*/].runID;
+        return
 
         //Meteor.call('storeInstance', textEditor.getValue(), themeData, cy.json(), handleGenInstanceURLEvent);
         Meteor.call('storeInstance', runID, themeData, cy.json(), handleGenInstanceURLEvent);
@@ -157,6 +157,7 @@ Template.alloyEditor.events({
 });
 /*Callbacks added with this method are called once when an instance of Template.alloyEditor is rendered into DOM nodes and put into the document for the first time.*/
 Template.alloyEditor.onRendered(function () {
+    console.log("editor rendered");
     try {
         cy
     } catch (e) {
@@ -171,6 +172,7 @@ Template.alloyEditor.onRendered(function () {
     var model;
     if (Router.current().data)
         model = Router.current().data();
+    console.log(model);
 
     if (model && textEditor) {
         var themeData;
@@ -280,25 +282,18 @@ function handleInterpretModelEvent(err, result) {
             log.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
             var paragraph = document.createElement('p');
 
-
             if (result.unsat) {
-
                 $('#instancenav').hide();
 
                 paragraph.innerHTML = "No counter-examples. " + command + " solved!";
                 paragraph.className = "log-complete";
-
-
             } else {
-
                 paragraph.innerHTML = "Invalid solution, checking " + command + " revealed a counter-example.";
                 paragraph.className = "log-wrong";
                 updateGraph(result);
-
             }
 
             log.appendChild(paragraph);
-            /* div with id=log will appendChild(log)*/
             $("#log")[0].appendChild(log);
         }
 
@@ -306,17 +301,7 @@ function handleInterpretModelEvent(err, result) {
             $('.empty-univ').fadeIn();
             $('#instanceViewer').hide();
             $("#genInstanceUrl").hide();
-        } else {
-            updateInstances(result);
-            Session.set("currentInstance", 0);
-
         }
-        /* if the commandType != check */
-
-
-        /*if (result.last_id) {
-            Session.set("last_id", result.last_id);
-        }*/
     }
 }
 
