@@ -2,9 +2,6 @@ import {
     zeroclipboard,
     getAnchorWithLink
 } from "../../lib/editor/clipboard"
-import {
-    containsValidSecret
-} from "../../../lib/editor/text"
 
 export {
     clickGenUrl,
@@ -15,70 +12,25 @@ export {
  * @param {Event} evt 
  */
 function clickGenUrl(evt) {
-    var themeData = {
-        atomSettings: atomSettings,
-        relationSettings: relationSettings,
-        generalSettings: generalSettings,
-        currentFramePosition: currentFramePosition,
-        currentlyProjectedTypes: currentlyProjectedTypes
-    };
-    if (!$("#genUrl > button").is(":disabled")) { //if button is not disabled
-        var modelToShare = textEditor.getValue();
+    if ($("#genURL > button").is(":disabled")) return
 
-        if (id = Router.current().params._id) { //if its loaded through an URL its a derivationOf model
-            //so acontece num link publico
-            //handle SECRETs
-            if ((secrets = Router.current().data().secrets) && containsValidSecret(modelToShare)) {
-                swal({
-                    title: "This model contains information that cannot be shared!",
-                    text: "Are you sure you want to share it?",
-                    type: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#DD6B55",
-                    confirmButtonText: "Yes, share it!",
-                    closeOnConfirm: true
-                }, function() {
-                    Meteor.call('genURL', modelToShare, "Original", false, Session.get("last_id"), themeData, handleGenURLEvent);
-                });
-            } else {
-                if (secrets.length == 0) {
-                    //se tiver um ou mais valid secret com run check e assert anonimos, pergunta
-                    if (containsValidSecretWithAnonymousCommand(modelToShare)) {
-                        swal({
-                            title: "This model contains an anonymous Command!",
-                            text: "Are you sure you want to share it?",
-                            type: "warning",
-                            showCancelButton: true,
-                            confirmButtonColor: "#DD6B55",
-                            confirmButtonText: "Yes, share it!",
-                            closeOnConfirm: true
-                        }, function() {
-                            Meteor.call('genURL', modelToShare, id, false, Session.get("last_id"), themeData, handleGenURLEvent);
-                        });
-                    } else
-                        Meteor.call('genURL', modelToShare, id, false, Session.get("last_id"), themeData, handleGenURLEvent);
-                } else
-                    Meteor.call('genURL', modelToShare + secrets, id, true, Session.get("last_id"), themeData, handleGenURLEvent)
-            }
-        } else { // Otherwise this a new model (not based in any other)
-            if (containsValidSecretWithAnonymousCommand(modelToShare)) {
-                swal({
-                    title: "This model contains an anonymous Command!",
-                    text: "Are you sure you want to share it?",
-                    type: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#DD6B55",
-                    confirmButtonText: "Yes, share it!",
-                    closeOnConfirm: true
-                }, function() {
-                    Meteor.call('genURL', modelToShare, "Original", false, Session.get("last_id"), themeData, handleGenURLEvent);
-                });
-            } else
-                Meteor.call('genURL', modelToShare, "Original", false, Session.get("last_id"), themeData, handleGenURLEvent);
-        }
+    let modelToShare = textEditor.getValue();
+    let callGenerate = function(){ // reusable function
+        Meteor.call('genURL', modelToShare, Session.get("last_id"), handleGenURLEvent);
     }
-}
 
+    if(containsValidSecretWithAnonymousCommand(modelToShare)){
+        swal({
+            title: "This model contains an anonymous Command!",
+            text: "Are you sure you want to share it?",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: "Yes, share it!",
+            closeOnConfirm: true
+        }, callGenerate)
+    }else callGenerate()
+}
 
 function containsValidSecretWithAnonymousCommand(model) {
     let lastSecret = 0;
@@ -105,11 +57,11 @@ function handleGenURLEvent(err, result) {
     textcenter.appendChild(url);
     if (urlPrivate) textcenter.appendChild(urlPrivate);
 
+    $('#url-permalink').empty()//remove previous links
     document.getElementById('url-permalink').appendChild(textcenter);
     $("#genUrl > button").prop('disabled', true);
     zeroclipboard();
 
-    if (result.last_id) {
-        Session.set("last_id", result.last_id);
-    }
+    //update the value of the last model id
+    Session.set("last_id", result.last_id);
 }

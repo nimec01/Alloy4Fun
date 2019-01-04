@@ -8,16 +8,13 @@ Link = new Meteor.Collection('Link');
 
 Link.attachSchema(new SimpleSchema({
     _id: {
-        type: String,
-        optional: false
+        type: String
     },
     private: { // wether this is a private or public link (shows SECRETs for private)
-        type: Boolean,
-        optional: false
+        type: Boolean
     },
     model_id: { // the id of the model associated
-        type: String,
-        optional: false
+        type: String
     }
 }))
 

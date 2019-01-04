@@ -39,14 +39,9 @@ function initializeAlloyEditor(htmlElement){
         editor.clearGutter("error-gutter");
 
         //Delete previous existing permalink elements if existent.
-        var permalink = document.getElementById("permalink");
-        if(permalink) permalink.remove();
-
-        //var instanceLink = document.getElementById("url-instance-permalink");
-        var instancel = document.getElementById("instance_permalink");
-        if(instancel)
-            instancel.remove();
-
+        //uncomment the following lines if it is desirable to hide the share links on code updates
+        // $('#url-permalink').empty() //remove previous links
+        // $("#instance_permalink").remove() //Remove isntance link
 
         $("#genInstanceUrl").hide();
         $("#log").empty();
@@ -78,7 +73,7 @@ function initializeAlloyEditor(htmlElement){
 
 
     });
-    editor.setSize("100%",400);
+    editor.setSize("100%", 400);
     return editor;
 }
 
