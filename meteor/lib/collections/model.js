@@ -22,6 +22,10 @@ Model.attachSchema(new SimpleSchema({
     }
 }))
 
+Model.publicFields = {
+    whole: 1,
+    derivationOf: 1
+}
 export {
     Model
 };

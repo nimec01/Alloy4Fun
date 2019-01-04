@@ -21,4 +21,11 @@ Link.attachSchema(new SimpleSchema({
     }
 }))
 
-export  {Link};
+Link.publicFields = {
+    private: 1,
+    model_id: 1
+}
+
+export {
+    Link
+};
