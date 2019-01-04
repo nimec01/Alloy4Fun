@@ -42,13 +42,17 @@ public class AlloyGetInstances {
 	@POST
 	@Produces("text/json")
 	public Response doGet(String body) throws IOException {
-		System.out.println(body);
 		InstancesRequest req = parseJSON(body);
 		A4Reporter rep = new A4Reporter();
 		File tempFile = File.createTempFile("a4f", "als");
 		tempFile.deleteOnExit();
+		CompModule world;
 
-		CompModule world = CompUtil.parseEverything_fromString(rep, req.model);
+		try {
+			world = CompUtil.parseEverything_fromString(rep, req.model);			
+		} catch (Exception e) {
+			return Response.ok("{\"syntax_error\": true}").build();
+		}
 
 		JsonArrayBuilder solsArrayJSON = Json.createArrayBuilder();
 		

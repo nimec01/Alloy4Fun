@@ -141,13 +141,17 @@ Template.alloyEditor.events({
             else {
                 res = JSON.parse(res);
                 if (!res.success) {
-                    //TODO: better feedback on invalid model
-                    addErrorMarkerToGutter(res.errorMessage, res.errorLocation.line)
+                    addErrorMarkerToGutter(res.errorMessage, res.errorLocation.line);
+                    swal({
+                        title: "There is at least an error on line "+res.errorLocation.line+"!",
+                        text: "The corresponding line has been highlighted in the text area!",
+                        type: "error"
+                    });
                 } else { // success
                     swal({
                         title: "The Model is Valid!",
                         text: "You're doing great!",
-                        type: "info"
+                        type: "success"
                     });
                 }
             }
@@ -301,6 +305,10 @@ function handleInterpretModelEvent(err, result) {
             $('.empty-univ').fadeIn();
             $('#instanceViewer').hide();
             $("#genInstanceUrl").hide();
+        }
+
+        if (result.syntax_error) {
+            swal("There is a syntax error!", "Please validate your model.", "error");
         }
     }
 }
