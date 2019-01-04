@@ -9,12 +9,15 @@ import {
 Meteor.methods({
     getModel: function(linkId) {
 		let link = Link.findOne(linkId)
-		// console.log("getmodel link:", link);
+		console.log("getmodel link:", link);
 		let model = Model.findOne(link.model_id)
-		// console.log(model);
+		console.log(model);
 		if(link.isPrivate){
 			console.log("private link");
 		}
 		return model
-    }
+	},
+	getInstance: function(linkId){
+		
+	}
 })
