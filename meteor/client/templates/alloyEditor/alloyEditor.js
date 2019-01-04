@@ -50,7 +50,7 @@ Template.alloyEditor.helpers({
 
 });
 Template.alloyEditor.events({
-    'click #exec': function(evt) {
+    'click #exec': function() {
         currentlyProjectedTypes = [];
         currentFramePosition = {};
         allAtoms = [];
@@ -68,7 +68,7 @@ Template.alloyEditor.events({
             });
         } else { // Execute command
             let model = textEditor.getValue();
-            Meteor.call('getInstances', model, 5, commandLabel, true, handleInterpretModelEvent);
+            Meteor.call('getInstances', model, 5, commandLabel, true, Session.get("last_id"), handleInterpretModelEvent);
         }
         // update button states after execution
         $("#exec > button").prop('disabled', true);
@@ -233,35 +233,32 @@ Template.alloyEditor.onRendered(function() {
 /* Execbtn event handler
       result: getInstance(textEditor.getValue,..)*/
 function handleInterpretModelEvent(err, result) {
-    //TODO: insert model into database on getInstances
-    console.log(result);
+    Session.set("last_id", result.last_id)
+    result = result.instances
+
     $.unblockUI();
     $('#exec > button').prop('disabled', true);
-
     $('#url-permalink').empty() //remove previous links
     $("#genUrl > button").prop('disabled', false); // Restart shareModel option
 
     //clear projection combo box
-    var select = document.getElementsByClassName("framePickerTarget");
+    let select = document.getElementsByClassName("framePickerTarget");
 
-    if (select)
-        select = select[0];
+    if (select) select = select[0];
     if (select) {
-        var length = select.options.length;
-        for (i = 0; i < length; i++) {
-            select.remove(0);
-        }
+        let length = select.options.length;
+        for (i = 0; i < length; i++) select.remove(0);
     }
 
     $('#instanceViewer').hide();
     $("#log").empty();
-    var command = $('.command-selection > select option:selected').text();
+    let command = $('.command-selection > select option:selected').text();
 
     if (err) {
-        //TODO: this is no longer applicable after no-soap
+        //TODO: Daniel: this is no longer applicable after no-soap
         if (err.error == 502) {
             swal("Syntax Error!", "", "error");
-            var x = document.createElement("IMG");
+            let x = document.createElement("IMG");
             x.setAttribute("src", "/images/icons/error.png");
             x.setAttribute("width", "15");
             x.setAttribute("id", "error");
@@ -278,9 +275,9 @@ function handleInterpretModelEvent(err, result) {
         if (result.commandType && result.commandType == "check") {
             /* if the commandType == check */
 
-            var log = document.createElement('div');
+            let log = document.createElement('div');
             log.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
-            var paragraph = document.createElement('p');
+            let paragraph = document.createElement('p');
 
             if (result.unsat) {
                 $('#instancenav').hide();
