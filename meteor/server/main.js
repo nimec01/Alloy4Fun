@@ -10,7 +10,4 @@ import '../server/methods/shareInstance'
 
 Meteor.startup(() => {
     // code to run on server at startup
-
-    Todos = new Mongo.Collection('todos');
-    console.log("MONGO IS ALIVE");
 });
