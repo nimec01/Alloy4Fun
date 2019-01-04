@@ -16,11 +16,15 @@ Instance.attachSchema(new SimpleSchema({
         type: String,
         optional: false
     },
-    run_id: {
+    sat: { // was the command satisfied?
+        type: Boolean,
+        optional: false
+    },
+    command: { // name of the command that was executed
         type: String,
         optional: false
     },
-    graph: { // the whole graph
+    graph: { // the entire cytoscape graph
         type: Object,
         optional: false,
         blackbox: true
@@ -29,6 +33,9 @@ Instance.attachSchema(new SimpleSchema({
         type: Object,
         optional: false,
         blackbox: true
+    },
+    time: {
+        type: String
     }
 }))
 
