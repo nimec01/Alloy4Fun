@@ -1,7 +1,6 @@
 import {
     isParagraph
 } from "../../lib/editor/text"
-
 import {
     Model
 } from "../../lib/collections/model"
@@ -29,7 +28,7 @@ editorLoadController = RouteController.extend({
         console.log(this.params._id);
         let data = Model.findOne(this.params._id)
         console.log("data is: ", data);
-        
+
         //if data is undefined return error message
         return data || {
             whole: "Unable to retrieve Model from Link"

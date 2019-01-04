@@ -102,7 +102,6 @@ Template.alloyEditor.events({
                     $('#next > button').prop('disabled', true);
                     swal("No more satisfying instances!", "", "error");
                 } else {
-                    console.log("requesting graph update");
                     updateGraph(ni);
                 }
                 if (instanceIndex + 1 == maxInstanceNumber) {
@@ -122,8 +121,6 @@ Template.alloyEditor.events({
             metaPrimSigs: metaPrimSigs,
             metaSubsetSigs: metaSubsetSigs
         };
-        console.log(instances);
-        console.log(getCommandLabel());
 
         Meteor.call("storeInstance", Session.get("last_id"), getCommandLabel(), cy.json(), themeData, handleGenInstanceURLEvent)
     },
@@ -318,10 +315,8 @@ function getCommandLabel() {
     return Session.get("commands").length > 1 ? $('.command-selection > select option:selected').text() : Session.get("commands")[0];
 }
 
-/* geninstanceurlbtn event handler after storeInstance method */
+// geninstanceurlbtn event handler after storeInstance method
 function handleGenInstanceURLEvent(err, result) {
-    console.log(err);
-    console.log(result);
     if (err) return //TODO: Daniel, increase verbosity with swal
 
     // if the URL was generated successfully, create and append a new element to the HTML containing it.
