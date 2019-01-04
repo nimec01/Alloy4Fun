@@ -1,3 +1,4 @@
+import {Instance} from "../../lib/collections/instance"
 /**
  * Meteor method to store a model instance with the user-defined theme
  * Used in Share Instance option
@@ -19,7 +20,7 @@ Meteor.methods({
             command: command,
             graph: instance,
             theme: themeData,
-            date: new Date().toLocaleString()
+            time: new Date().toLocaleString()
         });
     }
 });
