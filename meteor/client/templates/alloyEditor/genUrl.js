@@ -15,11 +15,11 @@ function clickGenUrl(evt) {
     if ($("#genURL > button").is(":disabled")) return
 
     let modelToShare = textEditor.getValue();
-    let callGenerate = function(){ // reusable function
+    let callGenerate = function() { // reusable function
         Meteor.call('genURL', modelToShare, Session.get("last_id"), handleGenURLEvent);
     }
 
-    if(containsValidSecretWithAnonymousCommand(modelToShare)){
+    if (containsValidSecretWithAnonymousCommand(modelToShare)) {
         swal({
             title: "This model contains an anonymous Command!",
             text: "Are you sure you want to share it?",
@@ -29,7 +29,7 @@ function clickGenUrl(evt) {
             confirmButtonText: "Yes, share it!",
             closeOnConfirm: true
         }, callGenerate)
-    }else callGenerate()
+    } else callGenerate()
 }
 
 function containsValidSecretWithAnonymousCommand(model) {
@@ -42,7 +42,6 @@ function containsValidSecretWithAnonymousCommand(model) {
     }
     return false;
 }
-
 
 /* genUrlbtn event handler after genUrl method */
 function handleGenURLEvent(err, result) {
@@ -57,7 +56,7 @@ function handleGenURLEvent(err, result) {
     textcenter.appendChild(url);
     if (urlPrivate) textcenter.appendChild(urlPrivate);
 
-    $('#url-permalink').empty()//remove previous links
+    $('#url-permalink').empty() //remove previous links
     document.getElementById('url-permalink').appendChild(textcenter);
     $("#genUrl > button").prop('disabled', true);
     zeroclipboard();
