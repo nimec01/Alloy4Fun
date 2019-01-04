@@ -67,21 +67,17 @@ Template.alloyEditor.events({
                     buttons: true,
                     dangerMode: true,
                 });
-
             } else { /* Execute command */
-
                 var modelToShare = textEditor.getValue();
-                var secrets = "";
                 if (!(id = Router.current().params._id)) {
                     id = "Original";
                 }
+                //TODO: secrets no longer exists here
                 if ((id != "Original") && Router.current().data().secrets) secrets = Router.current().data().secrets;
                 Meteor.call('getInstances', modelToShare, Meteor.default_connection._lastSessionId, 5, commandLabel, true, id, Session.get("last_id"), handleInterpretModelEvent);
             }
             $("#exec > button").prop('disabled', true); /* available buttons */
             $("#next > button").prop('disabled', false);
-
-            console.log();
         }
     },
     'change .command-selection > select': function () {
@@ -132,14 +128,15 @@ Template.alloyEditor.events({
             metaPrimSigs: metaPrimSigs,
             metaSubsetSigs: metaSubsetSigs
         };
-        console.log(Session.get("instances"));
         console.log(instances);
+        console.log(getCommandLabel());
         //obter o id do Run correspondente à instancia atual no browser
         var runID = Session.get("instances")[0 /*Session.get("currentInstance")*/].runID;
-        return
+
+        Meteor.call("storeInstance", Session.get("last_id"), sat, getCommandLabel(), cy.json(), themeData, handleGenInstanceURLEvent)
 
         //Meteor.call('storeInstance', textEditor.getValue(), themeData, cy.json(), handleGenInstanceURLEvent);
-        Meteor.call('storeInstance', runID, themeData, cy.json(), handleGenInstanceURLEvent);
+        // Meteor.call('storeInstance', runID, themeData, cy.json(), handleGenInstanceURLEvent);
     },
     'click #validateModel': function () { // click on the validate button
         Meteor.call('validate', textEditor.getValue(), (err, res) => {
@@ -238,14 +235,14 @@ Template.alloyEditor.onRendered(function () {
 /* Execbtn event handler
       result: getInstance(textEditor.getValue,..)*/
 function handleInterpretModelEvent(err, result) {
-
+    //TODO: return [things, model_id]
+    //TODO: insert model into database on getInstances
+    console.log(result);
     $.unblockUI();
     $('#exec > button').prop('disabled', true);
-
-    // Restart shareModel option
-    var permalink = document.getElementById("permalink");
-    if (permalink) permalink.remove();
-    $("#genUrl > button").prop('disabled', false);
+    
+    $('#url-permalink').empty()//remove previous links
+    $("#genUrl > button").prop('disabled', false);// Restart shareModel option
 
     //clear projection combo box
     var select = document.getElementsByClassName("framePickerTarget");
@@ -264,6 +261,7 @@ function handleInterpretModelEvent(err, result) {
     var command = $('.command-selection > select option:selected').text();
 
     if (err) {
+        //TODO: this is no longer applicable after no-soap
         if (err.error == 502) {
             swal("Syntax Error!", "", "error");
             var x = document.createElement("IMG");
