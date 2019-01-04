@@ -24,6 +24,10 @@ Model.attachSchema(new SimpleSchema({
         type: String,
         optional: true
     },
+    sat: { // was the command satisfied?
+        type: Boolean,
+        optional: true
+    },
     time: {
         type: String
     }

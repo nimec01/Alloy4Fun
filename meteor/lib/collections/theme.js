@@ -7,12 +7,10 @@ Theme = new Meteor.Collection('Theme');
 
 Theme.attachSchema(new SimpleSchema({
     _id: {
-        type: String,
-        optional: false
+        type: String
     },
     name: {
-        type: String,
-        optional: false
+        type: String
     },
 
     //Node Colors
@@ -110,12 +108,6 @@ Theme.attachSchema(new SimpleSchema({
     },
     "edgeLabels.label": {
         type: String
-    },
-
-    //Reference to its model
-    modelId: {
-        type: String,
-        optional: false
     }
 }))
 

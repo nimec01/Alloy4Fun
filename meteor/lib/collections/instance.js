@@ -9,29 +9,20 @@ Instance = new Meteor.Collection('Instance');
 
 Instance.attachSchema(new SimpleSchema({
     _id: {
-        type: String,
-        optional: false
+        type: String
     },
     model_id: {
-        type: String,
-        optional: false
-    },
-    sat: { // was the command satisfied?
-        type: Boolean,
-        optional: false
+        type: String
     },
     command: { // name of the command that was executed to generate instance
-        type: String,
-        optional: false
+        type: String
     },
     graph: { // the entire cytoscape graph
         type: Object,
-        optional: false,
         blackbox: true
     },
     theme: { // the theme associated with this instance
         type: Object,
-        optional: false,
         blackbox: true
     },
     time: {
