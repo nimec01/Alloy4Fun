@@ -147,8 +147,12 @@ Template.alloyEditor.events({
             else {
                 res = JSON.parse(res);
                 if (!res.success) {
-                    //TODO: better feedback on invalid model
-                    addErrorMarkerToGutter(res.errorMessage, res.errorLocation.line)
+                    addErrorMarkerToGutter(res.errorMessage, res.errorLocation.line);
+                    swal({
+                        title: "There is at least an error!",
+                        text: "The corresponding line has been highlighted in the text area!",
+                        type: "error"
+                    });
                 } else { // success
                     swal({
                         title: "The Model is Valid!",
