@@ -70,9 +70,7 @@ Template.alloyEditor.events({
             } else { // Execute command
                 var modelToShare = textEditor.getValue();
                 let id =Router.current().params._id ||  "Original"
-
-                //TODO: secrets no longer exists here
-                if ((id != "Original") && Router.current().data().secrets) secrets = Router.current().data().secrets;
+                
                 Meteor.call('getInstances', modelToShare, Meteor.default_connection._lastSessionId, 5, commandLabel, true, id, Session.get("last_id"), handleInterpretModelEvent);
             }
             $("#exec > button").prop('disabled', true); /* available buttons */
