@@ -15,17 +15,12 @@ export {
  * @param {Event} evt 
  */
 function clickGenUrl(evt) {
-    // let themeData = {
-    //     atomSettings: atomSettings,
-    //     relationSettings: relationSettings,
-    //     generalSettings: generalSettings,
-    //     currentFramePosition: currentFramePosition,
-    //     currentlyProjectedTypes: currentlyProjectedTypes
-    // };
-    let callGenerate = function(){
+    if ($("#genURL > button").is(":disabled")) return
+
+    let modelToShare = textEditor.getValue();
+    let callGenerate = function(){ // reusable function
         Meteor.call('genURL', modelToShare, Session.get("last_id"), handleGenURLEvent);
     }
-    let modelToShare = textEditor.getValue();
 
     if(containsValidSecretWithAnonymousCommand(modelToShare)){
         swal({
@@ -39,7 +34,6 @@ function clickGenUrl(evt) {
         }, callGenerate)
     }else callGenerate()
 }
-
 
 function containsValidSecretWithAnonymousCommand(model) {
     let lastSecret = 0;
@@ -65,7 +59,6 @@ function handleGenURLEvent(err, result) {
     textcenter.id = "permalink";
     textcenter.appendChild(url);
     if (urlPrivate) textcenter.appendChild(urlPrivate);
-
 
     $('#url-permalink').empty()//remove previous links
     document.getElementById('url-permalink').appendChild(textcenter);
