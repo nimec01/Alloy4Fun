@@ -8,16 +8,15 @@ import {
  */
 Meteor.methods({
     getModel: function(linkId) {
-		let link = Link.findOne(linkId)
-		console.log("getmodel link:", link);
-		let model = Model.findOne(link.model_id)
-		console.log(model);
-		if(link.isPrivate){
-			console.log("private link");
-		}
-		return model
-	},
-	getInstance: function(linkId){
-		
-	}
+        let link = Link.findOne(linkId)
+        let model = Model.findOne(link.model_id)
+        if (link.isPrivate) {
+            //TODO: handle secrets
+            console.log("private link");
+        }
+        return model
+    },
+    getInstance: function(linkId) {
+		//TODO: 
+    }
 })
