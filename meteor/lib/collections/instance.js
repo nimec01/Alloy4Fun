@@ -6,13 +6,13 @@ Instance = new Meteor.Collection('Instance');
 
 //TODO: colocar aqui esquema correto, model_id não está a ser utilizado
 
-/*
+
 Instance.attachSchema(new SimpleSchema({
     _id: {
         type: String,
         optional: false
     },
-    model: {
+    model_id: {
         type: String,
         optional: false
     },
@@ -25,12 +25,12 @@ Instance.attachSchema(new SimpleSchema({
         optional: false,
         blackbox: true
     },
-    theme: { // o tema associado à instância
+    theme: { // the theme associated with this instance
         type: Object,
         optional: false,
         blackbox: true
     }
-}))*/
+}))
 
 export {
     Instance
