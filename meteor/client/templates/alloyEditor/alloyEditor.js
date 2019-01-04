@@ -124,13 +124,8 @@ Template.alloyEditor.events({
         };
         console.log(instances);
         console.log(getCommandLabel());
-        //obter o id do Run correspondente à instancia atual no browser
-        var runID = Session.get("instances")[0 /*Session.get("currentInstance")*/ ].runID;
 
-        Meteor.call("storeInstance", Session.get("last_id"), sat, getCommandLabel(), cy.json(), themeData, handleGenInstanceURLEvent)
-
-        //Meteor.call('storeInstance', textEditor.getValue(), themeData, cy.json(), handleGenInstanceURLEvent);
-        // Meteor.call('storeInstance', runID, themeData, cy.json(), handleGenInstanceURLEvent);
+        Meteor.call("storeInstance", Session.get("last_id"), getCommandLabel(), cy.json(), themeData, handleGenInstanceURLEvent)
     },
     'click #validateModel': function() { // click on the validate button
         Meteor.call('validate', textEditor.getValue(), (err, res) => {
@@ -325,26 +320,25 @@ function getCommandLabel() {
 
 /* geninstanceurlbtn event handler after storeInstance method */
 function handleGenInstanceURLEvent(err, result) {
-    if (!err) {
-        // if the URL was generated successfully, create and append a new element to the HTML containing it.
-        var url = getAnchorWithLink(result, "instance link");
+    if (err) return //TODO: Daniel, increase verbosity with swal
 
-        var clipboard = document.createElement('div');
-        clipboard.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
-        clipboard.innerHTML = "<button class='clipboardbutton cbutton cbutton--effect-boris'><img src='/images/icons/clipboard.png' /><i class='legend'>copy to clipboard</i></button></div>";
+    // if the URL was generated successfully, create and append a new element to the HTML containing it.
+    let url = getAnchorWithLink(result, "instance link");
 
+    let clipboard = document.createElement('div');
+    clipboard.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
+    clipboard.innerHTML = "<button class='clipboardbutton cbutton cbutton--effect-boris'><img src='/images/icons/clipboard.png' /><i class='legend'>copy to clipboard</i></button></div>";
 
-        var textcenter = document.createElement('div');
-        textcenter.className = "text-center";
-        textcenter.id = "instance_permalink";
-        textcenter.appendChild(url);
-        textcenter.appendChild(clipboard);
+    let textcenter = document.createElement('div');
+    textcenter.className = "text-center";
+    textcenter.id = "instance_permalink";
+    textcenter.appendChild(url);
+    textcenter.appendChild(clipboard);
 
-        $("#url-instance-permalink").empty()
-        document.getElementById('url-instance-permalink').appendChild(textcenter);
-        $("#genInstanceUrl > button").prop('disabled', true);
-        zeroclipboard();
-    }
+    $("#url-instance-permalink").empty()
+    document.getElementById('url-instance-permalink').appendChild(textcenter);
+    $("#genInstanceUrl > button").prop('disabled', true);
+    zeroclipboard();
 }
 
 getCurrentInstance = function() {
