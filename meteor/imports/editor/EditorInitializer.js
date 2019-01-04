@@ -39,9 +39,9 @@ function initializeAlloyEditor(htmlElement){
         editor.clearGutter("error-gutter");
 
         //Delete previous existing permalink elements if existent.
-        
-        $('#url-permalink').empty() //remove previous links
-        $("#instance_permalink").remove() //Remove isntance link
+        //uncomment the following lines if it is desirable to hide the share links on code updates
+        // $('#url-permalink').empty() //remove previous links
+        // $("#instance_permalink").remove() //Remove isntance link
 
         $("#genInstanceUrl").hide();
         $("#log").empty();
