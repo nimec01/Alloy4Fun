@@ -4,9 +4,6 @@
 
 Instance = new Meteor.Collection('Instance');
 
-//TODO: colocar aqui esquema correto, model_id não está a ser utilizado
-
-
 Instance.attachSchema(new SimpleSchema({
     _id: {
         type: String
