@@ -226,21 +226,6 @@ Template.alloyEditor.onRendered(function () {
 
 /*------------- Server HANDLERS methods && Aux Functions ----------- */
 
-/* nextbtn event handler after getInstance(textEditor.getValue) , currentInstance + 1 */
-function handleNextInstanceEvent(err, result) {
-    if (err) {
-        swal(err.reason, "", "error");
-    } else {
-        if (result.unsat) {
-            $('#next > button').prop('disabled', true);
-            swal("No more satisfying instances!", "", "error");
-        } else {
-            updateInstances(result);
-            Session.set("currentInstance", result.number);
-        }
-    }
-
-}
 
 /* Execbtn event handler
       result: getInstance(textEditor.getValue,..)*/
@@ -346,18 +331,6 @@ function getNextInstance() {
 
 function getPreviousInstance() {
     return instances[--instanceIndex];
-}
-
-
-/* prevbtn event handler after getInstance(textEditor.getValue) , currentInstance - 1 */
-function handlePreviousInstanceEvent(err, result) {
-    if (err) {
-        swal(err.reason, "", "error");
-    } else {
-        if (result.unsat) $('#prev > button').prop('disabled', true);
-        else updateInstances(result);
-        Session.set("currentInstance", result.number);
-    }
 }
 
 /* geninstanceurlbtn event handler after storeInstance method */
