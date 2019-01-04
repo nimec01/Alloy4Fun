@@ -142,6 +142,7 @@ Template.alloyEditor.events({
             else {
                 res = JSON.parse(res);
                 if (!res.success) {
+                    //TODO: better feedback on invalid model
                     addErrorMarkerToGutter(res.errorMessage, res.errorLocation.line)
                 } else { // success
                     swal({
