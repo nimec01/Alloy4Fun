@@ -8,10 +8,4 @@ Meteor.publish("link", function(linkId) {
         publication.added('Model', linkId, model);
         publication.ready();
     })
-
-    // return Link.find({
-    //     _id: linkId
-    // }, {
-    //     fields: Link.publicFields
-    // })
-});
+})
