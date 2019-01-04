@@ -12,14 +12,6 @@ Meteor.methods({
     //TODO: Daniel, é mesmo suposto manter o forceInterpretation?
     getInstances: function(code, numberOfInstances, commandLabel, forceInterpretation, last_id) {
         return new Promise((resolve, reject) => {
-            // save executed model to database
-            let model_id = Model.insert({
-                whole: code,
-                derivationOf: last_id || "Original",
-                command: commandLabel,
-                time: new Date().toLocaleString()
-            });
-
             // call webservice to get instances
             HTTP.call('POST', `${Meteor.settings.env.API_URL}/getInstances`, {
                 data: {
@@ -30,14 +22,27 @@ Meteor.methods({
                 }
             }, (error, result) => {
                 if (error) reject(error)
+
+                // handle result (unsat vs sat)
                 let content = JSON.parse(result.content)
-                if (content.unsat) { // unsatisfied single check
+                if (content.unsat) { // no counter-examples found
                     content.commandType = "check";
-                } else {
+                } else { // counter-examples found
                     Object.keys(content).forEach(k => {
                         content[k].commandType = "check";
                     });
                 }
+
+                // save executed model to database
+                let model_id = Model.insert({
+                    whole: code,
+                    derivationOf: last_id || "Original",
+                    command: commandLabel,
+                    sat: !!content.unsat, // sat means there was no counter-example (!! is for bool)
+                    time: new Date().toLocaleString()
+                });
+
+                // resolve the promise
                 resolve({
                     instances: content,
                     last_id: model_id
