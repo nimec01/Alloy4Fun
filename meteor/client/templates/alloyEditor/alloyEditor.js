@@ -51,6 +51,8 @@ Template.alloyEditor.helpers({
 });
 Template.alloyEditor.events({
     'click #exec': function() {
+        if ($("#exec > button").is(":disabled")) return
+
         currentlyProjectedTypes = [];
         currentFramePosition = {};
         allAtoms = [];
@@ -79,36 +81,34 @@ Template.alloyEditor.events({
     },
     'click #genUrl': clickGenUrl,
     'click #prev': function(evt) {
+        if ($("#prev > button").is(":disabled")) return
         if (evt.toElement.id != "prev") {
-            if (!$("#prev > button").is(":disabled")) {
-                let ni = getPreviousInstance();
-                if (typeof ni !== 'undefined') {
-                    updateGraph(ni);
-                    if (instanceIndex == 0) {
-                        $("#prev > button").prop('disabled', true);
-                    }
-                    $("#next > button").prop('disabled', false);
+            let ni = getPreviousInstance();
+            if (typeof ni !== 'undefined') {
+                updateGraph(ni);
+                if (instanceIndex == 0) {
+                    $("#prev > button").prop('disabled', true);
                 }
+                $("#next > button").prop('disabled', false);
             }
         }
     },
     'click #next': function(evt) {
+        if ($("#next > button").is(":disabled")) return
         if (evt.toElement.id != "next") {
-            if (!$("#next > button").is(":disabled")) {
-                let ni = getNextInstance();
-                if (typeof ni !== 'undefined') {
-                    if (ni.unsat) {
-                        $('#next > button').prop('disabled', true);
-                        swal("No more satisfying instances!", "", "error");
-                    } else {
-                        console.log("requesting graph update");
-                        updateGraph(ni);
-                    }
-                    if (instanceIndex + 1 == maxInstanceNumber) {
-                        $("#next > button").prop('disabled', true);
-                    }
-                    $("#prev > button").prop('disabled', false);
+            let ni = getNextInstance();
+            if (typeof ni !== 'undefined') {
+                if (ni.unsat) {
+                    $('#next > button').prop('disabled', true);
+                    swal("No more satisfying instances!", "", "error");
+                } else {
+                    console.log("requesting graph update");
+                    updateGraph(ni);
                 }
+                if (instanceIndex + 1 == maxInstanceNumber) {
+                    $("#next > button").prop('disabled', true);
+                }
+                $("#prev > button").prop('disabled', false);
             }
         }
     },
@@ -320,20 +320,17 @@ function getCommandLabel() {
 
 /* geninstanceurlbtn event handler after storeInstance method */
 function handleGenInstanceURLEvent(err, result) {
+    console.log(err);
+    console.log(result);
     if (err) return //TODO: Daniel, increase verbosity with swal
 
     // if the URL was generated successfully, create and append a new element to the HTML containing it.
     let url = getAnchorWithLink(result, "instance link");
 
-    let clipboard = document.createElement('div');
-    clipboard.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
-    clipboard.innerHTML = "<button class='clipboardbutton cbutton cbutton--effect-boris'><img src='/images/icons/clipboard.png' /><i class='legend'>copy to clipboard</i></button></div>";
-
     let textcenter = document.createElement('div');
     textcenter.className = "text-center";
     textcenter.id = "instance_permalink";
     textcenter.appendChild(url);
-    textcenter.appendChild(clipboard);
 
     $("#url-instance-permalink").empty()
     document.getElementById('url-instance-permalink').appendChild(textcenter);
