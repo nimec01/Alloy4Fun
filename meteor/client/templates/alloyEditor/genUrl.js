@@ -2,6 +2,9 @@ import {
     zeroclipboard,
     getAnchorWithLink
 } from "../../lib/editor/clipboard"
+import {
+    containsValidSecret
+} from "../../../lib/editor/text"
 
 export {
     clickGenUrl,
