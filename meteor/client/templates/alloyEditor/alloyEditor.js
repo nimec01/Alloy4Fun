@@ -59,7 +59,7 @@ Template.alloyEditor.events({
 
         if (!$("#exec > button").is(":disabled")) { /* if the button is available, check if there are commands to execute*/
             let commandLabel = getCommandLabel();
-            if (commandLabel.length == 0) {
+            if (commandLabel.length == 0) {//no command to run
                 swal({
                     title: "",
                     text: "There are no commands to execute",
@@ -67,11 +67,10 @@ Template.alloyEditor.events({
                     buttons: true,
                     dangerMode: true,
                 });
-            } else { /* Execute command */
+            } else { // Execute command
                 var modelToShare = textEditor.getValue();
-                if (!(id = Router.current().params._id)) {
-                    id = "Original";
-                }
+                let id =Router.current().params._id ||  "Original"
+
                 //TODO: secrets no longer exists here
                 if ((id != "Original") && Router.current().data().secrets) secrets = Router.current().data().secrets;
                 Meteor.call('getInstances', modelToShare, Meteor.default_connection._lastSessionId, 5, commandLabel, true, id, Session.get("last_id"), handleInterpretModelEvent);
