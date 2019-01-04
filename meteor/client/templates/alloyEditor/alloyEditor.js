@@ -341,6 +341,7 @@ function handleGenInstanceURLEvent(err, result) {
         textcenter.appendChild(url);
         textcenter.appendChild(clipboard);
 
+        $("#url-instance-permalink").empty()
         document.getElementById('url-instance-permalink').appendChild(textcenter);
         $("#genInstanceUrl > button").prop('disabled', true);
         zeroclipboard();
