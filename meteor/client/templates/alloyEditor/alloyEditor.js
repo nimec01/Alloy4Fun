@@ -57,25 +57,22 @@ Template.alloyEditor.events({
         atomPositions = {};
         $(".frame-navigation").hide();
 
-        if (!$("#exec > button").is(":disabled")) { /* if the button is available, check if there are commands to execute*/
-            let commandLabel = getCommandLabel();
-            if (commandLabel.length == 0) { //no command to run
-                swal({
-                    title: "",
-                    text: "There are no commands to execute",
-                    icon: "warning",
-                    buttons: true,
-                    dangerMode: true,
-                });
-            } else { // Execute command
-                var modelToShare = textEditor.getValue();
-                let id = Router.current().params._id || "Original"
-
-                Meteor.call('getInstances', modelToShare, 5, commandLabel, true, handleInterpretModelEvent);
-            }
-            $("#exec > button").prop('disabled', true); /* available buttons */
-            $("#next > button").prop('disabled', false);
+        let commandLabel = getCommandLabel();
+        if (commandLabel.length == 0) { //no command to run
+            swal({
+                title: "",
+                text: "There are no commands to execute",
+                icon: "warning",
+                buttons: true,
+                dangerMode: true,
+            });
+        } else { // Execute command
+            let model = textEditor.getValue();
+            Meteor.call('getInstances', model, 5, commandLabel, true, handleInterpretModelEvent);
         }
+        // update button states after execution
+        $("#exec > button").prop('disabled', true);
+        $("#next > button").prop('disabled', false);
     },
     'change .command-selection > select': function() {
         $("#exec > button").prop('disabled', false);
@@ -236,7 +233,6 @@ Template.alloyEditor.onRendered(function() {
 /* Execbtn event handler
       result: getInstance(textEditor.getValue,..)*/
 function handleInterpretModelEvent(err, result) {
-    //TODO: return [things, model_id]
     //TODO: insert model into database on getInstances
     console.log(result);
     $.unblockUI();
