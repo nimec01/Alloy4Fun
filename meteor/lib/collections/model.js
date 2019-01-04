@@ -15,10 +15,20 @@ Model.attachSchema(new SimpleSchema({
         optional: false
     },
     derivationOf: { // which model does it derive from
+        type: String,
+        optional: false
+    },
+    /**
+     * optional field for the command selected when model was created.
+     * genUrl will not set command
+     * execute will set the command
+     */
+    command: {
         type: String
     },
     time: {
-        type: String
+        type: String,
+        optional: false
     }
 }))
 
