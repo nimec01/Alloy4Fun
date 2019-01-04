@@ -58,7 +58,7 @@ Template.alloyEditor.events({
         $(".frame-navigation").hide();
 
         if (!$("#exec > button").is(":disabled")) { /* if the button is available, check if there are commands to execute*/
-            var commandLabel = Session.get("commands").length > 1 ? $('.command-selection > select option:selected').text() : Session.get("commands");
+            let commandLabel = getCommandLabel();
             if (commandLabel.length == 0) {
                 swal({
                     title: "",
@@ -322,6 +322,10 @@ function getNextInstance() {
 
 function getPreviousInstance() {
     return instances[--instanceIndex];
+}
+
+function getCommandLabel() {
+    return Session.get("commands").length > 1 ? $('.command-selection > select option:selected').text() : Session.get("commands")[0];
 }
 
 /* geninstanceurlbtn event handler after storeInstance method */
