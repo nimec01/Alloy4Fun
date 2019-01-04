@@ -7,7 +7,6 @@ export {
     clickGenUrl,
     containsValidSecretWithAnonymousCommand
 };
-
 /**
  * Function to handle click on "Share" button
  * @param {Event} evt 
