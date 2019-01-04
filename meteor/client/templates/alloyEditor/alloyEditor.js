@@ -176,8 +176,7 @@ Template.alloyEditor.onRendered(function() {
 
     if (model && textEditor) {
         var themeData;
-        if (model.instance)
-            themeData = model.instance.theme;
+        if (model.instance) themeData = model.instance.theme;
         //Place model on text editor
         var result = model.whole;
         textEditor.setValue(result);
@@ -294,7 +293,7 @@ function handleInterpretModelEvent(err, result) {
             $("#log")[0].appendChild(log);
         }
 
-        if (result.unsat) {
+        if (result.unsat) { // no counter examples found
             $('.empty-univ').fadeIn();
             $('#instanceViewer').hide();
             $("#genInstanceUrl").hide();
