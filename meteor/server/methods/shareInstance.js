@@ -8,7 +8,7 @@ Meteor.methods({
     /**
      * Saves the instance and returns the id
      * @param {String} modelId the model id
-     * @param {Bool} sat true or fals for satisfiable instance or not
+     * @param {Bool} sat true or false for satisfiable instance or not
      * @param {String} command the name of the command that was executed
      * @param {String} instance the JSON string of the cytoscape graph
      * @param {Object} themeData with the theme information for cytoscape
