@@ -7,16 +7,13 @@ Model = new Meteor.Collection('Model');
 
 Model.attachSchema(new SimpleSchema({
     _id: {
-        type: String,
-        optional: false
+        type: String
     },
     whole: { // has all of the code
-        type: String,
-        optional: false
+        type: String
     },
     derivationOf: { // which model does it derive from
-        type: String,
-        optional: false
+        type: String
     },
     /**
      * optional field for the command selected when model was created.
@@ -24,11 +21,11 @@ Model.attachSchema(new SimpleSchema({
      * execute will set the command
      */
     command: {
-        type: String
+        type: String,
+        optional: true
     },
     time: {
-        type: String,
-        optional: false
+        type: String
     }
 }))
 
