@@ -40,8 +40,8 @@ public class AlloyGetInstances {
 	@POST
 	@Produces("text/json")
 	public Response doGet(String body) throws IOException {
+		System.out.println(body);
 		InstancesRequest req = parseJSON(body);
-
 		A4Reporter rep = new A4Reporter();
 		File tempFile = File.createTempFile("a4f", "als");
 		tempFile.deleteOnExit();
@@ -77,7 +77,7 @@ public class AlloyGetInstances {
 						}
 						res = solsArrayJSON.build().toString();
 					} else {
-						res = "unsat";
+						res = "{\"unsat\": true}";
 					}
 
 				} catch (Err e) {

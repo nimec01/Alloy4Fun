@@ -4,7 +4,7 @@ import {
 
 import '../server/methods/validate'
 import '../server/methods/genURL'
-import '../server/methods/getInstance'
+import '../server/methods/getInstances'
 import '../server/methods/getProjection'
 import '../server/methods/shareInstance'
 
