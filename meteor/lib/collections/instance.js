@@ -20,7 +20,7 @@ Instance.attachSchema(new SimpleSchema({
         type: Boolean,
         optional: false
     },
-    command: { // name of the command that was executed
+    command: { // name of the command that was executed to generate instance
         type: String,
         optional: false
     },
