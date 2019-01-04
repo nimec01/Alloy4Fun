@@ -1,6 +1,6 @@
 /**
  * Models created through the editor feature.
- * An Alloy model
+ * An Alloy model, with the code
  */
 
 Model = new Meteor.Collection('Model');
