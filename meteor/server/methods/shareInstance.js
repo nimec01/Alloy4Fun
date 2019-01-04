@@ -8,16 +8,14 @@ Meteor.methods({
     /**
      * Saves the instance and returns the id
      * @param {String} modelId the model id
-     * @param {Bool} sat true or false for satisfiable instance or not
      * @param {String} command the name of the command that was executed
      * @param {String} instance the JSON string of the cytoscape graph
      * @param {Object} themeData with the theme information for cytoscape
      * @return id of the new instance
      */
-    storeInstance: function(modelId, sat, command, instance, themeData) {
+    storeInstance: function(modelId, command, instance, themeData) {
         return Instance.insert({
             model_id: modelId,
-            sat: sat,
             command: command,
             graph: instance,
             theme: themeData,
