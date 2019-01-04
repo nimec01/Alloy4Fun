@@ -11,7 +11,7 @@
     "@babel/runtime": "^7.1.5",
     "classie": "^1.0.0",
     "codemirror": "^5.42.2",
-    "cytoscape": "^3.3.1",
+    "cytoscape": "2.7.14",
     "meteor-node-stubs": "^0.4.1",
     "qtip2": "^3.0.3",
     "simpl-schema": "^1.5.3"
