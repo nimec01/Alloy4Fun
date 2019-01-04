@@ -11,8 +11,13 @@ import {
 
 
 // Globals
+/** @var instances The received instances */
 instances = [];
+
+/** @var instanceIndex The current instance index */
 instanceIndex = 0;
+
+/** @var maxInstanceNumber The number of instances in the variable instances */
 maxInstanceNumber = -1;
 
 /*Each template has a local dictionary of helpers that are made available to it, and this call specifies helpers to add to the template’s dictionary.*/
@@ -342,8 +347,8 @@ function handleGenInstanceURLEvent(err, result) {
     }
 }
 
-getCurrentInstance = function (instanceNumber) {
-    return instances[instanceNumber]
+getCurrentInstance = function () {
+    return instances[instanceIndex]
 };
 
 /*onRendered aux functions*/

@@ -11,7 +11,7 @@ project = function(){
     // var projection = getProjectionFromCache();
     // if(projection)updateProjection(projection);
     // else
-    Meteor.call("getProjection", Meteor.default_connection._lastSessionId,  currentFramePosition, processProjection);
+    Meteor.call("getProjection", getCurrentInstance().uuid, currentFramePosition, processProjection);
 };
 
 processProjection = function(err, projection){
