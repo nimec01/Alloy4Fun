@@ -4,33 +4,16 @@
  */
 
 export {
-    isParagraph, containsValidSecret
+    isParagraph,
+    containsValidSecret,
+    getCommands,
+    getCommandsFromCode
 }
 
 
 /*Check if the model contains some valid 'secret'*/
 function containsValidSecret(model) {
-    return model.indexOf("\n//SECRET\n")!= -1
-
-
-    // var i, lastSecret = 0;
-    // var paragraph = "";
-    // while ((i = model.indexOf("//SECRET\n", lastSecret)) >= 0) {
-    //     for (var z = i + ("//SECRET\n".length);
-    //         (z < model.length && model[z] != '{'); z++) {
-    //         paragraph = paragraph + model[z];
-    //     }
-    //     if (!isParagraph(paragraph)) {
-    //         paragraph = "";
-    //         lastSecret = i + 1;
-    //         continue;
-    //     }
-    //     if (findClosingBracketMatchIndex(model, z) != -1) {
-    //         return true;
-    //     }
-    //     lastSecret = i + 1;
-    // }
-    // return false;
+    return model.indexOf("\n//SECRET\n") != -1
 }
 
 /**
@@ -39,8 +22,35 @@ function containsValidSecret(model) {
  * @return true if valid paragraph, false otherwise
  */
 function isParagraph(word) {
-    var pattern_named = /^((one sig |sig |pred |fun |abstract sig )(\ )*[A-Za-z0-9]+)/m;
-    var pattern_nnamed = /^((fact|assert|run|check)(\ )*[A-Za-z0-9]*)/m;
+    let pattern_named = /^((one sig |sig |pred |fun |abstract sig )(\ )*[A-Za-z0-9]+)/m;
+    let pattern_nnamed = /^((fact|assert|run|check)(\ )*[A-Za-z0-9]*)/m;
     if (word.match(pattern_named) == null && word.match(pattern_nnamed) == null) return false;
     else return true;
+}
+
+/**
+ * Function associated with 'text box' that parses command type paragraphs, to be used as data for the combobox.
+ * @param {String} code with the code
+ */
+function getCommandsFromCode(code) {
+    let pattern = /((\W|^)run(\{|(\[\n\r\s]+\{)|([\n\r\s]+([^{\n\r\s]*)))|((\W|^)check(\{|(\[\n\r\s]+\{)|([\n\r\s]+([^{\n\r\s]*)))))/g;
+    let commands = [];
+    let commandNumber = 1;
+
+    // To avoid commands that are in comment, comments must be eliminated before parse
+    code = code.replace(/\/\/(.*)(\n)/g, "");
+    let matches = pattern.exec(code);
+
+    while (matches != null) {
+        if (matches[6]) commands.push(matches[6]);
+        else if (matches[12]) commands.push(matches[12]);
+        else if (matches[0].includes("run")) {
+            commands.push("run$" + commandNumber);
+        } else if (matches[0].includes("check")) {
+            commands.push("check$" + commandNumber);
+        } else console.log("Unreachable block of code.");
+        commandNumber++;
+        matches = pattern.exec(code);
+    }
+    return commands
 }
