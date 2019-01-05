@@ -11,6 +11,8 @@ before_script:
 # cache:
   # directories:
   #   - node_modules
+addons:
+  chrome: stable
 notifications:
   email:
     on_success: never
