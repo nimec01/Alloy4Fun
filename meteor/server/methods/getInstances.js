@@ -10,7 +10,7 @@
  */
 Meteor.methods({
     //TODO: Daniel, é mesmo suposto manter o forceInterpretation?
-    getInstances: function(code, numberOfInstances, commandLabel, forceInterpretation, last_id) {
+    getInstances: function(code, numberOfInstances, commandLabel, forceInterpretation, last_id, original) {
         return new Promise((resolve, reject) => {
             // call webservice to get instances
             HTTP.call('POST', `${Meteor.settings.env.API_URL}/getInstances`, {
@@ -34,13 +34,17 @@ Meteor.methods({
                 }
 
                 // save executed model to database
-                let model_id = Model.insert({
+                let new_model = {
                     whole: code,
-                    derivationOf: last_id || "Original",
                     command: commandLabel,
                     sat: !!content.unsat, // sat means there was no counter-example (!! is for bool)
                     time: new Date().toLocaleString()
-                });
+                }
+                // optional params explictly to avoid_idnull
+                if (last_id) new_model.derivationOf = last_id
+                if (original) new_model.original = original
+                // insert
+                let model_id = Model.insert(new_model);
 
                 // resolve the promise
                 resolve({

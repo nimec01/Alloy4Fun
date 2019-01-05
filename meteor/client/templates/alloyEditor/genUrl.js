@@ -61,5 +61,5 @@ function handleGenURLEvent(err, result) {
     zeroclipboard();
 
     //update the value of the last model id
-    Session.set("last_id", result.last_id);
+    Session.set("last_id", result.last_id); // this will change on every derivation
 }

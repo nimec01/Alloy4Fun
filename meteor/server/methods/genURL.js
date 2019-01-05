@@ -16,11 +16,15 @@ import {
 Meteor.methods({
     genURL: function(code, last_id) {
         // A Model is always created, regardless of having secrets or not
-        let model_id = Model.insert({
+        let model = {
             whole: code,
-            derivationOf: last_id || "Original",
             time: new Date().toLocaleString()
-        });
+        }
+        // explicitly set optional to avoid nulls
+        if (last_id) model.derivationOf = last_id
+        // insert
+        let model_id = Model.insert(model);
+
         //Generate the public link
         let public_link_id = Link.insert({
             model_id: model_id,
@@ -29,7 +33,7 @@ Meteor.methods({
 
         //Generate private link if SECRET is present
         let private_link_id
-        if(containsValidSecret(code)){
+        if (containsValidSecret(code)) {
             private_link_id = Link.insert({
                 model_id: model_id,
                 private: true
