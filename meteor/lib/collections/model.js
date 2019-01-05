@@ -12,8 +12,9 @@ Model.attachSchema(new SimpleSchema({
     whole: { // has all of the code
         type: String
     },
-    derivationOf: { // which model does it derive from
-        type: String
+    derivationOf: { // which model does it derive from (null if original)
+        type: String,
+        optional: true
     },
     /**
      * which model does it originally derive from
