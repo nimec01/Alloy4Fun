@@ -161,7 +161,6 @@ Template.alloyEditor.onRendered(() => {
 
     if (Router.current().data && textEditor) { // if there's subscribed data, process it.
         let model = Router.current().data(); // load the model from controller
-        console.log(model);
         textEditor.setValue(model.code); // update the textEditor
         // save the loaded model id for later derivations
         Session.set("last_id", model.model_id); // this will change on execute
