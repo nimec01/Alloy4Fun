@@ -22,7 +22,7 @@
         }
     },
     "devDependencies": {
-        "chromedriver": "^2.35.0",
+        "chromedriver": "2.45.0",
         "selenium-webdriver": "3.6.0",
         "@meteorjs/eslint-config-meteor": "^1.0.5",
         "babel-eslint": "^10.0.1",
@@ -51,11 +51,17 @@
             "import/prefer-default-export": "off",
             "no-underscore-dangle": "off",
             "no-undef": "off",
-            "object-curly-newline": ["error", {
-                "ImportDeclaration": "never",
-                "ExportDeclaration": "never"
-            }],
-            "indent": ["error", 4],
+            "object-curly-newline": [
+                "error",
+                {
+                    "ImportDeclaration": "never",
+                    "ExportDeclaration": "never"
+                }
+            ],
+            "indent": [
+                "error",
+                4
+            ],
             "object-shorthand": [
                 "error",
                 "always",
