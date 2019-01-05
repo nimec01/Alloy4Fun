@@ -1,5 +1,7 @@
 Currently running at http://alloy4fun.di.uminho.pt
 
+[![Build Status](https://travis-ci.org/msramalho/Alloy4FunWebApp.svg?branch=v1.0.0)](https://travis-ci.org/msramalho/Alloy4FunWebApp)
+
 Docker contains meteor (without hot code), mongodb, and java container
 
 Magic command: `docker-compose up -d` (meteor available at localhost:3010 and api at localhost:8080)
