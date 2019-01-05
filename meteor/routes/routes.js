@@ -2,7 +2,6 @@
  * Defines the routes for the application
  */
 
-
 // global route settings
 Router.configure({
     // Template displayed while loading data.

@@ -2,6 +2,9 @@ import {
     Model
 } from "../../lib/collections/model"
 
+/**
+ * This is used to retrieve data when the Route contains a link /:_id
+ */
 editor = RouteController.extend({
     template: 'alloyEditor',
 
