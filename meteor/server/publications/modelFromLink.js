@@ -1,7 +1,7 @@
 /**
  * Publishes the link information to the client
  */
-Meteor.publish("link", function(linkId) {
+Meteor.publish("modelFromLink", function(linkId) {
     let publication = this;
     Meteor.call("getModel", linkId, (err, model) => {
         if(err) publication.ready();

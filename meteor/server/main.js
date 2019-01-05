@@ -9,7 +9,7 @@ import '../server/methods/getProjection'
 import '../server/methods/shareInstance'
 import '../server/methods/getModel'
 
-import './publications/link'
+import './publications/modelFromLink'
 
 Meteor.startup(() => {
     // code to run on server at startup
