@@ -5,6 +5,9 @@ import {
     clickGenUrl
 } from "./genUrl"
 import {
+    downloadTree
+} from "./downloadTree"
+import {
     zeroclipboard,
     getAnchorWithLink
 } from "../../lib/editor/clipboard"
@@ -80,7 +83,7 @@ Template.alloyEditor.events({
     'change .command-selection > select'() {
         $('#exec > button').prop('disabled', false);
     },
-    'click #genUrl': clickGenUrl,
+    'click #genUrl': downloadTree,
     'click #prev': function(evt) {
         if ($("#prev > button").is(":disabled")) return
         if (evt.toElement.id != "prev") {
@@ -147,6 +150,7 @@ Template.alloyEditor.events({
             }
         });
     },
+    'click #downloadTree': downloadTree
 });
 /* Callbacks added with this method are called once when an instance of Template.alloyEditor is rendered into DOM nodes and put into the document for the first time. */
 Template.alloyEditor.onRendered(() => {
@@ -170,7 +174,7 @@ Template.alloyEditor.onRendered(() => {
         Session.set("commands", model.commands) // update the commands to start correct
 
         $("#downloadTree > button").prop('disabled', false);
-        
+
         if (model.instance) { // if there is an instance to show
             let themeData = model.instance.theme;
             atomSettings = themeData.atomSettings;
