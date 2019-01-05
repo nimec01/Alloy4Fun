@@ -12,7 +12,7 @@ Alloy4Fun is being developed using:
  * [Docker](https://www.docker.com/) is used to ensure a simple and ubiquitous development environment.
  * [Travis CI](https://travis-ci.org/) is used for continuous integration through the [.travis.yml](.travis.yml) file.
 
-## Contributing and Development Guidelines
+# Contributing and Development Guidelines
 You can contribute by looking at the [issues](issues/) section.
 
 **INFO:** The application contains three main services/containers:
@@ -32,13 +32,13 @@ You can contribute by looking at the [issues](issues/) section.
  * use the webservice available at [localhost:8081](http://localhost:8081)
 
 
-### Meteor Development with Hot-code push
+## Meteor Development with Hot-code push
 Since the meteor instance running inside docker is statick and has to be built everytime a change is made (`docker-compose build meteor`), it is not very good for development. 
 
 To have Hot-code push while you develop meteor you can run it on your computer (after `cd meteor`) with `npm start`.
 
 
-### API
+## API
 Since the api is essentially an Alloy4fun webservice a local jar file is used for stability purposes the lib folder structure is required for maven to detect the local repository. 
 
 To run the **api** isolated do `cd api` and then `docker build -t alloy4fun-api . && docker run -p 8080:8080 alloy4fun-api` for now it can be accessed at [http://localhost:8080/](http://localhost:8080/)
@@ -47,10 +47,10 @@ You can also run it **outside docker**, just take a look at its [Dockerfile](api
  1. `mvn clean install`
  1. `java -Djava.net.preferIPv4Stack=true -jar /home/target/alloy4fun-api-swarm.jar`
 
-### Database
+## Database
 The database is saved to a volume in `data/db/` and backups can be made by copying this folder elsewhere. 
 
-### Meteor
+## Meteor
 Meteor will run locally on port **3000** and on port **3010** in docker so that there is no interference between both instances.
 
 # Testing
@@ -58,13 +58,13 @@ Unit tests are enabled on both client and server code, with the appropriate chro
 
 To run the tests just do `npm test`
 
-### Linter
+## Linter
 Linter is also installed and configured but not included in the CI pipeline, to run the linter you can do `npm run lint` inside the `meteor` folder. To run linter without the `--fix` option do `eslint .`.
 
 To include the linter in the CI pipeline (first make sure all linter errors are fixed) and then add the following to the [package.json](meteor/package.json) `scripts`: `"pretest": "npm run lint --silent"`
 
 
-### Team
+## Team
 Alloy4fun has been developed by:
  * [Haslab](https://github.com/haslab)
  * [Universidade do Minho](https://www.uminho.pt/)
