@@ -43,7 +43,7 @@ Since the api is essentially an Alloy4fun webservice a local jar file is used fo
 
 To run the **api** isolated do `cd api` and then `docker build -t alloy4fun-api . && docker run -p 8080:8080 alloy4fun-api` for now it can be accessed at [http://localhost:8080/](http://localhost:8080/)
 
-You can also run it outside docker, just take a look at its [Dockerfile](api/Dockerfile), essentially you need:
+You can also run it **outside docker**, just take a look at its [Dockerfile](api/Dockerfile), essentially you need:
  1. `mvn clean install`
  1. `java -Djava.net.preferIPv4Stack=true -jar /home/target/alloy4fun-api-swarm.jar`
 
@@ -51,7 +51,7 @@ You can also run it outside docker, just take a look at its [Dockerfile](api/Doc
 The database is saved to a volume in `data/db/` and backups can be made by copying this folder elsewhere. 
 
 ### Meteor
-Meteor locally will run on port **3000** and on docker on port **3010** so that there is no interference between both instances.
+Meteor will run locally on port **3000** and on port **3010** in docker so that there is no interference between both instances.
 
 # Testing
 Unit tests are enabled on both client and server code, with the appropriate chromedriver packages needed for integration and acceptance tests. 
