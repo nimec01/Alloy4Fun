@@ -13,10 +13,11 @@ Meteor.methods({
     getModel: function(linkId) {
         let link = Link.findOne(linkId)
         let model = Model.findOne(link.model_id)
+        let complete_model = model.whole
         if (!link.private) model.whole = extractSecrets(model.whole).public
         model.model_id = model._id // this is necessary because publish is for the linkId
         model.from_private = link.private // return info about the used link type
-        model.commands = getCommandsFromCode(model.whole)
+        model.commands = getCommandsFromCode(complete_model)
         return model
     },
     getInstance: function(linkId) {
