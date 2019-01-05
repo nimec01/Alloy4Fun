@@ -77,7 +77,7 @@ We believe the changes made to the alloy4fun platform represent a very drastic a
 
 We also belive we have exceeded our expectations of produced work for the time given for the project, and are happy with the outcome.
 
-Context: 		MFES 2018/2019 - FEUP
-Group:			Daniel Silva and Miguel Ramalho
-Teacher:		Professora Ana Paiva
-Product Owner:	Professor Alcino Cunha
+ * Context: 		MFES 2018/2019 - FEUP
+ * Group:			Daniel Silva and Miguel Ramalho
+ * Teacher:		   Professora Ana Paiva
+ * Product Owner:	Professor Alcino Cunha
