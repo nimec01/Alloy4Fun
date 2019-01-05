@@ -52,7 +52,7 @@ Meteor.publish('instanceLoad', function(_id) {
     }
 
 
-    var result = Instance.find(selector, options);
+    const result = Instance.find(selector, options);
 
     if (result) {
         return result;
@@ -74,7 +74,7 @@ Meteor.publish('runLoad', function() {
     }
 
 
-    var result = Run.find(selector, options);
+    const result = Run.find(selector, options);
 
     if (result) {
         return result;

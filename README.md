@@ -1,5 +1,7 @@
 Currently running at http://alloy4fun.di.uminho.pt
 
+[![Build Status](https://travis-ci.org/msramalho/Alloy4FunWebApp.svg?branch=v1.0.0)](https://travis-ci.org/msramalho/Alloy4FunWebApp)
+
 Docker contains meteor (without hot code), mongodb, and java container
 
 Magic command: `docker-compose up -d` (meteor available at localhost:3010 and api at localhost:8080)
@@ -26,3 +28,9 @@ To run with hot code (outside docker): `cd meteor/ && npm start` (This will run 
 
 ## Development
 The easiest way to deploy is to run meteor locally and the service and database in docker (if a lot of changes have to be made to the service, you can updated it as well)
+
+## Future
+To consider linter errors into `npm test` update the [package.json](meteor/package.json) file to have another `script` namely: `"pretest": "npm run lint --silent"`. This is currently disabled as there were too many errors to handle and also due to lack of specification of which linter rules should be followed, these can be found and updated in the future in the `eslintConfig` parameter of the [package.json](meteor/package.json) file.
+
+For future reference, do:
+```meteor npm install --save-dev babel-eslint eslint-config-airbnb eslint-plugin-import eslint-plugin-meteor eslint-plugin-react eslint-plugin-jsx-a11y eslint-import-resolver-meteor eslint @meteorjs/eslint-config-meteor``` to instal required packages

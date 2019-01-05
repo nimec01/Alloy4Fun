@@ -18,20 +18,20 @@ export {
 /*
 Editor initialization options.
 */
-var options = {
-    //Display line numbers.
+const options = {
+    // Display line numbers.
     lineNumbers: true,
-    //Whether CodeMirror should scroll or wrap for long lines. Defaults to false (scroll).
+    // Whether CodeMirror should scroll or wrap for long lines. Defaults to false (scroll).
     lineWrapping: true,
     styleActiveLine: true,
-    //Highlight matching brackets when editor's standing next to them
+    // Highlight matching brackets when editor's standing next to them
     matchBrackets: true,
-    //TODO: Allow choosing between multiple themes.
-    theme: "twilight",
-    //TODO: This is broken. Must be fixed to permit block folding.
+    // TODO: Allow choosing between multiple themes.
+    theme: 'twilight',
+    // TODO: This is broken. Must be fixed to permit block folding.
     foldGutter: true,
-    //Adds gutters to the editor. In this case a single one is added for the error icon placement
-    gutters: ["error-gutter", "breakpoints"]
+    // Adds gutters to the editor. In this case a single one is added for the error icon placement
+    gutters: ['error-gutter', 'breakpoints'],
 };
 
 /*
@@ -63,7 +63,7 @@ function initializeAlloyEditor(htmlElement) {
             $('#prev > button').prop('disabled', true);
             $('.permalink > button').prop('disabled', true);
         } else {
-            //Populate commands combo box
+            // Populate commands combo box
             editor.getCommands();
             if (Session.get("commands") && Session.get("commands").length >= 0) {
                 $('#instanceViewer').hide();

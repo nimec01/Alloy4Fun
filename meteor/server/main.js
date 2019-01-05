@@ -1,6 +1,4 @@
-import {
-    Meteor
-} from 'meteor/meteor';
+import { Meteor } from 'meteor/meteor';
 
 import '../server/methods/validate'
 import '../server/methods/genURL'

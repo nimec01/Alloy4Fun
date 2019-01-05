@@ -25,7 +25,7 @@ function isParagraph(word) {
     let pattern_named = /^((one sig |sig |pred |fun |abstract sig )(\ )*[A-Za-z0-9]+)/m;
     let pattern_nnamed = /^((fact|assert|run|check)(\ )*[A-Za-z0-9]*)/m;
     if (word.match(pattern_named) == null && word.match(pattern_nnamed) == null) return false;
-    else return true;
+    return true;
 }
 
 /**

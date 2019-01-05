@@ -13,37 +13,37 @@ Theme.attachSchema(new SimpleSchema({
         type: String
     },
 
-    //Node Colors
+    // Node Colors
     nodeColors: {
         type: Array,
-        optional: true
+        optional: true,
     },
-    "nodeColors.$": {
-        type: Object
+    'nodeColors.$': {
+        type: Object,
     },
-    "nodeColors.type": {
-        type: String
+    'nodeColors.type': {
+        type: String,
     },
-    "nodeColors.color": {
-        type: String
+    'nodeColors.color': {
+        type: String,
     },
 
-    //Node Shapes
+    // Node Shapes
     nodeShapes: {
         type: Array,
-        optional: true
+        optional: true,
     },
-    "nodeShapes.$": {
-        type: Object
+    'nodeShapes.$': {
+        type: Object,
     },
-    "nodeShapes.type": {
-        type: String
+    'nodeShapes.type': {
+        type: String,
     },
-    "nodeShapes.shape": {
-        type: String
+    'nodeShapes.shape': {
+        type: String,
     },
 
-    /*nodePositions: {
+    /* nodePositions: {
         type: Array,
         optional : true
     },
@@ -62,55 +62,53 @@ Theme.attachSchema(new SimpleSchema({
     },
     "nodePositions.pos.y" : {
         type: Number
-    },*/
+    }, */
 
-    //Node labels in case of renaming
+    // Node labels in case of renaming
     nodeLabels: {
         type: Array,
-        optional: true
+        optional: true,
     },
-    "nodeLabels.$": {
-        type: Object
+    'nodeLabels.$': {
+        type: Object,
     },
-    "nodeLabels.type": {
-        type: String
+    'nodeLabels.type': {
+        type: String,
     },
-    "nodeLabels.label": {
-        type: String
+    'nodeLabels.label': {
+        type: String,
     },
 
 
-    //Edge Colors
+    // Edge Colors
     edgeColors: {
         type: Array,
-        optional: true
+        optional: true,
     },
-    "edgeColors.$": {
-        type: Object
+    'edgeColors.$': {
+        type: Object,
     },
-    "edgeColors.relation": {
-        type: String
+    'edgeColors.relation': {
+        type: String,
     },
-    "edgeColors.color": {
-        type: String
+    'edgeColors.color': {
+        type: String,
     },
 
-    //Edge Labels
+    // Edge Labels
     edgeLabels: {
         type: Array,
-        optional: true
+        optional: true,
     },
-    "edgeLabels.$": {
-        type: Object
+    'edgeLabels.$': {
+        type: Object,
     },
-    "edgeLabels.relation": {
-        type: String
+    'edgeLabels.relation': {
+        type: String,
     },
     "edgeLabels.label": {
         type: String
     }
 }))
 
-export {
-    Theme
-};
+export { Theme };

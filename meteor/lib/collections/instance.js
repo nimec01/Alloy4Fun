@@ -27,6 +27,4 @@ Instance.attachSchema(new SimpleSchema({
     }
 }))
 
-export {
-    Instance
-};
+export { Instance };

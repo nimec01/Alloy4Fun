@@ -42,9 +42,9 @@ Model.attachSchema(new SimpleSchema({
         optional: true
     },
     time: {
-        type: String
-    }
-}))
+        type: String,
+    },
+}));
 
 Model.publicFields = {
     code: 1,

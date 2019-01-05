@@ -1,8 +1,8 @@
 /**
- * Link merely links to Models. 
+ * Link merely links to Models.
  * When a challenge is created two links are provided: one public and another private.
- * This corresponds to two Link instances (with different _ids) 
- * but both have the same model_id as they both point to same model. 
+ * This corresponds to two Link instances (with different _ids)
+ * but both have the same model_id as they both point to same model.
  */
 Link = new Meteor.Collection('Link');
 

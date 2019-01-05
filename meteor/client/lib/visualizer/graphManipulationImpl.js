@@ -4,22 +4,22 @@ updateGraph = function (instance) {
     //If not yet initialized, create new cytoscape object using the text area identified by 'instance' class.
     if (!cy) initGraphViewer("instance");
     $('#instanceViewer').show();
-    $("#genInstanceUrl").show();
-    //Remove previous nodes and edges.
+    $('#genInstanceUrl').show();
+    // Remove previous nodes and edges.
     cy.remove(cy.elements());
-    //Add new ones.
-    var atomElements = getAtoms(instance)
+    // Add new ones.
+    const atomElements = getAtoms(instance);
     cy.add(atomElements);
     cy.add(getEdges(instance));
     if (atomElements.length == 0)
         $(".empty-universe").show();
     else {
-        $(".empty-universe").hide();
+        $('.empty-universe').hide();
     }
     cy.resize();
-    //Apply same theme settings as previous instance.
+    // Apply same theme settings as previous instance.
     applyThemeSettings();
-    //Draw data according to the selected layout.
+    // Draw data according to the selected layout.
     applyCurrentLayout();
 };
 
@@ -35,13 +35,14 @@ applyThemeSettings = function () {
         relationSettings.showAsArcs.forEach(function (item) {
             if (item.showAsArcs) setShowAsArcsValue(item.relation, true);
         });
-    //In case of label change.
+    }
+    // In case of label change.
     refreshAttributes();
-    //Add types, subsets and relations to selection area on settings tab.
+    // Add types, subsets and relations to selection area on settings tab.
     updateElementSelectionContent();
-    //Backup of whole instance. Helpful for projection.
+    // Backup of whole instance. Helpful for projection.
     allAtoms = cy.nodes();
-    //Apply same projections as on previous instances.
+    // Apply same projections as on previous instances.
     newInstanceSetup();
 };
 
@@ -54,20 +55,19 @@ getAtoms = function (instance) {
             if (atom.type.toLowerCase().indexOf("this/") > -1) {
                 if (atom.isPrimSig) {
                     metaPrimSigs.push({
-                        type: atom.type.split("/")[1],
-                        parent: atom.parent.indexOf("/") > -1 ? atom.parent.split("/")[1] : atom.parent
+                        type: atom.type.split('/')[1],
+                        parent: atom.parent.indexOf('/') > -1 ? atom.parent.split('/')[1] : atom.parent,
                     });
-                    getAtomBorder(atom.type.split("/")[1]);
-                    getAtomColor(atom.type.split("/")[1]);
-                    getAtomShape(atom.type.split("/")[1]);
+                    getAtomBorder(atom.type.split('/')[1]);
+                    getAtomColor(atom.type.split('/')[1]);
+                    getAtomShape(atom.type.split('/')[1]);
 
-                    atom.values.forEach(function (value) {
-                        if (value.indexOf("/") == -1)
-                            var type = value.split("$")[0];
+                    atom.values.forEach((value) => {
+                        if (value.indexOf('/') == -1) var type = value.split('$')[0];
                         atoms.push(
                             {
-                                group: "nodes",
-                                classes: "multiline-manual",
+                                group: 'nodes',
+                                classes: 'multiline-manual',
                                 data: {
                                     number: value.split("$")[1],
                                     numberBackup: value.split("$")[1],
@@ -76,7 +76,7 @@ getAtoms = function (instance) {
                                     id: value,
                                     type: type,
                                     label: getAtomLabel(type),
-                                    dollar: "",
+                                    dollar: '',
                                     border: getAtomBorder(type),
                                     subsetSigs: []
                                 }
@@ -92,7 +92,7 @@ getAtoms = function (instance) {
                             getAtomColor(type);
                             getAtomShape(type);
                             getAtomLabel(type);
-                            updateAtomLabel(type, atom.type.split("/")[1]);
+                            updateAtomLabel(type, atom.type.split('/')[1]);
                         }
                         for (var i = 0; i < atoms.length; i++) {
                             if (atoms[i].data.id == value) {
@@ -100,12 +100,12 @@ getAtoms = function (instance) {
                             }
                         }
                     });
-
                 }
 
                 return atoms;
             }
         });
+    }
 
     for (var skolem in instance.skolem) {
         for (var atom in atoms) {
@@ -143,6 +143,7 @@ getEdges = function (instance) {
                 });
             }
         });
+    }
     return result;
 };
 
@@ -197,6 +198,9 @@ initGraphViewer = function (element) {
                             if (color == "inherit") return getInheritedAtomColor(ele.data().type);
                             else return color;
                         }
+                        var color = getAtomColor(ele.data().type);
+                        if (color == 'inherit') return getInheritedAtomColor(ele.data().type);
+                        return color;
                     },
                     'label': function (ele) {
                         if (!ele.data().attributes || Object.keys(ele.data().attributes).length == 0) {
@@ -209,6 +213,7 @@ initGraphViewer = function (element) {
                             }
                             return ele.data().label + ele.data().dollar + ele.data().number + (ele.data().subsetSigs.length > 0 ? "\n(" + ele.data().subsetSigs.map(getAtomLabel) + ")\n" : "") + "\n" + attributes + (typeof ele.data().skolem != "undefined" ? "\n" + ele.data().skolem : "");
                         }
+                        return `${ele.data().label + ele.data().dollar + ele.data().number + (ele.data().subsetSigs.length > 0 ? `\n(${ele.data().subsetSigs.map(getAtomLabel)})\n` : '')}\n${attributes}${typeof ele.data().skolem !== 'undefined' ? `\n${ele.data().skolem}` : ''}`;
                     },
                     'border-style': function (ele) {
                         if (ele.data().subsetSigs.length > 0) {
@@ -226,6 +231,9 @@ initGraphViewer = function (element) {
                             if (border == "inherit") return getInheritedAtomBorder(ele.data().type);
                             else return border;
                         }
+                        var border = getAtomBorder(ele.data().type);
+                        if (border == 'inherit') return getInheritedAtomBorder(ele.data().type);
+                        return border;
                     },
                     'text-valign': 'center',
                     'text-outline-color': 'black',
@@ -245,6 +253,9 @@ initGraphViewer = function (element) {
                             if (shape == "inherit") return getInheritedAtomShape(ele.data().type);
                             else return shape;
                         }
+                        var shape = getAtomShape(ele.data().type);
+                        if (shape == 'inherit') return getInheritedAtomShape(ele.data().type);
+                        return shape;
                     },
                     'width': 'label',
                     'height': 'label',
@@ -254,14 +265,14 @@ initGraphViewer = function (element) {
                     'padding-right': '10px',
                     'border-color': 'black',
                     'border-width': 2,
-                    'border-opacity': 0.8
-                }
+                    'border-opacity': 0.8,
+                },
             },
 
             {
                 selector: 'edge',
                 style: {
-                    'width': 1,
+                    width: 1,
                     'line-color': 'data(color)',
                     'target-arrow-color': 'data(color)',
                     'target-arrow-shape': 'triangle',
@@ -277,6 +288,8 @@ initGraphViewer = function (element) {
                             ele.data().updatedLabelExt = auxLabelExt;
                             return ele.data().label + "[" + auxLabelExt + "]";
                         }
+                        ele.data().updatedLabelExt = auxLabelExt;
+                        return `${ele.data().label}[${auxLabelExt}]`;
                     },
                     'curve-style': 'bezier',
                     'text-valign': 'center',
@@ -294,8 +307,8 @@ initGraphViewer = function (element) {
             {
                 selector: '.multiline-manual',
                 style: {
-                    'text-wrap': 'wrap'
-                }
+                    'text-wrap': 'wrap',
+                },
             },
             {
                 selector: 'edge:selected',
@@ -307,9 +320,9 @@ initGraphViewer = function (element) {
                 selector: ':parent',
                 style: {
                     'background-opacity': 0.3,
-                    'text-valign': 'top'
-                }
-            }
+                    'text-valign': 'top',
+                },
+            },
 
         ],
 
@@ -328,7 +341,7 @@ initGraphViewer = function (element) {
     cy.on('cxttap', 'node', {}, function (evt) {
         //Place right click options menu on mouse position and display it
         $('#optionsMenu').css({
-            //overlap cytoscape canvas
+            // overlap cytoscape canvas
             'z-index': 10,
             'position': 'absolute',
             //+1 avoids recapturing right click event and opening browser's context menu.

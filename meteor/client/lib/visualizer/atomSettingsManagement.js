@@ -23,6 +23,10 @@ getAtomColor = function (atomType) {
         //Session.set("atomSettings",atomSettings);
         return 'inherit';
     }
+    atomSettings.nodeColors = [];
+    atomSettings.nodeColors.push({ type: atomType, color: 'inherit' });
+    // Session.set("atomSettings",atomSettings);
+    return 'inherit';
 };
 
 getAtomShape = function (atomType) {
@@ -42,6 +46,10 @@ getAtomShape = function (atomType) {
         //Session.set("atomSettings",atomSettings);
         return 'inherit';
     }
+    atomSettings.nodeShapes = [];
+    atomSettings.nodeShapes.push({ type: atomType, shape: 'inherit' });
+    // Session.set("atomSettings",atomSettings);
+    return 'inherit';
 };
 
 getAtomBorder = function (atomType) {
@@ -58,6 +66,9 @@ getAtomBorder = function (atomType) {
         atomSettings.nodeBorders.push({ type: atomType, border: 'inherit' });
         return 'inherit';
     }
+    atomSettings.nodeBorders = [];
+    atomSettings.nodeBorders.push({ type: atomType, border: 'inherit' });
+    return 'inherit';
 };
 
 getAtomVisibility = function (atomType) {
@@ -74,6 +85,9 @@ getAtomVisibility = function (atomType) {
         atomSettings.nodeVisibility.push({ type: atomType, visibility: 'inherit' });
         return 'inherit';
     }
+    atomSettings.nodeVisibility = [];
+    atomSettings.nodeVisibility.push({ type: atomType, visibility: 'inherit' });
+    return 'inherit';
 };
 
 updateAtomVisibility = function (atomType, newVisibilityValue) {
@@ -130,6 +144,9 @@ getAtomLabel = function (atomType) {
         atomSettings.nodeLabels.push({ type: atomType, label: atomType });
         return atomType;
     }
+    atomSettings.nodeLabels = [];
+    atomSettings.nodeLabels.push({ type: atomType, label: atomType });
+    return atomType;
 };
 
 updateAtomLabel = function (atomType, newLabel) {
@@ -169,7 +186,7 @@ setUnconnectedNodesValue = function (atomType, value) {
                 var atomSet = cy.nodes("[type='" + inheriting[j] + "']");
                 for (var i = 0; i < atomSet.length; i++) {
                     if (atomSet[i].neighbourhood().length == 0) {
-                        value == "true" ? atomSet[i].hide() : atomSet[i].show();
+                        value == 'true' ? atomSet[i].hide() : atomSet[i].show();
                     }
                 }
             }
@@ -184,7 +201,7 @@ updateAtomShape = function (atomType, newShape) {
     for (var i = 0; i < atomSettings.nodeShapes.length; i++) {
         if (atomSettings.nodeShapes[i].type == atomType) {
             atomSettings.nodeShapes[i].shape = newShape;
-            //Session.set("atomSettings", atomSettings);
+            // Session.set("atomSettings", atomSettings);
             return;
         }
     }
@@ -196,7 +213,7 @@ updateAtomColor = function (atomType, newColor) {
     for (var i = 0; i < atomSettings.nodeColors.length; i++) {
         if (atomSettings.nodeColors[i].type == atomType) {
             atomSettings.nodeColors[i].color = newColor;
-            //Session.set("atomSettings", atomSettings);
+            // Session.set("atomSettings", atomSettings);
             return;
         }
     }
@@ -214,6 +231,7 @@ isUnconnectedNodesOn = function (atomType) {
     } else {
         return false;
     }
+    return false;
 };
 
 updateUnconnectedNodes = function (atomType, newUnconnectedNodesValue) {
@@ -268,7 +286,6 @@ setDisplayNodesNumberValue = function (atomType, value) {
                     value == "true" ? atomSet[i].data().number = atomSet[i].data().numberBackup : atomSet[i].data().number = "";
                 }
             }
-
         }
     } catch (e) {
 
@@ -286,6 +303,7 @@ isDisplayNodesNumberOn = function (selectedType) {
     } else {
         return false;
     }
+    return false;
 };
 
 getUnconnectedNodesValue = function (selectedType) {
@@ -302,6 +320,9 @@ getUnconnectedNodesValue = function (selectedType) {
         atomSettings.unconnectedNodes.push({ type: selectedType, unconnectedNodes: 'inherit' });
         return 'inherit';
     }
+    atomSettings.unconnectedNodes = [];
+    atomSettings.unconnectedNodes.push({ type: selectedType, unconnectedNodes: 'inherit' });
+    return 'inherit';
 };
 
 getDisplayNodesNumberValue = function (selectedType) {
@@ -318,6 +339,9 @@ getDisplayNodesNumberValue = function (selectedType) {
         atomSettings.displayNodesNumber.push({ type: selectedType, displayNodesNumber: 'inherit' });
         return 'inherit';
     }
+    atomSettings.displayNodesNumber = [];
+    atomSettings.displayNodesNumber.push({ type: selectedType, displayNodesNumber: 'inherit' });
+    return 'inherit';
 };
 
 getInheritedHideUnconnectedNodesValue = function (type) {
