@@ -53,6 +53,7 @@
             "no-underscore-dangle": "off",
             "no-undef": "off",
             "semi": ["error", "never"],
+            "no-var": "error",
             "object-curly-newline": [
                 "error",
                 {
