@@ -16,7 +16,8 @@ Meteor.methods({
     //TODO: Daniel, é mesmo suposto manter o forceInterpretation?
     getInstances: function(code, numberOfInstances, commandLabel, forceInterpretation, last_id, original, from_private) {
         return new Promise((resolve, reject) => {
-            if (!from_private) { //if public link was used, load secrets
+            let code_with_secrets = code
+            if (from_private === false) { //if public link was used, load secrets
                 //load original model, extract secrets and append to code
                 code_with_secrets = code + extractSecrets(Model.findOne(original).code).secret
             }
