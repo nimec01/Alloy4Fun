@@ -18,7 +18,7 @@ Meteor.methods({
         return new Promise((resolve, reject) => {
             if (!from_private) { //if public link was used, load secrets
                 //load original model, extract secrets and append to code
-                code_with_secrets = code + extractSecrets(Model.findOne(original).whole).secret
+                code_with_secrets = code + extractSecrets(Model.findOne(original).code).secret
             }
 
             // call webservice to get instances
@@ -44,7 +44,7 @@ Meteor.methods({
 
                 // save executed model to database
                 let new_model = {
-                    whole: code, // should not be code_with_secrets
+                    code: code, // should not be code_with_secrets
                     command: commandLabel,
                     sat: !!content.unsat, // sat means there was no counter-example (!! is for bool)
                     time: new Date().toLocaleString()

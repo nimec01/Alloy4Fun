@@ -161,7 +161,7 @@ Template.alloyEditor.onRendered(function() {
 
     if (Router.current().data && textEditor) { // if there's subscribed data, process it.
         let model = Router.current().data(); // load the model from controller
-        textEditor.setValue(model.whole); // update the textEditor
+        textEditor.setValue(model.code); // update the textEditor
         // save the loaded model id for later derivations
         Session.set("last_id", model.model_id); // this will change on execute
         Session.set("original_id", model.model_id); // this will only change on share model

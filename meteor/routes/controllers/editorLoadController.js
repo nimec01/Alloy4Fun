@@ -29,7 +29,7 @@ editorLoadController = RouteController.extend({
 
         //if data is undefined return error message
         return data || {
-            whole: "Unable to retrieve Model from Link"
+            code: "Unable to retrieve Model from Link"
         };
         //TODO: return instance as well
 
@@ -76,7 +76,7 @@ editorLoadController = RouteController.extend({
             model = Model.findOne({
                 _id: model_id
             });
-            var v = model.whole;
+            var v = model.code;
             var i, z;
 
             var teste;
@@ -110,12 +110,12 @@ editorLoadController = RouteController.extend({
                     }
 
                     secrets += "\n\n" + v.substr(i, (e - i) + 1);
-                    v = v.substr(0, i) + v.substr(e + 1); /* remove secrets from v (whole model) */
+                    v = v.substr(0, i) + v.substr(e + 1); /* remove secrets from v (code model) */
                     i++;
                 }
 
                 /*return {
-                        "whole": teste,
+                        "code": teste,
                         "secrets": "",
                         "lockedLines":"",
                         "priv": false,
@@ -162,7 +162,7 @@ editorLoadController = RouteController.extend({
                 }
 
                 return {
-                    "whole": modelToEdit,
+                    "code": modelToEdit,
                     "secrets": secrets,
                     "lockedLines": lockedLines,
                     "priv": false,
@@ -172,7 +172,7 @@ editorLoadController = RouteController.extend({
 
             } else { //private
                 return {
-                    "whole": v,
+                    "code": v,
                     "secrets": "",
                     "lockedLines": "",
                     "priv": true,
@@ -182,7 +182,7 @@ editorLoadController = RouteController.extend({
             }
         } else {
             return {
-                "whole": "Link not found",
+                "code": "Link not found",
                 "secrets": "",
                 "lockedLines": "",
                 "priv": false,

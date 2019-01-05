@@ -17,7 +17,7 @@ Meteor.methods({
     genURL: function(code, last_id) {
         // A Model is always created, regardless of having secrets or not
         let model = {
-            whole: code,
+            code: code,
             time: new Date().toLocaleString()
         }
         // explicitly set optional to avoid nulls

@@ -9,7 +9,7 @@ Model.attachSchema(new SimpleSchema({
     _id: {
         type: String
     },
-    whole: { // has all of the code
+    code: { // has all of the code
         type: String
     },
     derivationOf: { // which model does it derive from (null if original)
@@ -47,7 +47,7 @@ Model.attachSchema(new SimpleSchema({
 }))
 
 Model.publicFields = {
-    whole: 1,
+    code: 1,
     derivationOf: 1
 }
 export {

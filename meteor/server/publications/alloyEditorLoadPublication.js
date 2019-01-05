@@ -1,9 +1,6 @@
 //publish and subscribe method is used so that clients can only access specific data from the database
 //to access is necessary to "subscribe"
 import {
-    Model
-} from "../../lib/collections/model"
-import {
     Instance
 } from "../../lib/collections/instance"
 import {
@@ -24,7 +21,7 @@ import {
 //     var options = {
 //         fields: {
 //             _id: 1,
-//             whole: 1,
+//             code: 1,
 //             derivationOf: 1
 //         }
 //     }
