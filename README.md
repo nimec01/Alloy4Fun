@@ -64,3 +64,10 @@ To run the tests just do `npm test`
 Linter is also installed and configured but not included in the CI pipeline, to run the linter you can do `npm run lint` inside the `meteor` folder. To run linter without the `--fix` option do `eslint .`.
 
 To include the linter in the CI pipeline (first make sure all linter errors are fixed) and then add the following to the [package.json](meteor/package.json) `scripts`: `"pretest": "npm run lint --silent"`
+
+
+### Team
+Alloy4fun has been developed by:
+ * [Haslab](https://github.com/haslab)
+ * [Universidade do Minho](https://www.uminho.pt/)
+ * [Universidade do Porto](https://fe.up.pt/)
