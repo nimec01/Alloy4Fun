@@ -70,7 +70,8 @@ Template.alloyEditor.events({
             });
         } else { // Execute command
             let model = textEditor.getValue();
-            Meteor.call('getInstances', model, 5, commandLabel, true, Session.get("last_id"), Session.get("original_id"), handleExecuteModel);
+            //TODO: Daniel extract 5 to env variable or similar
+            Meteor.call('getInstances', model, 5, commandLabel, true, Session.get("last_id"), Session.get("original_id"), Session.get("from_private"), handleExecuteModel);
         }
         // update button states after execution
         $("#exec > button").prop('disabled', true);
@@ -165,6 +166,7 @@ Template.alloyEditor.onRendered(function() {
         // save the loaded model id for later derivations
         Session.set("last_id", model.model_id); // this will change on execute
         Session.set("original_id", model.model_id); // this will only change on share model
+        Session.set("from_private", model.from_private); // this will not change
 
         if (model.instance) { // if there is an instance to show
             let themeData = model.instance.theme;
