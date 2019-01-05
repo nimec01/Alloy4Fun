@@ -25,9 +25,7 @@ editorLoadController = RouteController.extend({
     waitOn: function() {},
 
     data: function() {
-        console.log(this.params._id);
         let data = Model.findOne(this.params._id)
-        console.log("data is: ", data);
 
         //if data is undefined return error message
         return data || {

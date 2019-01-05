@@ -150,7 +150,6 @@ Template.alloyEditor.events({
 });
 /*Callbacks added with this method are called once when an instance of Template.alloyEditor is rendered into DOM nodes and put into the document for the first time.*/
 Template.alloyEditor.onRendered(function() {
-    console.log("editor rendered");
     try {
         cy
     } catch (e) {
