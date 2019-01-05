@@ -155,26 +155,19 @@ Template.alloyEditor.onRendered(function() {
     } catch (e) {
         initGraphViewer("instance");
     }
-    //Adds click effects to Buttons
-    buttonsEffects();
-    //Hide Next, Previous, Run... buttons on startup
-    hideButtons();
 
-    //If there's subscribed data, process it.
-    var model;
-    if (Router.current().data) model = Router.current().data();
+    buttonsEffects(); //Adds click effects to Buttons
+    hideButtons(); //Hide Next, Previous, Run... buttons on startup
 
-    Session.set("last_id", model.model_id); // this will change on execute
-    Session.set("original_id", model.model_id); // this will only change on share model
+    if (Router.current().data && textEditor) { // if there's subscribed data, process it.
+        let model = Router.current().data(); // load the model from controller
+        textEditor.setValue(model.whole); // update the textEditor
+        // save the loaded model id for later derivations
+        Session.set("last_id", model.model_id); // this will change on execute
+        Session.set("original_id", model.model_id); // this will only change on share model
 
-    if (model && textEditor) {
-        var themeData;
-        if (model.instance) themeData = model.instance.theme;
-        //Place model on text editor
-        var result = model.whole;
-        textEditor.setValue(result);
-        //Load theme settings;
-        if (themeData) {
+        if (model.instance) { // if there is an instance to show
+            let themeData = model.instance.theme;
             atomSettings = themeData.atomSettings;
             relationSettings = themeData.relationSettings;
             generalSettings = themeData.generalSettings;
@@ -183,10 +176,8 @@ Template.alloyEditor.onRendered(function() {
             if (themeData.metaPrimSigs) metaPrimSigs = themeData.metaPrimSigs;
             if (themeData.metaSubsetSigs) metaSubsetSigs = themeData.metaSubsetSigs;
         }
-        //Load graph JSON data in case of instance sharing.
-        if (model.instance && cy) {
+        if (model.instance && cy) { //Load graph JSON data in case of instance sharing.
             $('#instanceViewer').show();
-            //cy.add(Router.current().data().instance.elements);
             cy.add(model.instance.graph.elements);
             updateElementSelectionContent();
         }
