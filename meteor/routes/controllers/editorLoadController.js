@@ -33,7 +33,7 @@ editorLoadController = RouteController.extend({
         return data || {
             whole: "Unable to retrieve Model from Link"
         };
-
+        //TODO: return instance as well
 
 
         console.log("getting data for id: ", this.params._id);
