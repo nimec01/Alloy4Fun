@@ -1,3 +1,6 @@
+import {
+    extractSecrets
+} from "../lib/secrets"
 /**
  * Meteor method to get a model instance
  * This will call the API (webService)
@@ -6,12 +9,19 @@
  * @param commandLabel (alloy commands [run, check, assert, ...])
  * @param forceInterpretation used to skip cache and force new model 
  * @param last_id the model this one derives from
+ * @param from_private false means it was loaded from public link and must retrieve //SECRET code
  * @returns Object with the instance data
  */
 Meteor.methods({
     //TODO: Daniel, é mesmo suposto manter o forceInterpretation?
-    getInstances: function(code, numberOfInstances, commandLabel, forceInterpretation, last_id, original) {
+    getInstances: function(code, numberOfInstances, commandLabel, forceInterpretation, last_id, original, from_private) {
         return new Promise((resolve, reject) => {
+            if (from_private) { //if public link was used, load secrets
+                //load original model, extract secrets and append to code
+                code += extractSecrets(Model.findOne(original).whole).secret
+            }
+            console.log(from_private, code);
+            
             // call webservice to get instances
             HTTP.call('POST', `${Meteor.settings.env.API_URL}/getInstances`, {
                 data: {
