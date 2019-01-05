@@ -52,6 +52,7 @@
             "import/prefer-default-export": "off",
             "no-underscore-dangle": "off",
             "no-undef": "off",
+            "semi": "never",
             "object-curly-newline": [
                 "error",
                 {
