@@ -53,7 +53,7 @@ pred checkStuff{
         chai.assert.equal(res.secret, code.substr(1))
     });
     it("returns correct public and secret", function() {
-        let public = `
+        let public_code = `
 sig Employee{}
 
 sig Department{}
@@ -77,9 +77,9 @@ assert validQuizz {
 
 //SECRET
 check validQuizz for 5`
-        code = public + private
+        code = public_code + private
         res = extractSecrets(code)
-        chai.assert.equal(res.public, public)
+        chai.assert.equal(res.public, public_code)
         chai.assert.equal(res.secret, private)
     });
 });
