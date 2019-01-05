@@ -1,4 +1,4 @@
-<h1 align="center"><img src="/meteor/public/favicon.ico" height="24"> Alloy4fun <img src="/meteor/public/favicon.ico" height="24"><h1>
+<h1 align="center"><img src="/meteor/public/favicon.ico" height="24"> Alloy4fun <img src="/meteor/public/favicon.ico" height="24"></h1>
 
 Web application for Alloy.
 <a href="https://travis-ci.org/msramalho/Alloy4FunWebApp"><img align="right" alt="Build Status" src="https://travis-ci.org/msramalho/Alloy4FunWebApp.svg?branch=v1.0.0"/></a>
