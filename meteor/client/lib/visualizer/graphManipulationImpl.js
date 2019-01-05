@@ -31,7 +31,7 @@ applyThemeSettings = function () {
 
     //Apply show as attributes option set on previous instances.
     setOriginalAtomNamesValue(generalSettings.useOriginalAtomNames ? true : false);
-    if (relationSettings.showAsArcs)
+    if (relationSettings.showAsArcs){
         relationSettings.showAsArcs.forEach(function (item) {
             if (item.showAsArcs) setShowAsArcsValue(item.relation, true);
         });
@@ -50,7 +50,7 @@ applyThemeSettings = function () {
 //Get atom information received from server ready to upload to cytoscape object.
 getAtoms = function (instance) {
     var atoms = [];
-    if (instance.atoms)
+    if (instance.atoms){
         instance.atoms.forEach(function (atom) {
             if (atom.type.toLowerCase().indexOf("this/") > -1) {
                 if (atom.isPrimSig) {
@@ -120,7 +120,7 @@ getAtoms = function (instance) {
 
 getEdges = function (instance) {
     var result = [];
-    if (instance.fields)
+    if (instance.fields){
         instance.fields.forEach(function (field) {
             if (field.type.indexOf("this/") != -1) {
                 field.values.forEach(function (relation) {

@@ -7,10 +7,6 @@
 
 import CodeMirror from 'codemirror';
 import * as simpleMode from 'codemirror/addon/mode/simple'; //do not remove despite unused warning
-export {
-    defineAlloyMode
-};
-
 export { defineAlloyMode };
 
 function defineAlloyMode() {
