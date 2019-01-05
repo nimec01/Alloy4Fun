@@ -10,7 +10,7 @@ Link.attachSchema(new SimpleSchema({
     _id: {
         type: String
     },
-    private: { // wether this is a private or public link (shows SECRETs for private)
+    private: { // whether this is a private or public link (shows SECRETs for private)
         type: Boolean
     },
     model_id: { // the id of the model associated

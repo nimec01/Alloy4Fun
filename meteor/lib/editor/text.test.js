@@ -1,6 +1,10 @@
-import { chai, assert } from 'meteor/practicalmeteor:chai';
 import {
-    isParagraph, containsValidSecret
+    chai,
+    assert
+} from 'meteor/practicalmeteor:chai';
+import {
+    isParagraph,
+    containsValidSecret
 } from "./text"
 /**
  * Default meteor tests for programming principles to be forced

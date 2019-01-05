@@ -224,6 +224,10 @@ Template.alloyEditor.onRendered(function() {
 /* Execbtn event handler
       result: getInstance(textEditor.getValue,..)*/
 function handleInterpretModelEvent(err, result) {
+    if (err) {
+        console.error(err);
+        return
+    }
     Session.set("last_id", result.last_id)
     result = result.instances
 

@@ -9,9 +9,8 @@ export {
 };
 /**
  * Function to handle click on "Share" button
- * @param {Event} evt 
  */
-function clickGenUrl(evt) {
+function clickGenUrl() {
     if ($("#genURL > button").is(":disabled")) return
 
     let modelToShare = textEditor.getValue();
