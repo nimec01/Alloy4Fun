@@ -101,5 +101,6 @@ function initializeEditor(htmlElement, mode) {
   Function associated with 'text box' that parses command type paragraphs, to be used as data for the combobox.
 */
 function getCommands() {
-    Session.set("commands", getCommandsFromCode(this.getValue()));
+    let hidden_commands = Session.get("hidden_commands") || []
+    Session.set("commands", getCommandsFromCode(this.getValue()).concat(hidden_commands))
 }
