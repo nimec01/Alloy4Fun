@@ -70,7 +70,7 @@ Template.alloyEditor.events({
             });
         } else { // Execute command
             let model = textEditor.getValue();
-            Meteor.call('getInstances', model, 5, commandLabel, true, Session.get("last_id"), Session.get("original_id"), handleInterpretModelEvent);
+            Meteor.call('getInstances', model, 5, commandLabel, true, Session.get("last_id"), Session.get("original_id"), handleExecuteModel);
         }
         // update button states after execution
         $("#exec > button").prop('disabled', true);
@@ -189,15 +189,10 @@ Template.alloyEditor.onRendered(function() {
 /*------------- Server HANDLERS methods && Aux Functions ----------- */
 
 
-/* Execbtn event handler
-      result: getInstance(textEditor.getValue,..)*/
-function handleInterpretModelEvent(err, result) {
-    if (err) {
-        console.error(err);
-        return
-    }
-    Session.set("last_id", result.last_id)
-    result = result.instances
+function handleExecuteModel(err, result) {
+    if (err) return console.error(err)
+
+    Session.set("last_id", result.last_id) // update the last_id for next derivations
 
     $.unblockUI();
     $('#exec > button').prop('disabled', true);
@@ -206,7 +201,6 @@ function handleInterpretModelEvent(err, result) {
 
     //clear projection combo box
     let select = document.getElementsByClassName("framePickerTarget");
-
     if (select) select = select[0];
     if (select) {
         let length = select.options.length;
@@ -232,6 +226,7 @@ function handleInterpretModelEvent(err, result) {
             $('#prev > button').prop('disabled', true);
         }
     } else {
+        result = result.instances
         storeInstances(result);
         if (Array.isArray(result))
             result = result[0];
