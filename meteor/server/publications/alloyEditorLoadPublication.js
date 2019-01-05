@@ -39,6 +39,7 @@ import {
 //     return this.ready();
 // });
 
+//TODO: complete modelFromLink with instance and delete this file
 Meteor.publish('instanceLoad', function(_id) {
 
     var selector = {
