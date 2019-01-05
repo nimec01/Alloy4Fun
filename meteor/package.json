@@ -54,6 +54,7 @@
             "no-undef": "off",
             "semi": ["error", "never"],
             "no-var": "error",
+            "comma-dangle": ["error", "never"],
             "object-curly-newline": [
                 "error",
                 {
