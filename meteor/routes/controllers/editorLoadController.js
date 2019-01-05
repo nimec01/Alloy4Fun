@@ -18,7 +18,7 @@ editorLoadController = RouteController.extend({
 
     // see http://iron-meteor.github.io/iron-router/#subscriptions
     subscriptions: function() {
-        this.subscribe('link', this.params._id).wait()
+        this.subscribe('modelFromLink', this.params._id).wait()
     },
 
     // see http://iron-meteor.github.io/iron-router/#the-waiton-option
