@@ -167,6 +167,8 @@ Template.alloyEditor.onRendered(function() {
         Session.set("last_id", model.model_id); // this will change on execute
         Session.set("original_id", model.model_id); // this will only change on share model
         Session.set("from_private", model.from_private); // this will not change
+        Session.set("hidden_commands", model.commands) // update the commands for public links that do not have them
+        Session.set("commands", model.commands) // update the commands to start correct
 
         if (model.instance) { // if there is an instance to show
             let themeData = model.instance.theme;
