@@ -60,7 +60,7 @@ Template.alloyEditor.events({
         $(".frame-navigation").hide();
 
         let commandLabel = getCommandLabel();
-        if (commandLabel.length == 0) { //no command to run
+        if (!commandLabel || commandLabel.length == 0) { //no command to run
             swal({
                 title: "",
                 text: "There are no commands to execute",
