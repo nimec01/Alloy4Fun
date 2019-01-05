@@ -16,6 +16,18 @@ Model.attachSchema(new SimpleSchema({
         type: String
     },
     /**
+     * which model does it originally derive from
+     * different from derivation, as this is the original model
+     * and remains the same after derivation to preserve the
+     * original SECRETs
+     * if a user shares a model it is considered the new original
+     * and all the previous secrets are forgotten
+     */
+    original: {
+        type: String,
+        optional: true
+    },
+    /**
      * optional field for the command selected when model was created.
      * genUrl will not set command
      * execute will set the command
