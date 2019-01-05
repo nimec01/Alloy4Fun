@@ -1,10 +1,19 @@
 import CodeMirror from 'codemirror';
-import {defineAlloyMode} from '/imports/editor/AlloyEditorMode';
+import {
+    defineAlloyMode
+} from '/imports/editor/AlloyEditorMode';
+import {
+    getCommandsFromCode
+} from "../../lib/editor/text"
 import 'codemirror/theme/twilight.css';
 import 'codemirror/lib/codemirror.css';
 import 'qtip2';
 
-export {initializeAlloyCreateChallengeEditor, initializeAlloySolveChallengeEditor, initializeAlloyEditor};
+export {
+    initializeAlloyCreateChallengeEditor,
+    initializeAlloySolveChallengeEditor,
+    initializeAlloyEditor
+};
 
 /*
 Editor initialization options.
@@ -28,12 +37,12 @@ var options = {
 /*
   Initialization of the code editor and associated buttons.
 */
-function initializeAlloyEditor(htmlElement){
+function initializeAlloyEditor(htmlElement) {
     defineAlloyMode(); //specify syntax highlighting
 
     var editor = initializeEditor(htmlElement, "alloy");
     //Text change event for the editor on alloy4fun/editor page
-    editor.on('change', function (editor) {
+    editor.on('change', function(editor) {
         $(".qtip").remove();
         //[gutter] -> A gutter is the clear empty space between an element's boundaries and the element's content.
         editor.clearGutter("error-gutter");
@@ -48,7 +57,7 @@ function initializeAlloyEditor(htmlElement){
 
         if ($.trim(editor.getValue()) == '') {
             //When editor is empty
-            Session.set("commands",[]);
+            Session.set("commands", []);
             $('#exec > button').prop('disabled', true);
             $('#next > button').prop('disabled', true);
             $('#prev > button').prop('disabled', true);
@@ -56,7 +65,7 @@ function initializeAlloyEditor(htmlElement){
         } else {
             //Populate commands combo box
             editor.getCommands();
-            if(Session.get("commands") && Session.get("commands").length>=0) {
+            if (Session.get("commands") && Session.get("commands").length >= 0) {
                 $('#instanceViewer').hide();
                 $('#exec > button').prop('disabled', false);
                 $('.permalink').prop('disabled', false);
@@ -67,9 +76,9 @@ function initializeAlloyEditor(htmlElement){
                 $("#validateModel > button").prop('disabled', false);
             }
         }
-        Session.set("currentInstance",undefined);
-        Session.set("instances",undefined);
-        Session.set("projectableTypes",undefined);
+        Session.set("currentInstance", undefined);
+        Session.set("instances", undefined);
+        Session.set("projectableTypes", undefined);
 
 
     });
@@ -81,7 +90,7 @@ function initializeAlloyEditor(htmlElement){
   Function that initializes the code editor and provides data context for the session.
   mode = "alloy" by default
 */
-function initializeEditor(htmlElement, mode){
+function initializeEditor(htmlElement, mode) {
     var editor = CodeMirror.fromTextArea(htmlElement, options);
     options.mode = mode;
     editor.getCommands = getCommands;
@@ -91,35 +100,6 @@ function initializeEditor(htmlElement, mode){
 /*
   Function associated with 'text box' that parses command type paragraphs, to be used as data for the combobox.
 */
-function getCommands(){
-
-      var pattern = /((\W|^)run(\{|(\[\n\r\s]+\{)|([\n\r\s]+([^{\n\r\s]*)))|((\W|^)check(\{|(\[\n\r\s]+\{)|([\n\r\s]+([^{\n\r\s]*)))))/g;
-      var commands = [];
-      var commandNumber = 1;
-      var input = this.getValue();
-
-      if(Router.current().params._id) /*if the model have some _id, the commands must be parsed*/
-      {
-        if(secrets = (Router.current().data().secrets)){
-          input +=secrets;
-        }
-      }
-
-      input = input.replace(/\/\/(.*)(\n)/g,"");    /*To avoid commands that are in comment, comments must be eliminated before parse */
-      var matches = pattern.exec(input);
-
-      while(matches != null){
-
-          if (matches[6]) commands.push(matches[6]);
-          else if (matches[12]) commands.push(matches[12]);
-          else if (matches[0].includes("run")) {
-              commands.push("run$"+commandNumber);
-          } else if (matches[0].includes("check")) {
-              commands.push("check$"+commandNumber);
-          } else console.log("Unreachable block of code. If you're reading this, consider debugging (function initializeEditor, file EditorInitializer).");
-          commandNumber++;
-          matches = pattern.exec(input);
-      }
-
-      Session.set("commands",commands);
+function getCommands() {
+    Session.set("commands", getCommandsFromCode(this.getValue()));
 }
