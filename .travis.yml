@@ -8,6 +8,10 @@ before_script:
   # We can then use the faster container infrastructure - http://docs.travis-ci.com/user/workers/container-based-infrastructure/
   - export PATH=$HOME/.meteor:$PATH
   - npm install
-cache:
-  directories:
-    - node_modules
+# cache:
+  # directories:
+  #   - node_modules
+notifications:
+  email:
+    on_success: never
+    on_failure: always # default: always
