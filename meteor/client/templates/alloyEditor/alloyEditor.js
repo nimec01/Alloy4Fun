@@ -162,9 +162,10 @@ Template.alloyEditor.onRendered(function() {
 
     //If there's subscribed data, process it.
     var model;
-    if (Router.current().data)
-        model = Router.current().data();
-    console.log(model);
+    if (Router.current().data) model = Router.current().data();
+
+    Session.set("last_id", model.model_id); // this will change on execute
+    Session.set("original_id", model.model_id); // this will only change on share model
 
     if (model && textEditor) {
         var themeData;
