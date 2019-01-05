@@ -169,6 +169,8 @@ Template.alloyEditor.onRendered(() => {
         Session.set("hidden_commands", model.commands) // update the commands for public links that do not have them
         Session.set("commands", model.commands) // update the commands to start correct
 
+        $("#downloadTree > button").prop('disabled', false);
+        
         if (model.instance) { // if there is an instance to show
             let themeData = model.instance.theme;
             atomSettings = themeData.atomSettings;
@@ -368,6 +370,7 @@ function hideButtons() {
     $('#next > button').prop('disabled', true);
     $('#prev > button').prop('disabled', true);
     $('#validateModel > button').prop('disabled', true);
+    $('#downloadTree > button').prop('disabled', true);
     $('.permalink > button').prop('disabled', true);
 }
 
