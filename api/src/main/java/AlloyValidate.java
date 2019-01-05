@@ -56,7 +56,7 @@ public class AlloyValidate {
 	 * @return the fixed message
 	 */
 	private String fixMessage(String message) {
-		return message.replace("\n", "").trim();
+		return message.replace("\n", " ").trim();
 	}
 
 	/**

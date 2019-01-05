@@ -1,38 +1,49 @@
-import { isParagraph } from '../../lib/editor/text';
+import {
+    isParagraph
+} from "../../lib/editor/text"
+import {
+    Model
+} from "../../lib/collections/model"
+import {
+    Link
+} from "../../lib/collections/link"
+import {
+    Theme
+} from "../../lib/collections/theme"
+
 
 editorLoadController = RouteController.extend({
 
     template: 'alloyEditor',
 
-    subscriptions() {
-        // Model collection
-        this.subscribe('editorLoad').wait();
-
-        // Instance collection: for shareInstance
-        this.subscribe('instanceLoad', this.params._id).wait();
-
-        // Run collection: to retrieve the Model when in Share Instance
-        this.subscribe('runLoad').wait();
-
-        // Link Collection
-        this.subscribe('links', this.params._id).wait();
+    // see http://iron-meteor.github.io/iron-router/#subscriptions
+    subscriptions: function() {
+        this.subscribe('modelFromLink', this.params._id).wait()
     },
 
-    // Subscriptions or other things we want to "wait" on. This also
-    // automatically uses the loading hook. That's the only difference between
-    // this option and the subscriptions option above.
-    // return Meteor.subscribe('post', this.params._id);
+    // see http://iron-meteor.github.io/iron-router/#the-waiton-option
+    waitOn: function() {},
 
-    waitOn() {},
+    data: function() {
+        let data = Model.findOne(this.params._id)
 
-    data() {
-        const priv = false;
-        const link = Link.findOne({
-            _id: this.params._id,
-        });
-        let model;
-        let secrets = '';
-        let instance;
+        //if data is undefined return error message
+        return data || {
+            code: "Unable to retrieve Model from Link"
+        };
+        //TODO: return instance as well
+
+
+        console.log("getting data for id: ", this.params._id);
+        var priv = false;
+        var link = Link.findOne(this.params._id);
+        console.log("link is: ", link);
+
+
+
+        var model;
+        var secrets = "";
+        var instance;
 
         let model_id;
         let isPrivate;
@@ -55,6 +66,7 @@ editorLoadController = RouteController.extend({
                 model_id = run.model;
             }
         }
+        console.log(model_id);
 
         const themes = Theme.find({
             modelId: this.params._id,
@@ -64,9 +76,8 @@ editorLoadController = RouteController.extend({
             model = Model.findOne({
                 _id: model_id,
             });
-            let v = model.whole;
-            let i; let
-                z;
+            var v = model.code;
+            var i, z;
 
             let teste;
             /* --------- SECRETS HANDLER------------*/
@@ -98,13 +109,13 @@ editorLoadController = RouteController.extend({
                         continue;
                     }
 
-                    secrets += `\n\n${v.substr(i, (e - i) + 1)}`;
-                    v = v.substr(0, i) + v.substr(e + 1); /* remove secrets from v (whole model) */
+                    secrets += "\n\n" + v.substr(i, (e - i) + 1);
+                    v = v.substr(0, i) + v.substr(e + 1); /* remove secrets from v (code model) */
                     i++;
                 }
 
-                /* return {
-                        "whole": teste,
+                /*return {
+                        "code": teste,
                         "secrets": "",
                         "lockedLines":"",
                         "priv": false,
@@ -150,31 +161,34 @@ editorLoadController = RouteController.extend({
                 }
 
                 return {
-                    whole: modelToEdit,
-                    secrets,
-                    lockedLines,
-                    priv: false,
-                    instance,
-                    themes,
+                    "code": modelToEdit,
+                    "secrets": secrets,
+                    "lockedLines": lockedLines,
+                    "priv": false,
+                    "instance": instance,
+                    "themes": themes
                 };
-            } // private
+
+            } else { //private
+                return {
+                    "code": v,
+                    "secrets": "",
+                    "lockedLines": "",
+                    "priv": true,
+                    "instance": instance,
+                    "themes": themes
+                };
+            }
+        } else {
             return {
-                whole: v,
-                secrets: '',
-                lockedLines: '',
-                priv: true,
-                instance,
-                themes,
+                "code": "Link not found",
+                "secrets": "",
+                "lockedLines": "",
+                "priv": false,
+                "instance": undefined,
+                "themes": undefined
             };
         }
-        return {
-            whole: 'Link não encontrado',
-            secrets: '',
-            lockedLines: '',
-            priv: false,
-            instance: undefined,
-            themes: undefined,
-        };
     },
 
     // You can provide any of the hook options

@@ -1,9 +1,26 @@
 import classie from 'classie';
 import 'qtip2/src/core.css';
-import { isParagraph } from '../../../lib/editor/text';
+
+import {
+    clickGenUrl
+} from "./genUrl"
+import {
+    zeroclipboard,
+    getAnchorWithLink
+} from "../../lib/editor/clipboard"
 
 
-/* Each template has a local dictionary of helpers that are made available to it, and this call specifies helpers to add to the template’s dictionary. */
+// Globals
+/** @var instances The received instances */
+instances = [];
+
+/** @var instanceIndex The current instance index */
+instanceIndex = 0;
+
+/** @var maxInstanceNumber The number of instances in the variable instances */
+maxInstanceNumber = -1;
+
+/*Each template has a local dictionary of helpers that are made available to it, and this call specifies helpers to add to the template’s dictionary.*/
 Template.alloyEditor.helpers({
     drawInstance() {
         const instanceNumber = Session.get('currentInstance');
@@ -33,223 +50,65 @@ Template.alloyEditor.helpers({
 
 });
 Template.alloyEditor.events({
-    'click #exec'(evt) { // click on "Execute" button
+    'click #exec': function() {
+        if ($("#exec > button").is(":disabled")) return
+
         currentlyProjectedTypes = [];
         currentFramePosition = {};
         allAtoms = [];
         atomPositions = {};
-        $('.frame-navigation').hide();
-        if (evt.toElement.id != 'exec') {
-            if (!$('#exec > button').is(':disabled')) { /* if the button is available, check if there are commands to execute */
-                const commandLabel = Session.get('commands').length > 1 ? $('.command-selection > select option:selected').text() : Session.get('commands');
-                if (commandLabel.length == 0) {
-                    swal({
-                        title: '',
-                        text: 'There are no commands to execute',
-                        icon: 'warning',
-                        buttons: true,
-                        dangerMode: true,
-                    });
-                } else { /* Execute command */
-                    /* //LOCKED insertion */
-                    let modelToShare = '';
-                    let i = 0;
+        $(".frame-navigation").hide();
 
-
-                    let line; let
-                        inLockBlock = false;
-                    let braces;
-                    let foundbraces = false;
-                    while (line = textEditor.lineInfo(i++)) {
-                        if (line.gutterMarkers && line.gutterMarkers.breakpoints) {
-                            if (!inLockBlock) {
-                                modelToShare += '\n//LOCKED';
-                                inLockBlock = true;
-                                foundbraces = false;
-                                braces = 0;
-                            }
-                            if (inLockBlock) {
-                                for (c = 0; c < line.text.length; c++) {
-                                    switch (line.text.charAt(c)) {
-                                    case '{':
-                                        braces++;
-                                        foundbraces = true;
-                                        break;
-                                    case '}':
-                                        braces--;
-                                        break;
-                                    }
-                                }
-                            }
-                        } else {
-                            inLockBlock = false;
-                            foundbraces = false;
-                        }
-                        modelToShare += `\n${line.text}`;
-
-                        if (foundbraces && braces == 0) {
-                            inLockBlock = false;
-                            modelToShare += '\n';
-                        }
-                    }
-
-                    let secrets = '';
-                    if (!(id = Router.current().params._id)) {
-                        id = 'Original';
-                    }
-                    if ((id != 'Original') && Router.current().data().secrets) secrets = Router.current().data().secrets;
-                    Meteor.call('getInstance', (modelToShare /* textEditor.getValue() */ + secrets), Meteor.default_connection._lastSessionId, 0, commandLabel, true, id, Session.get('last_id'), handleInterpretModelEvent);
-                }
-                $('#exec > button').prop('disabled', true); /* available buttons */
-
-                $('#next > button').prop('disabled', false);
-            }
+        let commandLabel = getCommandLabel();
+        if (!commandLabel || commandLabel.length == 0) { //no command to run
+            swal({
+                title: "",
+                text: "There are no commands to execute",
+                icon: "warning",
+                buttons: true,
+                dangerMode: true,
+            });
+        } else { // Execute command
+            let model = textEditor.getValue();
+            //TODO: Daniel extract 5 to env variable or similar
+            Meteor.call('getInstances', model, 5, commandLabel, true, Session.get("last_id"), Session.get("original_id"), Session.get("from_private"), handleExecuteModel);
         }
+        // update button states after execution
+        $("#exec > button").prop('disabled', true);
+        $("#next > button").prop('disabled', false);
     },
     'change .command-selection > select'() {
         $('#exec > button').prop('disabled', false);
     },
-    'click #genUrl'(evt) {
-        if (evt.toElement.id != 'genUrl') {
-            const themeData = {
-                atomSettings,
-                relationSettings,
-                generalSettings,
-                currentFramePosition,
-                currentlyProjectedTypes,
-            };
-            if (!$('#genUrl > button').is(':disabled')) {
-                /* //LOCKED insertion */
-                let modelToShare = '';
-                let i = 0;
-
-
-                let line; let
-                    inLockBlock = false;
-                let braces;
-                let foundbraces = false;
-                while (line = textEditor.lineInfo(i++)) {
-                    if (line.gutterMarkers && line.gutterMarkers.breakpoints) {
-                        if (!inLockBlock) {
-                            modelToShare += '\n//LOCKED';
-                            inLockBlock = true;
-                            foundbraces = false;
-                            braces = 0;
-                        }
-                        if (inLockBlock) {
-                            for (c = 0; c < line.text.length; c++) {
-                                switch (line.text.charAt(c)) {
-                                case '{':
-                                    braces++;
-                                    foundbraces = true;
-                                    break;
-                                case '}':
-                                    braces--;
-                                    break;
-                                }
-                            }
-                        }
-                    } else {
-                        inLockBlock = false;
-                        foundbraces = false;
-                    }
-                    modelToShare += `\n${line.text}`;
-                    if (foundbraces && braces == 0) {
-                        inLockBlock = false;
-                        modelToShare += '\n';
-                    }
+    'click #genUrl': clickGenUrl,
+    'click #prev': function(evt) {
+        if ($("#prev > button").is(":disabled")) return
+        if (evt.toElement.id != "prev") {
+            let ni = getPreviousInstance();
+            if (typeof ni !== 'undefined') {
+                updateGraph(ni);
+                if (instanceIndex == 0) {
+                    $("#prev > button").prop('disabled', true);
                 }
-
-                if (id = Router.current().params._id) { /* if its loaded through an URL its a derivationOf model */
-                    // so acontece num link publico
-                    if ((secrets = Router.current().data().secrets) && containsValidSecret(modelToShare)) {
-                        swal({
-                            title: 'This model contains information that cannot be shared!',
-                            text: 'Are you sure you want to share it?',
-                            type: 'warning',
-                            showCancelButton: true,
-                            confirmButtonColor: '#DD6B55',
-                            confirmButtonText: 'Yes, share it!',
-                            closeOnConfirm: true,
-                        }, () => {
-                            Meteor.call('genURL', modelToShare, 'Original', false, Session.get('last_id'), themeData, handleGenURLEvent);
-                        });
-                    } else if (secrets.length == 0) {
-                        // se tiver um ou mais valid secret com run check e assert anonimos, pergunta
-                        if (containsValidSecretWithAnonymousCommand(modelToShare)) {
-                            swal({
-                                title: 'This model contains an anonymous Command!',
-                                text: 'Are you sure you want to share it?',
-                                type: 'warning',
-                                showCancelButton: true,
-                                confirmButtonColor: '#DD6B55',
-                                confirmButtonText: 'Yes, share it!',
-                                closeOnConfirm: true,
-                            }, () => {
-                                Meteor.call('genURL', modelToShare, id, false, Session.get('last_id'), themeData, handleGenURLEvent);
-                            });
-                        } else Meteor.call('genURL', modelToShare, id, false, Session.get('last_id'), themeData, handleGenURLEvent);
-                    } else Meteor.call('genURL', modelToShare + secrets, id, true, Session.get('last_id'), themeData, handleGenURLEvent);
-                } else { /* Otherwise its an original model */
-                    if (containsValidSecretWithAnonymousCommand(modelToShare)) {
-                        swal({
-                            title: 'This model contains an anonymous Command!',
-                            text: 'Are you sure you want to share it?',
-                            type: 'warning',
-                            showCancelButton: true,
-                            confirmButtonColor: '#DD6B55',
-                            confirmButtonText: 'Yes, share it!',
-                            closeOnConfirm: true,
-                        }, () => {
-                            Meteor.call('genURL', modelToShare, 'Original', false, Session.get('last_id'), themeData, handleGenURLEvent);
-                        });
-                    } else Meteor.call('genURL', modelToShare, 'Original', false, Session.get('last_id'), themeData, handleGenURLEvent);
-                }
+                $("#next > button").prop('disabled', false);
             }
         }
     },
-    'click #prev'(evt) {
-        if (evt.toElement.id != 'prev') {
-            if (!$('#prev > button').is(':disabled')) {
-                const currentInstance = Session.get('currentInstance');
-                if (currentInstance > 0) {
-                    const instance = getCurrentInstance(currentInstance - 1);
-                    if (instance) {
-                        Session.set('currentInstance', currentInstance - 1);
-                    } else {
-                        const command = Session.get('commands').length > 1 ? $('.command-selection > select option:selected').text() : Session.get('commands')[0];
-
-                        id = Router.current().params._id;
-                        if (!id) {
-                            id = 'Original';
-                        }
-
-                        Meteor.call('getInstance', textEditor.getValue(), Meteor.default_connection._lastSessionId, currentInstance - 1, command, true, id, null, handlePreviousInstanceEvent);
-                    }
-                    $('#next > button').prop('disabled', false);
-                }
-            }
-        }
-    },
-    'click #next'(evt) {
-        if (evt.toElement.id != 'next') {
-            if (!$('#next > button').is(':disabled')) {
-                const currentInstance = Session.get('currentInstance');
-
-                const instance = getCurrentInstance(currentInstance + 1);
-
-                if (instance) {
-                    Session.set('currentInstance', currentInstance + 1);
+    'click #next': function(evt) {
+        if ($("#next > button").is(":disabled")) return
+        if (evt.toElement.id != "next") {
+            let ni = getNextInstance();
+            if (typeof ni !== 'undefined') {
+                if (ni.unsat) {
+                    $('#next > button').prop('disabled', true);
+                    swal("No more satisfying instances!", "", "error");
                 } else {
-                    const command = Session.get('commands').length > 1 ? $('.command-selection > select option:selected').text() : Session.get('commands')[0];
-
-                    id = Router.current().params._id;
-                    if (!id) {
-                        id = 'Original';
-                    }
-                    Meteor.call('getInstance', textEditor.getValue(), Meteor.default_connection._lastSessionId, currentInstance + 1, command, false, id, null, handleNextInstanceEvent);
+                    updateGraph(ni);
                 }
-                $('#prev > button').prop('disabled', false);
+                if (instanceIndex + 1 == maxInstanceNumber) {
+                    $("#next > button").prop('disabled', true);
+                }
+                $("#prev > button").prop('disabled', false);
             }
         }
     },
@@ -264,11 +123,7 @@ Template.alloyEditor.events({
             metaSubsetSigs,
         };
 
-        // obter o id do Run correspondente à instancia atual no browser
-        const runID = Session.get('instances')[0].runID;
-
-        // Meteor.call('storeInstance', textEditor.getValue(), themeData, cy.json(), handleGenInstanceURLEvent);
-        Meteor.call('storeInstance', runID, themeData, cy.json(), handleGenInstanceURLEvent);
+        Meteor.call("storeInstance", Session.get("last_id"), getCommandLabel(), cy.json(), themeData, handleGenInstanceURLEvent)
     },
     'click #validateModel'() { // click on the validate button
         Meteor.call('validate', textEditor.getValue(), (err, res) => {
@@ -277,11 +132,16 @@ Template.alloyEditor.events({
                 res = JSON.parse(res);
                 if (!res.success) {
                     addErrorMarkerToGutter(res.errorMessage, res.errorLocation.line);
+                    swal({
+                        title: "There is at least an error on line " + res.errorLocation.line + "!",
+                        text: "The corresponding line has been highlighted in the text area!",
+                        type: "error"
+                    });
                 } else { // success
                     swal({
                         title: 'The Model is Valid!',
                         text: "You're doing great!",
-                        type: 'info',
+                        type: "success"
                     });
                 }
             }
@@ -295,23 +155,22 @@ Template.alloyEditor.onRendered(() => {
     } catch (e) {
         initGraphViewer('instance');
     }
-    // Adds click effects to Buttons
-    buttonsEffects();
-    // Hide Next, Previous, Run... buttons on startup
-    hideButtons();
 
-    // If there's subscribed data, process it.
-    let model;
-    if (Router.current().data) model = Router.current().data();
+    buttonsEffects(); //Adds click effects to Buttons
+    hideButtons(); //Hide Next, Previous, Run... buttons on startup
 
-    if (model && textEditor) {
-        let themeData;
-        if (model.instance) themeData = model.instance.theme;
-        // Place model on text editor
-        const result = model.whole;
-        textEditor.setValue(result);
-        // Load theme settings;
-        if (themeData) {
+    if (Router.current().data && textEditor) { // if there's subscribed data, process it.
+        let model = Router.current().data(); // load the model from controller
+        textEditor.setValue(model.code); // update the textEditor
+        // save the loaded model id for later derivations
+        Session.set("last_id", model.model_id); // this will change on execute
+        Session.set("original_id", model.model_id); // this will only change on share model
+        Session.set("from_private", model.from_private); // this will not change
+        Session.set("hidden_commands", model.commands) // update the commands for public links that do not have them
+        Session.set("commands", model.commands) // update the commands to start correct
+
+        if (model.instance) { // if there is an instance to show
+            let themeData = model.instance.theme;
             atomSettings = themeData.atomSettings;
             relationSettings = themeData.relationSettings;
             generalSettings = themeData.generalSettings;
@@ -320,270 +179,132 @@ Template.alloyEditor.onRendered(() => {
             if (themeData.metaPrimSigs) metaPrimSigs = themeData.metaPrimSigs;
             if (themeData.metaSubsetSigs) metaSubsetSigs = themeData.metaSubsetSigs;
         }
-        // Load graph JSON data in case of instance sharing.
-        if (model.instance && cy) {
+        if (model.instance && cy) { //Load graph JSON data in case of instance sharing.
             $('#instanceViewer').show();
-            // cy.add(Router.current().data().instance.elements);
             cy.add(model.instance.graph.elements);
             updateElementSelectionContent();
         }
     }
-
-    // On tab/browser closure, terminate the user's session.
-    $(window).bind('beforeunload', (e) => {
-        // No longer necessary. Webservice automatically deletes session associated objects after a few hours idle.
-    });
-    try {
-        cy;
-    } catch (e) {
-        initGraphViewer('instance');
-    }
-    // Right click menu styling
-    $('.command-selection').hide();
-    (function ($) {
-        $(document).ready(() => {
-            $('#cssmenu li.active').addClass('open').children('ul').show();
-            $('#cssmenu li.has-sub>a').on('click', function () {
-                $(this).removeAttr('href');
-                const element = $(this).parent('li');
-                if (element.hasClass('open')) {
-                    element.removeClass('open');
-                    element.find('li').removeClass('open');
-                    element.find('ul').slideUp(200);
-                } else {
-                    element.addClass('open');
-                    element.children('ul').slideDown(200);
-                    element.siblings('li').children('ul').slideUp(200);
-                    element.siblings('li').removeClass('open');
-                    element.siblings('li').find('li').removeClass('open');
-                    element.siblings('li').find('ul').slideUp(200);
-                }
-            });
-        });
-    }(jQuery));
+    styleRightClickMenu();
     $('#optionsMenu').hide();
 });
 
 /* ------------- Server HANDLERS methods && Aux Functions ----------- */
 
-/* nextbtn event handler after getInstance(textEditor.getValue) , currentInstance + 1 */
-function handleNextInstanceEvent(err, result) {
-    if (err) {
-        swal(err.reason, '', 'error');
-    } else if (result.unsat) {
-        $('#next > button').prop('disabled', true);
-        swal('No more satisfying instances!', '', 'error');
-    } else {
-        updateInstances(result);
-        Session.set('currentInstance', result.number);
-    }
-}
 
-/* Execbtn event handler
-      result: getInstance(textEditor.getValue,..) */
-function handleInterpretModelEvent(err, result) {
+function handleExecuteModel(err, result) {
+    if (err) return console.error(err)
+
+    Session.set("last_id", result.last_id) // update the last_id for next derivations
+
     $.unblockUI();
     $('#exec > button').prop('disabled', true);
+    $('#url-permalink').empty() //remove previous links
+    $("#genUrl > button").prop('disabled', false); // Restart shareModel option
 
-    // Restart shareModel option
-    const permalink = document.getElementById('permalink');
-    if (permalink) permalink.remove();
-    $('#genUrl > button').prop('disabled', false);
-
-    // clear projection combo box
-    let select = document.getElementsByClassName('framePickerTarget');
-
+    //clear projection combo box
+    let select = document.getElementsByClassName("framePickerTarget");
     if (select) select = select[0];
     if (select) {
-        const length = select.options.length;
-        for (i = 0; i < length; i++) {
-            select.remove(0);
-        }
+        let length = select.options.length;
+        for (i = 0; i < length; i++) select.remove(0);
     }
 
     $('#instanceViewer').hide();
-    $('#log').empty();
-    const command = $('.command-selection > select option:selected').text();
+    $("#log").empty();
+    let command = $('.command-selection > select option:selected').text();
 
     if (err) {
+        //TODO: Daniel: this is no longer applicable after no-soap
         if (err.error == 502) {
-            swal('Syntax Error!', '', 'error');
-            const x = document.createElement('IMG');
-            x.setAttribute('src', '/images/icons/error.png');
-            x.setAttribute('width', '15');
-            x.setAttribute('id', 'error');
-            x.setAttribute('title', err.reason.msg);
-            textEditor.setGutterMarker(err.reason.line - 1, 'error-gutter', x);
+            swal("Syntax Error!", "", "error");
+            let x = document.createElement("IMG");
+            x.setAttribute("src", "/images/icons/error.png");
+            x.setAttribute("width", "15");
+            x.setAttribute("id", "error");
+            x.setAttribute("title", err.reason.msg);
+            textEditor.setGutterMarker(err.reason.line - 1, "error-gutter", x);
             textEditor.refresh();
             $('#next > button').prop('disabled', true);
             $('#prev > button').prop('disabled', true);
         }
     } else {
-        if (result.commandType && result.commandType == 'check') {
+        result = result.instances
+        storeInstances(result);
+        if (Array.isArray(result))
+            result = result[0];
+        if (result.commandType && result.commandType == "check") {
             /* if the commandType == check */
 
-            const log = document.createElement('div');
-            log.className = 'col-lg-12 col-md-12 col-sm-12 col-xs-12';
-            const paragraph = document.createElement('p');
-
+            let log = document.createElement('div');
+            log.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
+            let paragraph = document.createElement('p');
 
             if (result.unsat) {
                 $('#instancenav').hide();
 
-                paragraph.innerHTML = `No counter-examples. ${command} solved!`;
-                paragraph.className = 'log-complete';
+                paragraph.innerHTML = "No counter-examples. " + command + " solved!";
+                paragraph.className = "log-complete";
             } else {
-                paragraph.innerHTML = `Invalid solution, checking ${command} revealed a counter-example.`;
-                paragraph.className = 'log-wrong';
+                paragraph.innerHTML = "Invalid solution, checking " + command + " revealed a counter-example.";
+                paragraph.className = "log-wrong";
                 updateGraph(result);
             }
 
             log.appendChild(paragraph);
-            /* div with id=log will appendChild(log) */
-            $('#log')[0].appendChild(log);
+            $("#log")[0].appendChild(log);
         }
 
-        /* if the commandType != check */
-        if (result.unsat) {
+        if (result.unsat) { // no counter examples found
             $('.empty-univ').fadeIn();
             $('#instanceViewer').hide();
-            $('#genInstanceUrl').hide();
-        } else {
-            updateInstances(result);
-            Session.set('currentInstance', 0);
+            $("#genInstanceUrl").hide();
         }
 
-        if (result.last_id) {
-            Session.set('last_id', result.last_id);
+        if (result.syntax_error) {
+            swal("There is a syntax error!", "Please validate your model.", "error");
         }
     }
 }
 
-/* genUrlbtn event handler after genUrl method */
-function handleGenURLEvent(err, result) {
-    if (!err) {
-        // if the URL was generated successfully, create and append a new element to the HTML containing it.
-        const url = document.createElement('div');
-        url.className = 'col-lg-12 col-md-12 col-sm-12 col-xs-12';
-        var anchor = document.createElement('a');
-        anchor.href = `/${result.public}`;
-        anchor.className = 'urlinfo';
-        anchor.innerHTML = `${window.location.origin}/${result.public}`;
-        url.appendChild(anchor);
-
-
-        let urlPrivate = '';
-        if (result.private !== undefined) {
-            urlPrivate = document.createElement('div');
-            urlPrivate.className = 'col-lg-12 col-md-12 col-sm-12 col-xs-12';
-            var anchor = document.createElement('a');
-            anchor.href = `/${result.private}`;
-            anchor.className = 'urlinfo';
-            anchor.innerHTML = `${window.location.origin}/${result.private}`;
-            urlPrivate.appendChild(anchor);
-        }
-
-        const clipboard = document.createElement('div');
-        clipboard.className = 'col-lg-12 col-md-12 col-sm-12 col-xs-12';
-        clipboard.innerHTML = "<button class='clipboardbutton cbutton cbutton--effect-boris'><img src='/images/icons/clipboard.png' /><i class='legend'>copy to clipboard</i></button></div>";
-
-        const textcenter = document.createElement('div');
-        textcenter.className = 'text-center';
-        textcenter.id = 'permalink';
-
-        if (result.private !== undefined) {
-            let paragraph = document.createElement('p');
-
-            let text = document.createTextNode('Public Link:  ');
-            paragraph.appendChild(text);
-            paragraph.appendChild(url);
-
-            textcenter.appendChild(paragraph);
-            paragraph = document.createElement('p');
-
-            text = document.createTextNode('Private Link:  ');
-            paragraph.appendChild(text);
-            paragraph.appendChild(urlPrivate);
-            textcenter.appendChild(paragraph);
-        } else {
-            textcenter.appendChild(url);
-        }
-
-        textcenter.appendChild(clipboard);
-
-        document.getElementById('url-permalink').appendChild(textcenter);
-        $('#genUrl > button').prop('disabled', true);
-        zeroclipboard();
-
-        if (result.last_id) {
-            Session.set('last_id', result.last_id);
-        }
-    }
+function storeInstances(allInstances) {
+    instances = allInstances;
+    instanceIndex = 0;
+    maxInstanceNumber = allInstances.length;
 }
 
-/* prevbtn event handler after getInstance(textEditor.getValue) , currentInstance - 1 */
-function handlePreviousInstanceEvent(err, result) {
-    if (err) {
-        swal(err.reason, '', 'error');
-    } else {
-        if (result.unsat) $('#prev > button').prop('disabled', true);
-        else updateInstances(result);
-        Session.set('currentInstance', result.number);
-    }
+function getNextInstance() {
+    return instances[++instanceIndex];
 }
 
-/* geninstanceurlbtn event handler after storeInstance method */
+function getPreviousInstance() {
+    return instances[--instanceIndex];
+}
+
+function getCommandLabel() {
+    return Session.get("commands").length > 1 ? $('.command-selection > select option:selected').text() : Session.get("commands")[0];
+}
+
+// geninstanceurlbtn event handler after storeInstance method
 function handleGenInstanceURLEvent(err, result) {
-    if (!err) {
-        // if the URL was generated successfully, create and append a new element to the HTML containing it.
-        const url = document.createElement('div');
-        url.className = 'col-lg-12 col-md-12 col-sm-12 col-xs-12';
-        const anchor = document.createElement('a');
-        anchor.href = `/${result}`;
-        anchor.target = '_';
-        anchor.className = 'urlinfo';
-        anchor.innerHTML = `${window.location.origin}/${result}`;
-        url.appendChild(anchor);
+    if (err) return //TODO: Daniel, increase verbosity with swal
 
-        const clipboard = document.createElement('div');
-        clipboard.className = 'col-lg-12 col-md-12 col-sm-12 col-xs-12';
-        clipboard.innerHTML = "<button class='clipboardbutton cbutton cbutton--effect-boris'><img src='/images/icons/clipboard.png' /><i class='legend'>copy to clipboard</i></button></div>";
+    // if the URL was generated successfully, create and append a new element to the HTML containing it.
+    let url = getAnchorWithLink(result, "instance link");
 
+    let textcenter = document.createElement('div');
+    textcenter.className = "text-center";
+    textcenter.id = "instance_permalink";
+    textcenter.appendChild(url);
 
-        const textcenter = document.createElement('div');
-        textcenter.className = 'text-center';
-        textcenter.id = 'instance_permalink';
-        textcenter.appendChild(url);
-        textcenter.appendChild(clipboard);
-
-        document.getElementById('url-instance-permalink').appendChild(textcenter);
-        $('#genInstanceUrl > button').prop('disabled', true);
-        zeroclipboard();
-    }
+    $("#url-instance-permalink").empty()
+    document.getElementById('url-instance-permalink').appendChild(textcenter);
+    $("#genInstanceUrl > button").prop('disabled', true);
+    zeroclipboard();
 }
 
-/* Functions used to update session instances */
-updateInstances = function (instance) {
-    if (!Session.get('instances')) {
-        var instances = [instance];
-        Session.set('instances', instances);
-        Session.set('currentInstance', 0);
-    } else {
-        var instances = Session.get('instances');
-        instances.push(instance);
-        Session.set('instances', instances);
-        Session.set('currentInstance', Session.get('currentInstance'));
-    }
-};
-getCurrentInstance = function (instanceNumber) {
-    const instances = Session.get('instances');
-    let result;
-    instances.forEach((inst) => {
-        if (inst.number == instanceNumber) {
-            result = inst;
-        }
-    });
-    return result;
+getCurrentInstance = function() {
+    return instances[instanceIndex]
 };
 
 /* onRendered aux functions */
@@ -646,74 +367,33 @@ function hideButtons() {
     $('#exec > button').prop('disabled', true);
     $('#next > button').prop('disabled', true);
     $('#prev > button').prop('disabled', true);
+    $('#validateModel > button').prop('disabled', true);
     $('.permalink > button').prop('disabled', true);
 }
 
-function zeroclipboard() {
-    const client = new ZeroClipboard($('.clipboardbutton'));
-    client.on('copy', (event) => {
-        const clipboard = event.clipboardData;
-        clipboard.setData('text/plain', $('.urlinfo').html());
-    });
-}
+function styleRightClickMenu() {
+    //Right click menu styling
+    $(".command-selection").hide();
+    (function($) {
+        $(document).ready(function() {
+            $('#cssmenu li.active').addClass('open').children('ul').show();
+            $('#cssmenu li.has-sub>a').on('click', function() {
+                $(this).removeAttr('href');
+                var element = $(this).parent('li');
+                if (element.hasClass('open')) {
+                    element.removeClass('open');
+                    element.find('li').removeClass('open');
+                    element.find('ul').slideUp(200);
+                } else {
+                    element.addClass('open');
+                    element.children('ul').slideDown(200);
+                    element.siblings('li').children('ul').slideUp(200);
+                    element.siblings('li').removeClass('open');
+                    element.siblings('li').find('li').removeClass('open');
+                    element.siblings('li').find('ul').slideUp(200);
+                }
+            });
 
-
-/*
-  Check if the model contains some valid 'secret'
-*/
-function containsValidSecret(model) {
-    let i; let j; let
-        lastSecret = 0;
-    let paragraph = '';
-    while ((i = model.indexOf('//SECRET\n', lastSecret)) >= 0) {
-        for (var z = i + ('//SECRET\n'.length);
-            (z < model.length && model[z] != '{'); z++) {
-            paragraph += model[z];
-        }
-        if (!isParagraph(paragraph)) {
-            paragraph = '';
-            lastSecret = i + 1;
-            continue;
-        }
-        if (findClosingBracketMatchIndex(model, z) != -1) {
-            return true;
-        }
-        lastSecret = i + 1;
-    }
-    return false;
-}
-
-function containsValidSecretWithAnonymousCommand(model) {
-    let lastSecret = 0;
-    while ((i = model.indexOf('//SECRET\n', lastSecret)) >= 0) {
-        const s = model.substr(i + '//SECRET\n'.length).trim();
-        // se o resto do texto comecar com a expressao abaixo entao contem
-        // um comando anonimo
-        if (s.match('^(assert|run|check)([ \t\n])*[{]')) {
-            return true;
-        }
-
-        lastSecret = i + 1;
-    }
-    return false;
-}
-
-function findClosingBracketMatchIndex(str, pos) {
-    if (str[pos] != '{') {
-        throw new Error(`No '{' at index ${pos}`);
-    }
-    let depth = 1;
-    for (let i = pos + 1; i < str.length; i++) {
-        switch (str[i]) {
-        case '{':
-            depth++;
-            break;
-        case '}':
-            if (--depth == 0) {
-                return i;
-            }
-            break;
-        }
-    }
-    return -1; // No matching closing parenthesis
+        });
+    })(jQuery);
 }

@@ -21,7 +21,6 @@ Router.route('/', {
 // route settings for endpoint with model id "/:_id"
 Router.route('/:_id', {
     name: 'editorLoad',
-    template: 'alloyEditor',
-    controller: 'editorLoadController',
-    where: 'client',
+    controller: "editorLoadController",
+    where: 'client'
 });

@@ -1,21 +1,26 @@
 atomSettings = {};
-atomSettings.nodeColors = [{ type: 'univ', color: '#68DB53' }];
-atomSettings.nodeShapes = [{ type: 'univ', shape: 'ellipse' }];
-atomSettings.nodeBorders = [{ type: 'univ', border: 'solid' }];
-atomSettings.unconnectedNodes = [{ type: 'univ', unconnectedNodes: 'false' }];
-atomSettings.displayNodesNumber = [{ type: 'univ', displayNodesNumber: 'true' }];
-atomSettings.nodeVisibility = [{ type: 'univ', visibility: 'visible' }];
+atomSettings.nodeColors = [{ type: "univ", color: "#68DB53" }];
+atomSettings.nodeShapes = [{ type: "univ", shape: "ellipse" }];
+atomSettings.nodeBorders = [{ type: "univ", border: "solid" }];
+atomSettings.unconnectedNodes = [{ type: "univ", unconnectedNodes: "false" }];
+atomSettings.displayNodesNumber = [{ type: "univ", displayNodesNumber: "true" }];
+atomSettings.nodeVisibility = [{ type: "univ", visibility: "visible" }];
 
 getAtomColor = function (atomType) {
-    // var atomSettings = Session.get("atomSettings");
+    //var atomSettings = Session.get("atomSettings");
     if (atomSettings && atomSettings.nodeColors) {
-        for (let i = 0; i < atomSettings.nodeColors.length; i++) {
+        for (var i = 0; i < atomSettings.nodeColors.length; i++) {
             if (atomSettings.nodeColors[i].type == atomType) {
                 return atomSettings.nodeColors[i].color;
             }
         }
         atomSettings.nodeColors.push({ type: atomType, color: 'inherit' });
-        // Session.set("atomSettings",atomSettings);
+        //Session.set("atomSettings",atomSettings);
+        return 'inherit';
+    } else {
+        atomSettings.nodeColors = [];
+        atomSettings.nodeColors.push({ type: atomType, color: 'inherit' });
+        //Session.set("atomSettings",atomSettings);
         return 'inherit';
     }
     atomSettings.nodeColors = [];
@@ -25,15 +30,20 @@ getAtomColor = function (atomType) {
 };
 
 getAtomShape = function (atomType) {
-    // var atomSettings = Session.get("atomSettings");
+    //var atomSettings = Session.get("atomSettings");
     if (atomSettings && atomSettings.nodeShapes) {
-        for (let i = 0; i < atomSettings.nodeShapes.length; i++) {
+        for (var i = 0; i < atomSettings.nodeShapes.length; i++) {
             if (atomSettings.nodeShapes[i].type == atomType) {
                 return atomSettings.nodeShapes[i].shape;
             }
         }
         atomSettings.nodeShapes.push({ type: atomType, shape: 'inherit' });
-        // Session.set("atomSettings",atomSettings);
+        //Session.set("atomSettings",atomSettings);
+        return 'inherit';
+    } else {
+        atomSettings.nodeShapes = [];
+        atomSettings.nodeShapes.push({ type: atomType, shape: 'inherit' });
+        //Session.set("atomSettings",atomSettings);
         return 'inherit';
     }
     atomSettings.nodeShapes = [];
@@ -44,11 +54,15 @@ getAtomShape = function (atomType) {
 
 getAtomBorder = function (atomType) {
     if (atomSettings && atomSettings.nodeBorders) {
-        for (let i = 0; i < atomSettings.nodeBorders.length; i++) {
+        for (var i = 0; i < atomSettings.nodeBorders.length; i++) {
             if (atomSettings.nodeBorders[i].type == atomType) {
                 return atomSettings.nodeBorders[i].border;
             }
         }
+        atomSettings.nodeBorders.push({ type: atomType, border: 'inherit' });
+        return 'inherit';
+    } else {
+        atomSettings.nodeBorders = [];
         atomSettings.nodeBorders.push({ type: atomType, border: 'inherit' });
         return 'inherit';
     }
@@ -59,11 +73,15 @@ getAtomBorder = function (atomType) {
 
 getAtomVisibility = function (atomType) {
     if (atomSettings && atomSettings.nodeVisibility) {
-        for (let i = 0; i < atomSettings.nodeVisibility.length; i++) {
+        for (var i = 0; i < atomSettings.nodeVisibility.length; i++) {
             if (atomSettings.nodeVisibility[i].type == atomType) {
                 return atomSettings.nodeVisibility[i].visibility;
             }
         }
+        atomSettings.nodeVisibility.push({ type: atomType, visibility: 'inherit' });
+        return 'inherit';
+    } else {
+        atomSettings.nodeVisibility = [];
         atomSettings.nodeVisibility.push({ type: atomType, visibility: 'inherit' });
         return 'inherit';
     }
@@ -73,7 +91,7 @@ getAtomVisibility = function (atomType) {
 };
 
 updateAtomVisibility = function (atomType, newVisibilityValue) {
-    for (let i = 0; i < atomSettings.nodeVisibility.length; i++) {
+    for (var i = 0; i < atomSettings.nodeVisibility.length; i++) {
         if (atomSettings.nodeVisibility[i].type == atomType) {
             atomSettings.nodeVisibility[i].visibility = newVisibilityValue;
             return;
@@ -83,9 +101,9 @@ updateAtomVisibility = function (atomType, newVisibilityValue) {
 
 getInheritedAtomVisibility = function (type) {
     type = getSigParent(type);
-    let visibility = getAtomVisibility(type);
-    while (visibility == 'inherit') {
-        const parent = getSigParent(type);
+    var visibility = getAtomVisibility(type);
+    while (visibility == "inherit") {
+        var parent = getSigParent(type);
         visibility = getAtomVisibility(type);
         type = parent;
     }
@@ -93,32 +111,36 @@ getInheritedAtomVisibility = function (type) {
 };
 
 setAtomVisibility = function (atomType, visibilityValue) {
-    const inheriting = [atomType];
-    const queue = [atomType];
+    var inheriting = [atomType];
+    var queue = [atomType];
     while (queue.length > 0) {
-        const children = getChildSigs(queue.shift());
+        var children = getChildSigs(queue.shift());
         for (var i in children) {
-            if (getAtomVisibility(children[i]) == 'inherit') {
+            if (getAtomVisibility(children[i]) == "inherit") {
                 inheriting.push(children[i]);
                 queue.push(children[i]);
             }
         }
     }
-    for (const j in inheriting) {
-        const atomSet = cy.nodes(`[type='${inheriting[j]}']`);
+    for (var j in inheriting) {
+        var atomSet = cy.nodes("[type='" + inheriting[j] + "']");
         for (var i = 0; i < atomSet.length; i++) {
-            visibilityValue == 'visible' ? atomSet[i].show() : atomSet[i].hide();
+            visibilityValue == "visible" ? atomSet[i].show() : atomSet[i].hide();
         }
     }
 };
 
 getAtomLabel = function (atomType) {
     if (atomSettings && atomSettings.nodeLabels) {
-        for (let i = 0; i < atomSettings.nodeLabels.length; i++) {
+        for (var i = 0; i < atomSettings.nodeLabels.length; i++) {
             if (atomSettings.nodeLabels[i].type == atomType) {
                 return atomSettings.nodeLabels[i].label;
             }
         }
+        atomSettings.nodeLabels.push({ type: atomType, label: atomType });
+        return atomType;
+    } else {
+        atomSettings.nodeLabels = [];
         atomSettings.nodeLabels.push({ type: atomType, label: atomType });
         return atomType;
     }
@@ -128,7 +150,7 @@ getAtomLabel = function (atomType) {
 };
 
 updateAtomLabel = function (atomType, newLabel) {
-    for (let i = 0; i < atomSettings.nodeLabels.length; i++) {
+    for (var i = 0; i < atomSettings.nodeLabels.length; i++) {
         if (atomSettings.nodeLabels[i].type == atomType) {
             atomSettings.nodeLabels[i].label = newLabel;
             return;
@@ -137,7 +159,7 @@ updateAtomLabel = function (atomType, newLabel) {
 };
 
 updateAtomBorder = function (atomType, newBorder) {
-    for (let i = 0; i < atomSettings.nodeBorders.length; i++) {
+    for (var i = 0; i < atomSettings.nodeBorders.length; i++) {
         if (atomSettings.nodeBorders[i].type == atomType) {
             atomSettings.nodeBorders[i].border = newBorder;
             return;
@@ -148,20 +170,20 @@ updateAtomBorder = function (atomType, newBorder) {
 setUnconnectedNodesValue = function (atomType, value) {
     try {
         if (cy) {
-            const inheriting = [atomType];
-            const queue = [atomType];
+            var inheriting = [atomType];
+            var queue = [atomType];
             while (queue.length > 0) {
-                const children = getChildSigs(queue.shift());
+                var children = getChildSigs(queue.shift());
                 for (var i in children) {
-                    if (getUnconnectedNodesValue(children[i]) == 'inherit') {
+                    if (getUnconnectedNodesValue(children[i]) == "inherit") {
                         inheriting.push(children[i]);
                         queue.push(children[i]);
                     }
                 }
             }
 
-            for (const j in inheriting) {
-                const atomSet = cy.nodes(`[type='${inheriting[j]}']`);
+            for (var j in inheriting) {
+                var atomSet = cy.nodes("[type='" + inheriting[j] + "']");
                 for (var i = 0; i < atomSet.length; i++) {
                     if (atomSet[i].neighbourhood().length == 0) {
                         value == 'true' ? atomSet[i].hide() : atomSet[i].show();
@@ -175,8 +197,8 @@ setUnconnectedNodesValue = function (atomType, value) {
 
 
 updateAtomShape = function (atomType, newShape) {
-    // var atomSettings = Session.get("atomSettings");
-    for (let i = 0; i < atomSettings.nodeShapes.length; i++) {
+    //var atomSettings = Session.get("atomSettings");
+    for (var i = 0; i < atomSettings.nodeShapes.length; i++) {
         if (atomSettings.nodeShapes[i].type == atomType) {
             atomSettings.nodeShapes[i].shape = newShape;
             // Session.set("atomSettings", atomSettings);
@@ -187,8 +209,8 @@ updateAtomShape = function (atomType, newShape) {
 
 
 updateAtomColor = function (atomType, newColor) {
-    // var atomSettings = Session.get("atomSettings");
-    for (let i = 0; i < atomSettings.nodeColors.length; i++) {
+    //var atomSettings = Session.get("atomSettings");
+    for (var i = 0; i < atomSettings.nodeColors.length; i++) {
         if (atomSettings.nodeColors[i].type == atomType) {
             atomSettings.nodeColors[i].color = newColor;
             // Session.set("atomSettings", atomSettings);
@@ -198,13 +220,15 @@ updateAtomColor = function (atomType, newColor) {
 };
 
 isUnconnectedNodesOn = function (atomType) {
-    // var atomSettings = Session.get("atomSettings");
+    //var atomSettings = Session.get("atomSettings");
     if (atomSettings.unconnectedNodes) {
-        for (let i = 0; i < atomSettings.unconnectedNodes.length; i++) {
+        for (var i = 0; i < atomSettings.unconnectedNodes.length; i++) {
             if (atomSettings.unconnectedNodes[i].type == atomType) {
                 return atomSettings.unconnectedNodes[i].unconnectedNodes;
             }
         }
+        return false;
+    } else {
         return false;
     }
     return false;
@@ -212,7 +236,7 @@ isUnconnectedNodesOn = function (atomType) {
 
 updateUnconnectedNodes = function (atomType, newUnconnectedNodesValue) {
     if (atomSettings.unconnectedNodes) {
-        for (let i = 0; i < atomSettings.unconnectedNodes.length; i++) {
+        for (var i = 0; i < atomSettings.unconnectedNodes.length; i++) {
             if (atomSettings.unconnectedNodes[i].type == atomType) {
                 atomSettings.unconnectedNodes[i].unconnectedNodes = newUnconnectedNodesValue;
                 return;
@@ -227,7 +251,7 @@ updateUnconnectedNodes = function (atomType, newUnconnectedNodesValue) {
 
 updateDisplayNodesNumber = function (atomType, newDisplayNodesNumberValue) {
     if (atomSettings.displayNodesNumber) {
-        for (let i = 0; i < atomSettings.displayNodesNumber.length; i++) {
+        for (var i = 0; i < atomSettings.displayNodesNumber.length; i++) {
             if (atomSettings.displayNodesNumber[i].type == atomType) {
                 atomSettings.displayNodesNumber[i].displayNodesNumber = newDisplayNodesNumberValue;
                 return;
@@ -241,24 +265,25 @@ updateDisplayNodesNumber = function (atomType, newDisplayNodesNumberValue) {
 };
 
 
+
 setDisplayNodesNumberValue = function (atomType, value) {
     try {
         if (cy) {
-            const inheriting = [atomType];
-            const queue = [atomType];
+            var inheriting = [atomType];
+            var queue = [atomType];
             while (queue.length > 0) {
-                const children = getChildSigs(queue.shift());
+                var children = getChildSigs(queue.shift());
                 for (var i in children) {
-                    if (getDisplayNodesNumberValue(children[i]) == 'inherit') {
+                    if (getDisplayNodesNumberValue(children[i]) == "inherit") {
                         inheriting.push(children[i]);
                         queue.push(children[i]);
                     }
                 }
             }
-            for (const j in inheriting) {
-                const atomSet = cy.nodes(`[type='${inheriting[j]}']`);
+            for (var j in inheriting) {
+                var atomSet = cy.nodes("[type='" + inheriting[j] + "']");
                 for (var i = 0; i < atomSet.length; i++) {
-                    value == 'true' ? atomSet[i].data().number = atomSet[i].data().numberBackup : atomSet[i].data().number = '';
+                    value == "true" ? atomSet[i].data().number = atomSet[i].data().numberBackup : atomSet[i].data().number = "";
                 }
             }
         }
@@ -269,11 +294,13 @@ setDisplayNodesNumberValue = function (atomType, value) {
 
 isDisplayNodesNumberOn = function (selectedType) {
     if (atomSettings.displayNodesNumber) {
-        for (let i = 0; i < atomSettings.displayNodesNumber.length; i++) {
+        for (var i = 0; i < atomSettings.displayNodesNumber.length; i++) {
             if (atomSettings.displayNodesNumber[i].type == selectedType) {
-                return atomSettings.displayNodesNumber[i].displayNodesNumber == 'true';
+                return atomSettings.displayNodesNumber[i].displayNodesNumber == "true";
             }
         }
+        return false;
+    } else {
         return false;
     }
     return false;
@@ -281,11 +308,15 @@ isDisplayNodesNumberOn = function (selectedType) {
 
 getUnconnectedNodesValue = function (selectedType) {
     if (atomSettings && atomSettings.unconnectedNodes) {
-        for (let i = 0; i < atomSettings.unconnectedNodes.length; i++) {
+        for (var i = 0; i < atomSettings.unconnectedNodes.length; i++) {
             if (atomSettings.unconnectedNodes[i].type == selectedType) {
                 return atomSettings.unconnectedNodes[i].unconnectedNodes;
             }
         }
+        atomSettings.unconnectedNodes.push({ type: selectedType, unconnectedNodes: 'inherit' });
+        return 'inherit';
+    } else {
+        atomSettings.unconnectedNodes = [];
         atomSettings.unconnectedNodes.push({ type: selectedType, unconnectedNodes: 'inherit' });
         return 'inherit';
     }
@@ -296,11 +327,15 @@ getUnconnectedNodesValue = function (selectedType) {
 
 getDisplayNodesNumberValue = function (selectedType) {
     if (atomSettings && atomSettings.displayNodesNumber) {
-        for (let i = 0; i < atomSettings.displayNodesNumber.length; i++) {
+        for (var i = 0; i < atomSettings.displayNodesNumber.length; i++) {
             if (atomSettings.displayNodesNumber[i].type == selectedType) {
                 return atomSettings.displayNodesNumber[i].displayNodesNumber;
             }
         }
+        atomSettings.displayNodesNumber.push({ type: selectedType, displayNodesNumber: 'inherit' });
+        return 'inherit';
+    } else {
+        atomSettings.displayNodesNumber = [];
         atomSettings.displayNodesNumber.push({ type: selectedType, displayNodesNumber: 'inherit' });
         return 'inherit';
     }
@@ -311,9 +346,9 @@ getDisplayNodesNumberValue = function (selectedType) {
 
 getInheritedHideUnconnectedNodesValue = function (type) {
     type = getSigParent(type);
-    let hideUnconnectedNodes = getUnconnectedNodesValue(type);
-    while (hideUnconnectedNodes == 'inherit') {
-        const parent = getSigParent(type);
+    var hideUnconnectedNodes = getUnconnectedNodesValue(type);
+    while (hideUnconnectedNodes == "inherit") {
+        var parent = getSigParent(type);
         hideUnconnectedNodes = getUnconnectedNodesValue(type);
         type = parent;
     }
@@ -322,9 +357,9 @@ getInheritedHideUnconnectedNodesValue = function (type) {
 
 getInheritedDisplayNodesNumberValue = function (type) {
     type = getSigParent(type);
-    let displayNodesNumber = getDisplayNodesNumberValue(type);
-    while (displayNodesNumber == 'inherit') {
-        const parent = getSigParent(type);
+    var displayNodesNumber = getDisplayNodesNumberValue(type);
+    while (displayNodesNumber == "inherit") {
+        var parent = getSigParent(type);
         displayNodesNumber = getDisplayNodesNumberValue(type);
         type = parent;
     }
@@ -333,9 +368,9 @@ getInheritedDisplayNodesNumberValue = function (type) {
 
 getInheritedAtomColor = function (type) {
     type = getSigParent(type);
-    let color = getAtomColor(type);
-    while (color == 'inherit') {
-        const parent = getSigParent(type);
+    var color = getAtomColor(type);
+    while (color == "inherit") {
+        var parent = getSigParent(type);
         color = getAtomColor(parent);
         type = parent;
     }
@@ -344,9 +379,9 @@ getInheritedAtomColor = function (type) {
 
 getInheritedAtomShape = function (type) {
     type = getSigParent(type);
-    let shape = getAtomShape(type);
-    while (shape == 'inherit') {
-        const parent = getSigParent(type);
+    var shape = getAtomShape(type);
+    while (shape == "inherit") {
+        var parent = getSigParent(type);
         shape = getAtomShape(parent);
         type = parent;
     }
@@ -356,9 +391,9 @@ getInheritedAtomShape = function (type) {
 
 getInheritedAtomBorder = function (type) {
     type = getSigParent(type);
-    let border = getAtomBorder(type);
-    while (border == 'inherit') {
-        const parent = getSigParent(type);
+    var border = getAtomBorder(type);
+    while (border == "inherit") {
+        var parent = getSigParent(type);
         border = getAtomBorder(parent);
         type = parent;
     }

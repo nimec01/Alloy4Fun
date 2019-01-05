@@ -3,16 +3,15 @@
     "private": true,
     "scripts": {
         "start": "MONGO_URL=mongodb://localhost:27017 meteor --settings settings.json",
-        "test": "meteor test --once --driver-package meteortesting:mocha",
+        "test": "TEST_BROWSER_DRIVER=chrome meteor test --once --driver-package meteortesting:mocha",
         "test-app": "TEST_WATCH=1 meteor test --full-app --driver-package meteortesting:mocha",
-        "visualize": "meteor --production --extra-packages bundle-visualizer",
-        "lint": "eslint . --fix"
+        "visualize": "meteor --production --extra-packages bundle-visualizer"
     },
     "dependencies": {
         "@babel/runtime": "^7.1.5",
         "classie": "^1.0.0",
         "codemirror": "^5.42.2",
-        "cytoscape": "^3.3.1",
+        "cytoscape": "2.7.14",
         "meteor-node-stubs": "^0.4.1",
         "qtip2": "^3.0.3",
         "simpl-schema": "^1.5.3"
@@ -23,6 +22,8 @@
         }
     },
     "devDependencies": {
+        "chromedriver": "^2.35.0",
+        "selenium-webdriver": "3.6.0",
         "@meteorjs/eslint-config-meteor": "^1.0.5",
         "babel-eslint": "^10.0.1",
         "eslint": "^5.11.1",
