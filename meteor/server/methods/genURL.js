@@ -14,60 +14,36 @@ import {
  * @return The 'id' of the model link, used in Share Model option
  */
 Meteor.methods({
-    genURL: function(code, last_id) {
+    genURL: function(code, lastId) {
         // A Model is always created, regardless of having secrets or not
         let model = {
             code: code,
             time: new Date().toLocaleString()
         }
         // explicitly set optional to avoid nulls
-        if (last_id) model.derivationOf = last_id
+        if (lastId) model.derivationOf = lastId
         // insert
-        let model_id = Model.insert(model);
+        let modelId = Model.insert(model);
 
         //Generate the public link
-        let public_link_id = Link.insert({
-            model_id: model_id,
+        let publicLinkId = Link.insert({
+            model_id: modelId,
             private: false
         });
 
         //Generate private link if SECRET is present
-        let private_link_id
+        let privateLinkId
         if (containsValidSecret(code)) {
-            private_link_id = Link.insert({
-                model_id: model_id,
+            privateLinkId = Link.insert({
+                model_id: modelId,
                 private: true
             });
         }
 
         return {
-            public: public_link_id,
-            private: private_link_id, // will be undefined if no secret is present
-            last_id: model_id
+            public: publicLinkId,
+            private: privateLinkId, // will be undefined if no secret is present
+            last_id: modelId
         }
     }
 });
-
-
-// Helper functions
-
-
-// function findClosingBracketMatchIndex(str, pos) {
-//     if (str[pos] != '{') {
-//         throw new Error("No '{' at index " + pos);
-//     }
-//     var depth = 1;
-//     for (var i = pos + 1; i < str.length; i++) {
-//         switch (str[i]) {
-//             case '{':
-//                 depth++;
-//                 break;
-//             case '}':
-//                 if (--depth == 0) {
-//                     return i;
-//                 }
-//                 break;
-//         }
-//     }
-//     return -1; // No matching closing parenthesis
-// }
