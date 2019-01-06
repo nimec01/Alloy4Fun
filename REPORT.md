@@ -53,14 +53,15 @@ Here are the overall changes that were performed on this project, these are iter
  * HTML cleanup for editor with bootstrap (unnecessary classes and ids, structure, ...)
  * Dimplified contribution instructions and setup difficulty
  * README is ready to be official
- * 
- * Attempting to implement deriveTree from a given model for later data mining
+ * Derivation tree implemented (tried with mongo aggregation but it seems unfeasable). Currently, all the descents are loaded and then the tree is created on client-side using a hashmap and DFS iteration.
+ * Tests for the algorithm to generate the derivation tree
+ * Implemented download of derivation tree for Data Mining  (name of files is `tree_LINKID_YYYY_MM_DD_HH_MM_SS`)
 
 ## Future Tasks
  * `run` and `check` both say "Counter-example found" when `run` should only be "instance found"
  * Improve SECRET separation to handle `//SECRET\n//comment\n/*other comment*/assert ...`
  * Continuous Deployment (if a server is given to us, we can handle this until the end of january)
- * Choose linter rules (it is ready but was not customized by Product Owner)
+ * Choose linter rules (it is ready but was not customized by Product Owner, see README)
  * After that, fixing linter errors (there are 600+, but they were 2000+ originally and some depend on rules chosen, which we did not feel confortable in doing)
  * Ideas for scaling Alloy4fun:
     * Defining indexes for mongodb (requires good knowledge of mongo optimization)
