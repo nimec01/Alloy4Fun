@@ -43,7 +43,12 @@ function createElementFromHTML(htmlString) {
     return div.firstChild;
 }
 
-
+/**
+ * Copy the data in the "data-clipboard-text" attribute 
+ * into the user's clipboard, when a button with that
+ * element as target is clicked
+ * @param {DOMElement} element 
+ */
 function copyToClipboard(element) {
 	let el = $(element.target)
 	el = el.is("button")?el:el.parent("button")
