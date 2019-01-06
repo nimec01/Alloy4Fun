@@ -207,12 +207,9 @@ Template.alloyEditor.onRendered(() => {
 
 function handleExecuteModel(err, result) {
     if (err) {
-        if (err.error == 500) {
-            swal("An error occurred!", "The Alloy Analyzer service is unreachable.", "error");
-            $('#next > button').prop('disabled', true);
-            $('#prev > button').prop('disabled', true);
-        }
-        return;
+        $('#next > button').prop('disabled', true);
+        $('#prev > button').prop('disabled', true);
+        return displayError(err)
     }
 
     Session.set("last_id", result.last_id) // update the last_id for next derivations
@@ -267,9 +264,8 @@ function handleExecuteModel(err, result) {
         $("#genInstanceUrl").hide();
     }
 
-    if (result.syntax_error) {
-        swal("There is a syntax error!", "Please validate your model.", "error");
-    }
+    if (result.syntax_error) swal("There is a syntax error!", "Please validate your model.", "error");
+
 }
 
 function storeInstances(allInstances) {
@@ -292,7 +288,7 @@ function getCommandLabel() {
 
 // geninstanceurlbtn event handler after storeInstance method
 function handleGenInstanceURLEvent(err, result) {
-    if (err) return //TODO: Daniel, increase verbosity with swal
+    if (err) return displayError(err)
 
     // if the URL was generated successfully, create and append a new element to the HTML containing it.
     let url = getAnchorWithLink(result, "instance link");

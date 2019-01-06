@@ -2,11 +2,14 @@ import {
     zeroclipboard,
     getAnchorWithLink
 } from "../../lib/editor/clipboard"
-
+import {
+    displayError
+} from "../../lib/editor/feedback"
 export {
     clickGenUrl,
     containsValidSecretWithAnonymousCommand
-};
+}
+
 /**
  * Function to handle click on "Share" button
  */
@@ -44,7 +47,7 @@ function containsValidSecretWithAnonymousCommand(model) {
 
 /* genUrlbtn event handler after genUrl method */
 function handleGenURLEvent(err, result) {
-    if (err) return
+    if (err) return displayError(err)
     // if the URL was generated successfully, create and append a new element to the HTML containing it.
     let url = getAnchorWithLink(result['public'], "public link");
     let urlPrivate = getAnchorWithLink(result['private'], "private link");
