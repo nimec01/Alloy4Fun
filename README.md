@@ -1,6 +1,6 @@
 <h1 align="center"><img src="/meteor/public/favicon.ico" height="24"> Alloy4fun</h1>
 
-Web application for [Alloy](http://alloytools.org/) - language for describing structures and a tool for exploring them.
+Web application for [Alloy](http://alloytools.org/) - a language for describing structures and a tool for exploring them.
 <a href="https://travis-ci.org/msramalho/Alloy4FunWebApp"><img align="right" alt="Build Status" src="https://travis-ci.org/msramalho/Alloy4FunWebApp.svg?branch=v1.0.0"/></a>
 
 Alloy4Fun is a Web platform that supports editing, sharing and interpreting Alloy models through your browser in real time.
