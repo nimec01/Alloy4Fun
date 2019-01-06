@@ -1,4 +1,5 @@
 function displayError(err) {
+    console.error(err);
     swal({
         type: 'error',
         title: err.error,
