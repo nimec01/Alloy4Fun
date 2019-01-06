@@ -1,12 +1,12 @@
 <h1 align="center"><img src="/meteor/public/favicon.ico" height="24"> Alloy4fun</h1>
 
-Web application for editing, sharing and interpreting [Alloy](http://alloytools.org/) models in your browser, real time.
+Web application for editing, sharing and interpreting [Alloy](http://alloytools.org/) models in your browser, in real time.
 
 <a href="https://travis-ci.org/msramalho/Alloy4FunWebApp"><img align="right" alt="Build Status" src="https://travis-ci.org/msramalho/Alloy4FunWebApp.svg?branch=v1.0.0"/></a>
 
-##### Live version: http://alloy4fun.di.uminho.pt.
+**LIVE:** http://alloy4fun.di.uminho.pt.
 
-Alloy4Fun is being developed using:
+**ABOUT:** Alloy4Fun is being developed using:
  * [Meteor](https://www.meteor.com/) framework which is a full-stack JavaScript platform for developing modern web and mobile applications.
  * [Docker](https://www.docker.com/) is used to ensure a simple and ubiquitous development environment.
  * [Travis CI](https://travis-ci.org/) is used for continuous integration through the [.travis.yml](.travis.yml) file.
