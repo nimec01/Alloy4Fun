@@ -3,15 +3,20 @@ import {
 } from "../../lib/editor/feedback"
 
 function downloadTree() {
-    Meteor.call("downloadTree", Router.current().data()._id, (err, res) => {
+    let linkId = Router.current().data()._id
+    Meteor.call("downloadTree", linkId, (err, res) => {
         if (err) return displayError(err)
-        console.log(descendantsToTree(res));
-        return descendantsToTree(res)
+        let d = new Date()
+        download(`tree_${linkId}_${d.getFullYear()}_${d.getMonth()+1}_${d.getDate()}_${d.getHours()}_${d.getMinutes()}_${d.getSeconds()}.json`, JSON.stringify(descendantsToTree(res)))
     })
 }
 
+/**
+ * converts a list of flat descendants into a tree object 
+ * using Hashmap and DFS
+ * @param {Object} res with descendants and root as properties
+ */
 function descendantsToTree(res) {
-    console.log(res);
     let descendants = res.descendants
     let root = res.root
     // get all the ids
@@ -35,6 +40,25 @@ function descendantsToTree(res) {
     }
     return root
 }
+
+/**
+ * 
+ * @param {String} filename filename
+ * @param {String} text content
+ */
+function download(filename, text) {
+    let anchor = document.createElement('a');
+    anchor.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    anchor.setAttribute('download', filename);
+
+    anchor.style.display = 'none';
+    document.body.appendChild(anchor);
+
+    anchor.click();
+
+    document.body.removeChild(anchor);
+}
+
 export {
     downloadTree,
     descendantsToTree
