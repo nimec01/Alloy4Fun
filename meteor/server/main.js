@@ -1,4 +1,9 @@
-import { Meteor } from 'meteor/meteor';
+import {
+    Meteor
+} from 'meteor/meteor';
+import {
+    seedWithModels
+} from "./seed"
 
 import '../server/methods/validate'
 import '../server/methods/genURL'
@@ -11,5 +16,9 @@ import '../server/methods/downloadTree'
 import './publications/modelFromLink'
 
 Meteor.startup(() => {
-    // code to run on server at startup
+    if (!Model.find().count()) {
+        // if there are no models, insert default ones
+        let res = seedWithModels()
+        console.log(`Seeded Database with ${res} models`);
+    }
 });
