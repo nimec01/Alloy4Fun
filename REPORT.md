@@ -56,6 +56,7 @@ Here are the overall changes that were performed on this project, these are iter
  * Derivation tree implemented (tried with mongo aggregation but it seems unfeasable). Currently, all the descents are loaded and then the tree is created on client-side using a hashmap and DFS iteration.
  * Tests for the algorithm to generate the derivation tree
  * Implemented download of derivation tree for Data Mining  (name of files is `tree_LINKID_YYYY_MM_DD_HH_MM_SS`)
+ * Improved user feedback on errors when invoking Meteor methods, using sweet alert to display verbose errors from server
 
 ## Future Tasks
  * `run` and `check` both say "Counter-example found" when `run` should only be "instance found"
