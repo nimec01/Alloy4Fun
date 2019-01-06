@@ -5,7 +5,7 @@ atomPositions = {};
 // TODO caching system
 // projectionCache = [];
 
-project = function () {
+project = function() {
     // TODO caching system
     // var projection = getProjectionFromCache();
     // if(projection)updateProjection(projection);
@@ -13,8 +13,8 @@ project = function () {
     Meteor.call("getProjection", getCurrentInstance().uuid, currentFramePosition, processProjection);
 };
 
-processProjection = function (err, projection) {
-    if (err)console.log(err);
+processProjection = function(err, projection) {
+    if (err) console.log(err);
     else {
         /* TODO caching system
          projectionCache.push({projectedTypes : currentFramePosition, frame : projection[0]});
@@ -24,7 +24,7 @@ processProjection = function (err, projection) {
     }
 };
 
-updateProjection = function (frame) {
+updateProjection = function(frame) {
     cy.nodes().remove();
     allAtoms.forEach((node) => {
         for (const i in frame.atoms) {
@@ -58,7 +58,7 @@ updateProjection = function (frame) {
     applyPositions();
 };
 
-addTypeToProjection = function (newType) {
+addTypeToProjection = function(newType) {
     if (currentlyProjectedTypes.indexOf(newType) == -1) {
         currentlyProjectedTypes.push(newType);
         currentlyProjectedTypes.sort();
@@ -80,7 +80,7 @@ addTypeToProjection = function (newType) {
     project();
 };
 
-removeTypeFromProjection = function (type) {
+removeTypeFromProjection = function(type) {
     const index = currentlyProjectedTypes.indexOf(type);
     if (index == -1) throw `${type} not found in types being projected.`;
     else {
@@ -93,7 +93,7 @@ removeTypeFromProjection = function (type) {
         const instanceNumber = Session.get('currentInstance');
         if (instanceNumber != undefined) {
             const instance = getCurrentInstance(instanceNumber);
-            if (instance)updateGraph(instance);
+            if (instance) updateGraph(instance);
         }
     } else {
         $('.current-frame').html(currentFramePositionToString());
@@ -101,23 +101,23 @@ removeTypeFromProjection = function (type) {
     }
 };
 
-newInstanceSetup = function () {
+newInstanceSetup = function() {
     if (currentlyProjectedTypes.length != 0) {
-        for (const key in currentFramePosition)currentFramePosition[key] = 0;
+        for (const key in currentFramePosition) currentFramePosition[key] = 0;
         $('.current-frame').html(currentFramePositionToString());
         allAtoms = cy.nodes();
         project();
     }
 };
 
-savePositions = function () {
+savePositions = function() {
     const atoms = cy.nodes();
     atoms.forEach((atom) => {
         atomPositions[atom.data().id] = jQuery.extend(true, {}, atom.position());
     });
 };
 
-applyPositions = function () {
+applyPositions = function() {
     for (const id in atomPositions) {
         const node = cy.nodes(`[id='${id}']`);
         if (node.length > 0) {
@@ -145,13 +145,13 @@ applyPositions = function () {
  }; */
 
 
-getProjectionEdges = function (relations) {
+getProjectionEdges = function(relations) {
     const result = [];
     relations.forEach((relation) => {
         if (relation.relation != 'Next' && relation.relation != 'First') {
             for (let i = 0; i < relation.tuples.length; i += relation.arity) {
                 let tuple = [];
-                for (let j = i; j < relation.arity + i; j++)tuple.push(relation.tuples[j]);
+                for (let j = i; j < relation.arity + i; j++) tuple.push(relation.tuples[j]);
                 const tempTuple = tuple.slice(0);
                 const labelExt = tuple.splice(1, tuple.length - 2).toString();
                 tuple = tempTuple;
@@ -176,8 +176,8 @@ getProjectionEdges = function (relations) {
 };
 
 
-currentFramePositionToString = function () {
+currentFramePositionToString = function() {
     const position = [];
-    for (const key in currentFramePosition)position.push(key + currentFramePosition[key]);
+    for (const key in currentFramePosition) position.push(key + currentFramePosition[key]);
     return position.toString();
 };
