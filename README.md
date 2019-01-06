@@ -4,7 +4,7 @@ Web application for editing, sharing and interpreting [Alloy](http://alloytools.
 
 <a href="https://travis-ci.org/msramalho/Alloy4FunWebApp"><img align="right" alt="Build Status" src="https://travis-ci.org/msramalho/Alloy4FunWebApp.svg?branch=v1.0.0"/></a>
 
-**LIVE:** http://alloy4fun.di.uminho.pt.
+**LIVE DEMO:** http://alloy4fun.di.uminho.pt.
 
 **ABOUT:** Alloy4Fun is being developed using:
  * [Meteor](https://www.meteor.com/) framework which is a full-stack JavaScript platform for developing modern web and mobile applications.
