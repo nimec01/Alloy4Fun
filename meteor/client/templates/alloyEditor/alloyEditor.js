@@ -88,7 +88,7 @@ Template.alloyEditor.events({
     'change .command-selection > select'() {
         $('#exec > button').prop('disabled', false);
     },
-    'click #genUrl': downloadTree,
+    'click #genUrl': clickGenUrl,
     'click #prev': function(evt) {
         if ($("#prev > button").is(":disabled")) return
         if (evt.toElement.id != "prev") {
