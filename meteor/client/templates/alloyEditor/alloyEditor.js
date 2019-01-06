@@ -11,7 +11,9 @@ import {
     zeroclipboard,
     getAnchorWithLink
 } from "../../lib/editor/clipboard"
-
+import {
+    displayError
+} from "../../lib/editor/feedback"
 
 // Globals
 /** @var instances The received instances */
@@ -26,7 +28,7 @@ maxInstanceNumber = -1;
 /*Each template has a local dictionary of helpers that are made available to it, and this call specifies helpers to add to the template’s dictionary.*/
 Template.alloyEditor.helpers({
 
-    getMaxIntanceNumber(){
+    getMaxIntanceNumber() {
         return process.env.MAX_INSTANCES;
     },
 
@@ -135,7 +137,7 @@ Template.alloyEditor.events({
     },
     'click #validateModel'() { // click on the validate button
         Meteor.call('validate', textEditor.getValue(), (err, res) => {
-            if (err) console.error('Unable to connect to server');
+            if (err) return displayError(err)
             else {
                 res = JSON.parse(res);
                 if (!res.success) {
@@ -212,7 +214,7 @@ function handleExecuteModel(err, result) {
         }
         return;
     }
-    
+
     Session.set("last_id", result.last_id) // update the last_id for next derivations
 
     $.unblockUI();
@@ -232,42 +234,42 @@ function handleExecuteModel(err, result) {
     $("#log").empty();
     let command = $('.command-selection > select option:selected').text();
 
-    
-        result = result.instances
-        storeInstances(result);
-        if (Array.isArray(result))
-            result = result[0];
-        if (result.commandType && result.commandType == "check") {
-            /* if the commandType == check */
 
-            let log = document.createElement('div');
-            log.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
-            let paragraph = document.createElement('p');
+    result = result.instances
+    storeInstances(result);
+    if (Array.isArray(result))
+        result = result[0];
+    if (result.commandType && result.commandType == "check") {
+        /* if the commandType == check */
 
-            if (result.unsat) {
-                $('#instancenav').hide();
+        let log = document.createElement('div');
+        log.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
+        let paragraph = document.createElement('p');
 
-                paragraph.innerHTML = "No counter-examples. " + command + " solved!";
-                paragraph.className = "log-complete";
-            } else {
-                paragraph.innerHTML = "Invalid solution, checking " + command + " revealed a counter-example.";
-                paragraph.className = "log-wrong";
-                updateGraph(result);
-            }
+        if (result.unsat) {
+            $('#instancenav').hide();
 
-            log.appendChild(paragraph);
-            $("#log")[0].appendChild(log);
+            paragraph.innerHTML = "No counter-examples. " + command + " solved!";
+            paragraph.className = "log-complete";
+        } else {
+            paragraph.innerHTML = "Invalid solution, checking " + command + " revealed a counter-example.";
+            paragraph.className = "log-wrong";
+            updateGraph(result);
         }
 
-        if (result.unsat) { // no counter examples found
-            $('.empty-univ').fadeIn();
-            $('#instanceViewer').hide();
-            $("#genInstanceUrl").hide();
-        }
+        log.appendChild(paragraph);
+        $("#log")[0].appendChild(log);
+    }
 
-        if (result.syntax_error) {
-            swal("There is a syntax error!", "Please validate your model.", "error");
-        }
+    if (result.unsat) { // no counter examples found
+        $('.empty-univ').fadeIn();
+        $('#instanceViewer').hide();
+        $("#genInstanceUrl").hide();
+    }
+
+    if (result.syntax_error) {
+        swal("There is a syntax error!", "Please validate your model.", "error");
+    }
 }
 
 function storeInstances(allInstances) {
