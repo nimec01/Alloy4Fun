@@ -1,27 +1,19 @@
+import {
+    displayError
+} from "../editor/feedback"
+
 currentlyProjectedTypes = [];
 currentFramePosition = {};
 allAtoms = [];
 atomPositions = {};
-// TODO caching system
-// projectionCache = [];
 
 project = function() {
-    // TODO caching system
-    // var projection = getProjectionFromCache();
-    // if(projection)updateProjection(projection);
-    // else
     Meteor.call("getProjection", getCurrentInstance().uuid, currentFramePosition, processProjection);
 };
 
 processProjection = function(err, projection) {
-    if (err) console.log(err);
-    else {
-        /* TODO caching system
-         projectionCache.push({projectedTypes : currentFramePosition, frame : projection[0]});
-         */
-
-        updateProjection(projection[0]);
-    }
+    if (err) return displayError(err)
+    else updateProjection(projection[0]);
 };
 
 updateProjection = function(frame) {
