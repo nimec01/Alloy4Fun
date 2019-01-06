@@ -52,6 +52,7 @@ div.instanceViewer {
 
 body {
     font-family: monospace !important;
+    background-color: ghostwhite;
 }
 
 .copyrights {
@@ -334,6 +335,11 @@ body {
 
 .CodeMirror pre {
     color: lightgray;
+}
+
+.CodeMirror {
+    height: 55vh !important;
+    min-height:500px;
 }
 
 .challenge-creator {

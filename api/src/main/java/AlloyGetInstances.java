@@ -50,6 +50,7 @@ public class AlloyGetInstances {
 
 		try {
 			//TODO: Daniel, this try fails when an invalid model is passed
+			//TODO: Miguel, It's supposed to.
 			world = CompUtil.parseEverything_fromString(rep, req.model);			
 		} catch (Exception e) {
 			return Response.ok("{\"syntax_error\": true}").build();

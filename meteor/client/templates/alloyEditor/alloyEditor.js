@@ -25,6 +25,11 @@ maxInstanceNumber = -1;
 
 /*Each template has a local dictionary of helpers that are made available to it, and this call specifies helpers to add to the template’s dictionary.*/
 Template.alloyEditor.helpers({
+
+    getMaxIntanceNumber(){
+        return process.env.MAX_INSTANCES;
+    },
+
     drawInstance() {
         const instanceNumber = Session.get('currentInstance');
         if (instanceNumber == 0) $('#prev > button').prop('disabled', true);
@@ -73,8 +78,8 @@ Template.alloyEditor.events({
             });
         } else { // Execute command
             let model = textEditor.getValue();
-            //TODO: Daniel extract 5 to env variable or similar
-            Meteor.call('getInstances', model, 5, commandLabel, true, Session.get("last_id"), Session.get("original_id"), Session.get("from_private"), handleExecuteModel);
+            let numberOfInstances = parseInt($("meta[name='MAX_INSTANCE_NUMBER']").attr('content'));
+            Meteor.call('getInstances', model, numberOfInstances, commandLabel, true, Session.get("last_id"), Session.get("original_id"), Session.get("from_private"), handleExecuteModel);
         }
         // update button states after execution
         $("#exec > button").prop('disabled', true);
@@ -199,8 +204,15 @@ Template.alloyEditor.onRendered(() => {
 
 
 function handleExecuteModel(err, result) {
-    if (err) return console.error(err)
-
+    if (err) {
+        if (err.error == 500) {
+            swal("An error occurred!", "The Alloy Analyzer service is unreachable.", "error");
+            $('#next > button').prop('disabled', true);
+            $('#prev > button').prop('disabled', true);
+        }
+        return;
+    }
+    
     Session.set("last_id", result.last_id) // update the last_id for next derivations
 
     $.unblockUI();
@@ -220,21 +232,7 @@ function handleExecuteModel(err, result) {
     $("#log").empty();
     let command = $('.command-selection > select option:selected').text();
 
-    if (err) {
-        //TODO: Daniel: this is no longer applicable after no-soap
-        if (err.error == 502) {
-            swal("Syntax Error!", "", "error");
-            let x = document.createElement("IMG");
-            x.setAttribute("src", "/images/icons/error.png");
-            x.setAttribute("width", "15");
-            x.setAttribute("id", "error");
-            x.setAttribute("title", err.reason.msg);
-            textEditor.setGutterMarker(err.reason.line - 1, "error-gutter", x);
-            textEditor.refresh();
-            $('#next > button').prop('disabled', true);
-            $('#prev > button').prop('disabled', true);
-        }
-    } else {
+    
         result = result.instances
         storeInstances(result);
         if (Array.isArray(result))
@@ -270,7 +268,6 @@ function handleExecuteModel(err, result) {
         if (result.syntax_error) {
             swal("There is a syntax error!", "Please validate your model.", "error");
         }
-    }
 }
 
 function storeInstances(allInstances) {
