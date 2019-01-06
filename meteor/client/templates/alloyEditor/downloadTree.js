@@ -7,7 +7,7 @@ function downloadTree() {
     Meteor.call("downloadTree", linkId, (err, res) => {
         if (err) return displayError(err)
         let d = new Date()
-        download(`tree_${linkId}_${d.getFullYear()}_${d.getMonth()+1}_${d.getDate()}_${d.getHours()}_${d.getMinutes()}_${d.getSeconds()}.json`, JSON.stringify(descendantsToTree(res)))
+        download(`tree_${linkId}_${d.getFullYear()}_${lz(d.getMonth()+1)}_${lz(d.getDate())}_${lz(d.getHours())}_${lz(d.getMinutes())}_${lz(d.getSeconds())}.json`, JSON.stringify(descendantsToTree(res)))
     })
 }
 
@@ -59,6 +59,13 @@ function download(filename, text) {
     document.body.removeChild(anchor);
 }
 
+/**
+ * Adds leading zeros to string: 9->09, 19->19
+ * @param {String} s 
+ */
+function lz(s) {
+    return ('0' + s).slice(-2)
+}
 export {
     downloadTree,
     descendantsToTree
