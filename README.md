@@ -31,10 +31,10 @@ You can contribute by looking at the [issues](issues/) section.
  * use the webservice available at [localhost:8081](http://localhost:8081)
 
 
-## Meteor Development with Hot-code push
+## Meteor Development with real-time updates
 Since the meteor instance running inside docker is statick and has to be built everytime a change is made (`docker-compose build meteor`), it is not very good for development. 
 
-To have Hot-code push while you develop meteor you can run it on your computer (after `cd meteor`) with `npm start`.
+To have real-time updates while you develop meteor you can run it on your computer (after `cd meteor`) with `npm start`.
 
 
 ## API
