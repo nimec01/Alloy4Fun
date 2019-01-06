@@ -57,6 +57,7 @@ Here are the overall changes that were performed on this project, these are iter
  * Tests for the algorithm to generate the derivation tree
  * Implemented download of derivation tree for Data Mining  (name of files is `tree_LINKID_YYYY_MM_DD_HH_MM_SS`)
  * Improved user feedback on errors when invoking Meteor methods, using sweet alert to display verbose errors from server
+ * Number of instances to load is configurable outside meteor in the Meteor settings variable (`.env` and `meteor/settings.json`) as `MAX_INSTANCES`
 
 ## Future Tasks
  * `run` and `check` both say "Counter-example found" when `run` should only be "instance found"

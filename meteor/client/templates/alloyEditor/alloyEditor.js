@@ -80,8 +80,7 @@ Template.alloyEditor.events({
             });
         } else { // Execute command
             let model = textEditor.getValue();
-            let numberOfInstances = parseInt($("meta[name='MAX_INSTANCE_NUMBER']").attr('content'));
-            Meteor.call('getInstances', model, numberOfInstances, commandLabel, true, Session.get("last_id"), Session.get("original_id"), Session.get("from_private"), handleExecuteModel);
+            Meteor.call('getInstances', model, commandLabel, true, Session.get("last_id"), Session.get("original_id"), Session.get("from_private"), handleExecuteModel);
         }
         // update button states after execution
         $("#exec > button").prop('disabled', true);

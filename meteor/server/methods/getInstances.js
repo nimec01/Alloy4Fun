@@ -14,7 +14,7 @@ import {
  */
 Meteor.methods({
     //TODO: Daniel, é mesmo suposto manter o forceInterpretation?
-    getInstances: function(code, numberOfInstances, commandLabel, forceInterpretation, last_id, original, from_private) {
+    getInstances: function(code, commandLabel, forceInterpretation, last_id, original, from_private) {
         return new Promise((resolve, reject) => {
             let code_with_secrets = code
             if (from_private === false) { //if public link was used, load secrets
@@ -26,7 +26,7 @@ Meteor.methods({
             HTTP.call('POST', `${Meteor.settings.env.API_URL}/getInstances`, {
                 data: {
                     model: code_with_secrets,
-                    numberOfInstances: numberOfInstances,
+                    numberOfInstances: Meteor.settings.env.MAX_INSTANCES,
                     commandLabel: commandLabel,
                     forceInterpretation: forceInterpretation
                 }
