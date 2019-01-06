@@ -63,6 +63,7 @@ Here are the overall changes that were performed on this project, these are iter
  * Continuous Deployment (if a server is given to us, we can handle this until the end of january)
  * Choose linter rules (it is ready but was not customized by Product Owner, see README)
  * After that, fixing linter errors (there are 600+, but they were 2000+ originally and some depend on rules chosen, which we did not feel confortable in doing)
+ * Including [analytics](https://guide.meteor.com/deployment.html#analytics) might be a good addition to monitor platform usage, also see the [analytics for iron router](https://github.com/reywood/meteor-iron-router-ga) which is the Routes library being used. 
  * Ideas for scaling Alloy4fun:
     * Defining indexes for mongodb (requires good knowledge of mongo optimization)
     * Check [docker swarm](https://docs.docker.com/engine/swarm/) for horizontal scaling of api service
