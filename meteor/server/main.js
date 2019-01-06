@@ -6,6 +6,7 @@ import '../server/methods/getInstances'
 import '../server/methods/getProjection'
 import '../server/methods/shareInstance'
 import '../server/methods/getModel'
+import '../server/methods/downloadTree'
 
 import './publications/modelFromLink'
 
