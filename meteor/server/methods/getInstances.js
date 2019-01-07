@@ -7,14 +7,12 @@ import {
  * @param code the Alloy code to validate
  * @param instanceNumber the index of the instance to retrieve
  * @param commandLabel (alloy commands [run, check, assert, ...])
- * @param forceInterpretation used to skip cache and force new model 
  * @param last_id the model this one derives from
  * @param from_private false means it was loaded from public link and must retrieve //SECRET code
  * @returns Object with the instance data
  */
 Meteor.methods({
-    //TODO: Daniel, é mesmo suposto manter o forceInterpretation?
-    getInstances: function(code, commandLabel, forceInterpretation, last_id, original, from_private) {
+    getInstances: function(code, commandLabel, last_id, original, from_private) {
         return new Promise((resolve, reject) => {
             let code_with_secrets = code
             if (from_private === false) { //if public link was used, load secrets
@@ -27,8 +25,7 @@ Meteor.methods({
                 data: {
                     model: code_with_secrets,
                     numberOfInstances: Meteor.settings.env.MAX_INSTANCES,
-                    commandLabel: commandLabel,
-                    forceInterpretation: forceInterpretation
+                    commandLabel: commandLabel
                 }
             }, (error, result) => {
                 if (error) reject(error)
