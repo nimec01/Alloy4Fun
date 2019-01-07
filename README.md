@@ -25,6 +25,7 @@ You can contribute by looking at the [issues](issues/) section.
 1. `cp .env.example .env` and edit it if necessary
 1. `docker-compose up` (pass `-d` for detached mode)
 
+
 **READY:** You can now:
  * visit the application at [localhost:3010](http://localhost:3010)
  * access the database with a mongo client such as [Robo3T](https://robomongo.org/) at [localhost:27017](mongodb://localhost/27017)
@@ -61,7 +62,6 @@ To run the tests just do `npm test`
 Linter is also installed and configured but not included in the CI pipeline, to run the linter you can do `npm run lint` inside the `meteor` folder. To run linter without the `--fix` option do `eslint .`.
 
 To include the linter in the CI pipeline (first make sure all linter errors are fixed) and then add the following to the [package.json](meteor/package.json) `scripts`: `"pretest": "npm run lint --silent"`
-
 
 ## Team
 Alloy4fun has been developed by:
