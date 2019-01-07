@@ -179,7 +179,7 @@ Template.alloyEditor.onRendered(() => {
         Session.set("hidden_commands", model.commands) // update the commands for public links that do not have them
         Session.set("commands", model.commands) // update the commands to start correct
 
-        $("#downloadTree > button").prop('disabled', false);
+        if(model.from_private) $("#downloadTree > button").prop('disabled', false);
 
         if (model.instance) { // if there is an instance to show
             let themeData = model.instance.theme;
