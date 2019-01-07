@@ -79,6 +79,7 @@ Here are the overall changes that were performed on this project, these are iter
     * `// TODO: This is broken. Must be fixed to permit block folding.`
     * `// TODO simular click na parte branca para limpar o checkBox`
  * Ternary relations in visualizer - this is possibly the only requested task not completed, but it was due to more critical problems that neeeded solving.
+ * We also believe there should be more of "brand concept" for Alloy4fun, such as a logo with better quality.
 
 ## Conclusion
 We believe the changes made to the alloy4fun platform represent a very drastic and necessary step towards an easier maintenance, deployment, development and for the overall future of the platform. We have greatly simplified the code and audited+documented many files and functions, especilly the ones that are essential for the proper operation of Alloy4fun.
