@@ -59,6 +59,9 @@ Here are the overall changes that were performed on this project, these are iter
  * Improved user feedback on errors when invoking Meteor methods, using sweet alert to display verbose errors from server
  * Number of instances to load is configurable outside meteor in the Meteor settings variable (`.env` and `meteor/settings.json`) as `MAX_INSTANCES`
  * Database seeded with the examples from [excel list](https://docs.google.com/spreadsheets/d/1UdGxKZLYJvvGxItWf6C_nCRjDu4jwKPHW6HlisvdZgg/edit#gid=0) keeping the same public and private linkId, also this seed is done automatically on server startup if no Model is present
+ * Updated UI for better UX
+ * Mobile-friendly UI for buttons
+ * Sticky footer
 
 ## Future Tasks
  * `run` and `check` both say "Counter-example found" when `run` should only be "instance found"
