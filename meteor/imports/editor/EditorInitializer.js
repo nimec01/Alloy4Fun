@@ -51,9 +51,11 @@ function initializeAlloyEditor(htmlElement) {
         //uncomment the following lines if it is desirable to hide the share links on code updates
         // $('#url-permalink').empty() //remove previous links
         // $("#instance_permalink").remove() //Remove isntance link
-
+        $("#next").hide();
+        $("#prev").hide();
         $("#genInstanceUrl").hide();
         $("#log").empty();
+
 
         if ($.trim(editor.getValue()) == '') {
             //When editor is empty
