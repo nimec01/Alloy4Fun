@@ -239,7 +239,7 @@ function handleExecuteModel(err, result) {
         /* if the commandType == check */
 
         let log = document.createElement('div');
-        log.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
+        log.className = "col-xs-12";
         let paragraph = document.createElement('p');
 
         if (result.unsat) {
