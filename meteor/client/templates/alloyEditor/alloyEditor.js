@@ -215,9 +215,6 @@ function handleExecuteModel(err, result) {
         return displayError(err)
     }
 
-    $("#next").css("display", 'initial');
-    $("#prev").css("display", 'initial');
-
     Session.set("last_id", result.last_id) // update the last_id for next derivations
 
     $.unblockUI();
@@ -251,13 +248,15 @@ function handleExecuteModel(err, result) {
 
         if (result.unsat) {
             $('#instancenav').hide();
-
             paragraph.innerHTML = "No counter-examples. " + command + " solved!";
             paragraph.className = "log-complete";
         } else {
             paragraph.innerHTML = "Invalid solution, checking " + command + " revealed a counter-example.";
             paragraph.className = "log-wrong";
             updateGraph(result);
+
+            $("#next").css("display", 'initial');
+            $("#prev").css("display", 'initial');
         }
 
         log.appendChild(paragraph);
