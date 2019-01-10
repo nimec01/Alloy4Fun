@@ -82,7 +82,7 @@ Here are the overall changes that were performed on this project, these are iter
  * We also believe there should be more of "brand concept" for Alloy4fun, such as a logo with better quality.
 
 ## Conclusion
-We believe the changes made to the alloy4fun platform represent a very drastic and necessary step towards an easier maintenance, deployment, development and for the overall future of the platform. We have greatly simplified the code and audited+documented many files and functions, especilly the ones that are essential for the proper operation of Alloy4fun.
+We believe the changes made to the alloy4fun platform represent a very drastic and necessary step towards an easier maintenance, deployment, development and for the overall future of the platform. We have greatly simplified the code and audited+documented many files and functions, especially the ones that are essential for the proper operation of Alloy4fun.
 
 We also belive we have exceeded our expectations of produced work for the time given for the project, and are happy with the outcome.
 
