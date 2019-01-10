@@ -31,7 +31,6 @@ Meteor.methods({
                 if (error) reject(error)
 
                 // handle result (unsat vs sat)
-                console.log(result.content);
                 let content = JSON.parse(result.content);
                 if (content.unsat) { // no counter-examples found
                     content.commandType = "check";

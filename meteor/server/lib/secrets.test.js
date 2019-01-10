@@ -38,7 +38,6 @@ pred checkStuff{
 sig A {}`
         res = extractSecrets(code)
         chai.assert.equal(res.public, "\n")
-        console.log();
         chai.assert.equal(res.secret, code.substr(1))
 
         code = `
