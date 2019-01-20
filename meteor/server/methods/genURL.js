@@ -7,6 +7,9 @@ import {
 import {
     containsValidSecret
 } from "../../lib/editor/text"
+import {
+    extractSecrets
+} from "../lib/secrets"
 
 /**
  * Meteor method to get a model share URL
@@ -15,13 +18,19 @@ import {
  */
 Meteor.methods({
     genURL: function(code, lastId) {
+
         // A Model is always created, regardless of having secrets or not
         let model = {
             code: code,
             time: new Date().toLocaleString()
         }
         // explicitly set optional to avoid nulls
-        if (lastId) model.derivationOf = lastId
+        if (lastId) {
+            model.derivationOf = lastId
+            if (!containsValidSecret(code)) {
+                model.code = model.code + extractSecrets(Model.findOne(lastId).code).secret
+            }
+        }
         // insert
         let modelId = Model.insert(model);
 
