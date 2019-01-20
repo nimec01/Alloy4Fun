@@ -1,88 +1,70 @@
-# Alloy 4 Fun
+<h1 align="center"><img src="/meteor/public/favicon.ico" height="24"> Alloy4fun</h1>
 
-Web application for Alloy.
+Web application for editing, sharing and interpreting [Alloy](http://alloytools.org/) models in your browser, in real time.
 
-  
+<a href="https://travis-ci.org/msramalho/Alloy4FunWebApp"><img align="right" alt="Build Status" src="https://travis-ci.org/msramalho/Alloy4FunWebApp.svg?branch=v1.0.0"/></a>
 
-## About
+**LIVE DEMO:** http://alloy4fun.di.uminho.pt.
 
-  
+**ABOUT:** Alloy4Fun is being developed using:
+ * [Meteor](https://www.meteor.com/) framework which is a full-stack JavaScript platform for developing modern web and mobile applications.
+ * [Docker](https://www.docker.com/) is used to ensure a simple and ubiquitous development environment.
+ * [Travis CI](https://travis-ci.org/) is used for continuous integration through the [.travis.yml](.travis.yml) file.
 
-Alloy is a language for describing structures and a tool for exploring them.
+# Contributing and Development Guidelines
+You can contribute by looking at the [issues](issues/) section.
 
-Alloy4Fun is a Web platform that supports edditing and interpreting Alloy models through your browser in real time.
+**INFO:** The application contains three main services/containers:
+ 1. `api` - where a Java web service is used to interact with the [alloytools API](http://alloytools.org/documentation.html)
+ 1. `mongo` - the instance of [mongodb](https://www.mongodb.com/) that has data persistance outside docker
+ 1. `meteor` - the webapp that interacts with the other services
 
-The latest version is currently running at http://alloy4fun.di.uminho.pt.
-
-  
-
-Alloy4Fun is being developed using the Meteor framework which is a full-stack JavaScript platform for developing
-
-modern web and mobile applications.
-
-## Prerequisites
-
-Install **meteor**. You cant get it here:
-https://www.meteor.com/install
-
-Install **Apache Tomcat**:
-https://tomcat.apache.org
-
-Install **Eclipse IDE for Java EE Developers**: (or any other IDE capable of creating a Dynamic web Service, although in this study case Ecplise is the one being used)
-http://www.eclipse.org/downloads/packages/eclipse-ide-java-ee-developers/oxygen2
-
-Add **axis2-1.7.7** Runtime location to Ecplise:
-	- Window > Preferences > WebServices > Axis2 Preferences > [add axis2 folder location ]
-
-Download these jar files:
--alloy4.2.jar 
--axis2-jaxws-1.7.7.jar
--javax.jws-3.1.2.jar
--javax.ws.rs-api-2.0.jar
--jaxws-rt.jar
--jaxws-tools.jar
--jstl-1.2.jar
--xmlschema-core-2.2.1.jar
-
-## Running web application
-installing **meteor** is pretty straight forward, just follow the steps in their website.
-
-- in the folder  Alloy4FunMeteor just run:
-```
-
->meteor run
-
-```
-## Running the web service:
-
-  - create a Dynamic Web Project
-	  - Project name: Alloy4Fun
-	  - TargetRuntime: Apache TomCat v7.0
-	  - Dynamic Web Module : 2.5
-	  - Configuration > modify > select Axis2 Web Services
-	  - Finish
-
-- Alloy4Fun>JavaResources:
-	- Create a new Package named **service**
-	- Drag here the two java files in the **Alloy4FunWebService** folder
-
-- Drag all the jar files mentioned above to this folder:
-	- Alloy4Fun>WebContent>WEB-INF>lib
+**SETUP:** To start the application in your development environment:
+1. Install docker, npm, ...
+1. clone the repo
+1. `cp .env.example .env` and edit it if necessary
+1. `docker-compose up` (pass `-d` for detached mode)
 
 
-- create server
-	- Windows > showView > servers 
-		- new server > Tomcat V7.0 Server
+**READY:** You can now:
+ * visit the application at [localhost:3010](http://localhost:3010)
+ * access the database with a mongo client such as [Robo3T](https://robomongo.org/) at [localhost:27017](mongodb://localhost/27017)
+ * use the webservice available at [localhost:8081](http://localhost:8081)
 
-- Right Bottom at Alloy4Fun > new > other > Web Service :
-	- Service Implementation : service.AlloyService
-	- WebService runtime :  Apache axis2
-	- finish
 
-- Open Alloy4Fun/WebContent/WEB-INF/services/AlloyService/META-INF/services.xml
-	- delete all its content and paste the one in this repository in the Alloy4FunWebService folder.
-	
-- Right Bottom at Alloy4Fun > new > other > Web Service :
-	- Service Implementation : service.AlloyService
-	- WebService runtime :  Apache axis2
-	- next > use existing services.xml > Alloy4Fun/WebContent/WEB-INF/services/AlloyService/META-INF/services.xml
+## Meteor Development with real-time updates
+Since the meteor instance running inside docker is statick and has to be built everytime a change is made (`docker-compose build meteor`), it is not very good for development. 
+
+To have real-time updates while you develop meteor you can run it on your computer (after `cd meteor`) with `npm start`.
+
+
+## API
+Since the api is essentially an Alloy4fun webservice a local jar file is used for stability purposes the lib folder structure is required for maven to detect the local repository. 
+
+To run the **api** isolated do `cd api` and then `docker build -t alloy4fun-api . && docker run -p 8080:8080 alloy4fun-api` for now it can be accessed at [http://localhost:8080/](http://localhost:8080/)
+
+You can also run it **outside docker**, just take a look at its [Dockerfile](api/Dockerfile), essentially you need:
+ 1. `mvn clean install`
+ 1. `java -Djava.net.preferIPv4Stack=true -jar /home/target/alloy4fun-api-swarm.jar`
+
+## Database
+The database is saved to a volume in `data/db/` and backups can be made by copying this folder elsewhere. 
+
+## Meteor
+Meteor will run locally on port **3000** and on port **3010** in docker so that there is no interference between both instances.
+
+# Testing
+Unit tests are enabled on both client and server code, with the appropriate chromedriver packages needed for integration and acceptance tests. 
+
+To run the tests just do `npm test`
+
+## Linter
+Linter is also installed and configured but not included in the CI pipeline, to run the linter you can do `npm run lint` inside the `meteor` folder. To run linter without the `--fix` option do `eslint .`.
+
+To include the linter in the CI pipeline (first make sure all linter errors are fixed) and then add the following to the [package.json](meteor/package.json) `scripts`: `"pretest": "npm run lint --silent"`
+
+## Team
+Alloy4fun has been developed by:
+ * [Haslab](https://github.com/haslab)
+ * [Universidade do Minho](https://www.uminho.pt/)
+ * [Universidade do Porto](https://fe.up.pt/)
