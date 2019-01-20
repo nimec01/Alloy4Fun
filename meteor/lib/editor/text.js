@@ -1,5 +1,5 @@
 /**
- * File with utils function shared by both client and server
+ * File with utility function shared by both client and server
  * with regard to text parsing
  */
 
@@ -10,10 +10,16 @@ export {
     getCommandsFromCode
 }
 
+/**
+ Checks whether the model code contains some valid 'secret' tag (i.e., a line
+ exactly "//SECRET"). No white-spaces allowed before/after.
 
-/*Check if the model contains some valid 'secret'*/
-function containsValidSecret(model) {
-    return model.indexOf("\n//SECRET\n") != -1
+ @param the code with the potential secret
+
+ @return true if there is a secrete tag 
+ */
+function containsValidSecret(code) {
+    return (code.indexOf("\n//SECRET\n") != -1 || code.indexOf("//SECRET\n") == 0);
 }
 
 /**
