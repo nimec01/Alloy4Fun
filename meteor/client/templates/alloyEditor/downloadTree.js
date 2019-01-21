@@ -3,7 +3,7 @@ import {
 } from "../../lib/editor/feedback"
 
 function downloadTree() {
-    let linkId = Router.current().data()._id
+    let linkId = Router.current().params._id
     Meteor.call("downloadTree", linkId, (err, res) => {
         if (err) return displayError(err)
         let d = new Date()
