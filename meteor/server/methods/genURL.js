@@ -24,8 +24,6 @@ Meteor.methods({
      @return The 'id' of the model link, used in Share Model option
      */
     genURL: function(code, currentModelId) {
-        console.log("** generate urls..")
-
         // a new model is always created, regardless of having secrets or not
         let model = {
             code: code,
