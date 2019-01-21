@@ -9,6 +9,7 @@ import {
 
   @param {String} code the Alloy model to execute
   @param {Number} commandIndex the index of the command to execute
+  @param {Boolean} commandType whether the command was a run (true) or check (false)
   @param {String} currentModelId the id of the current model (from which the
       new will derive)
   @param {Boolean} from_private whether it was loaded from public link and
@@ -17,7 +18,7 @@ import {
   @returns the instance data and the id of the new saved model
  */
 Meteor.methods({
-    getInstances: function(code, commandIndex, currentModelId, from_private) {
+    getInstances: function(code, commandIndex, commandType, currentModelId, from_private) {
         return new Promise((resolve, reject) => {
             let originalId = undefined
             let code_with_secrets = code
@@ -45,12 +46,13 @@ Meteor.methods({
                 if (error) reject(error)
 
                 // handle result (unsat vs sat)
+                let strType = commandType ? "run" : "check"
                 let content = JSON.parse(result.content);
                 if (content.unsat) { // no counter-examples found
-                    content.commandType = "check";
+                    content.commandType = commandType;
                 } else { // counter-examples found
                     Object.keys(content).forEach(k => {
-                        content[k].commandType = "check";
+                        content[k].commandType = commandType;
                     });
                 }
 

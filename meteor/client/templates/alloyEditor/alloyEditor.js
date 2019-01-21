@@ -80,7 +80,7 @@ Template.alloyEditor.events({
             });
         } else { // Execute command
             let model = textEditor.getValue();
-            Meteor.call('getInstances', model, commandIndex, Session.get("last_id"), Session.get("from_private"), handleExecuteModel);
+            Meteor.call('getInstances', model, commandIndex, isRunSelected(), Session.get("last_id"), Session.get("from_private"), handleExecuteModel);
         }
         // update button states after execution
         $("#exec > button").prop('disabled', true);
@@ -237,29 +237,26 @@ function handleExecuteModel(err, result) {
     storeInstances(result);
     if (Array.isArray(result))
         result = result[0];
-    if (result.commandType && result.commandType == "check") {
-        /* if the commandType == check */
+   
+    let log = document.createElement('div');
+    log.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
+    let paragraph = document.createElement('p');
 
-        let log = document.createElement('div');
-        log.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
-        let paragraph = document.createElement('p');
+    if (result.unsat) {
+        $('#instancenav').hide();
+        paragraph.innerHTML = result.commandType ? "No instance found. " + command + " is inconsistent." : "No counter-examples. " + command + " solved!";
+        paragraph.className = result.commandType ? "log-wrong" : "log-complete";
+    } else {
+        paragraph.innerHTML = result.commandType ? "Instance found. " + command + " is consistent." : "Counter-example found. " + command + " is inconsistent.";
+        paragraph.className = result.commandType ? "log-complete" : "log-wrong";
+        updateGraph(result);
 
-        if (result.unsat) {
-            $('#instancenav').hide();
-            paragraph.innerHTML = "No counter-examples. " + command + " solved!";
-            paragraph.className = "log-complete";
-        } else {
-            paragraph.innerHTML = "Invalid solution, checking " + command + " revealed a counter-example.";
-            paragraph.className = "log-wrong";
-            updateGraph(result);
-
-            $("#next").css("display", 'initial');
-            $("#prev").css("display", 'initial');
-        }
-
-        log.appendChild(paragraph);
-        $("#log")[0].appendChild(log);
+        $("#next").css("display", 'initial');
+        $("#prev").css("display", 'initial');
     }
+
+    log.appendChild(paragraph);
+    $("#log")[0].appendChild(log);
 
     if (result.unsat) { // no counter examples found
         $('.empty-univ').fadeIn();
@@ -283,6 +280,11 @@ function getNextInstance() {
 
 function getPreviousInstance() {
     return instances[--instanceIndex];
+}
+
+function isRunSelected() {
+    if (Session.get("commands").length <= 0) return false;
+    return $('.command-selection > select option:selected').text().startsWith("run");
 }
 
 function getCommandIndex() {

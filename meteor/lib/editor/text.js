@@ -40,13 +40,10 @@ function getCommandsFromCode(code) {
     let matches = pattern.exec(code);
 
     while (matches != null) {
-        if (matches[6]) commands.push(matches[6]);
-        else if (matches[12]) commands.push(matches[12]);
-        else if (matches[0].includes("run")) {
-            commands.push("run$" + commandNumber);
-        } else if (matches[0].includes("check")) {
-            commands.push("check$" + commandNumber);
-        } else console.log("Unreachable block of code.");
+        let pre = matches[0].includes("run") ? "run " : "check "
+        if (matches[6]) commands.push(pre + matches[6]);
+        else if (matches[12]) commands.push(pre + matches[12]);
+        else commands.push(pre + commandNumber);
         commandNumber++;
         matches = pattern.exec(code);
     }
