@@ -5,6 +5,8 @@ import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -19,6 +21,7 @@ import org.json.JSONObject;
 
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.Err;
+import edu.mit.csail.sdg.alloy4.ErrorWarning;
 import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.ExprVar;
 import edu.mit.csail.sdg.ast.Sig;
@@ -43,7 +46,12 @@ public class AlloyGetInstances {
 	@Produces("text/json")
 	public Response doGet(String body) throws IOException {
 		InstancesRequest req = parseJSON(body);
-		A4Reporter rep = new A4Reporter();
+		List<ErrorWarning> warnings = new ArrayList<ErrorWarning>();
+		A4Reporter rep = new A4Reporter() {
+			public void warning (ErrorWarning msg) {
+				warnings.add(msg);
+   			}
+		};
 		File tempFile = File.createTempFile("a4f", "als");
 		tempFile.deleteOnExit();
 		CompModule world;
@@ -52,10 +60,18 @@ public class AlloyGetInstances {
 			world = CompUtil.parseEverything_fromString(rep, req.model);			
 		} catch (Err e) {
 			System.out.println(e.getMessage());
-			return Response.ok("{\"alloy_error\": true, \"line\": "+ e.pos.y +", \"column\": "+ e.pos.x +", \"msg\": \""+ e.msg.replace("\"","\\\"").replace("\n"," ") +"\"}").build();
+			JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
+			instanceJSON.add("alloy_error", true);
+			instanceJSON.add("msg", e.msg);
+			instanceJSON.add("line", e.pos.y);
+			instanceJSON.add("column", e.pos.x);
+			return Response.ok(instanceJSON.build().toString()).build();
 		} catch (Exception e) {
+			JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
 			System.out.println(e.getMessage());
-			return Response.ok("{\"alloy_error\": true, \"msg\": \""+ e.getMessage().replace("\"","\\\"").replace("+\n"," ") +"\"}").build();
+			instanceJSON.add("alloy_error", true);
+			instanceJSON.add("msg", e.getMessage());
+			return Response.ok(instanceJSON.build().toString()).build();
 		}
 
 		JsonArrayBuilder solsArrayJSON = Json.createArrayBuilder();
@@ -74,7 +90,7 @@ public class AlloyGetInstances {
 				try {
 					for (int n = 0; n < req.numberOfInstances && aux.satisfiable(); n++) {
 						UUID uuid = UUID.randomUUID();
-						solsArrayJSON.add(answerToJson(uuid, aux));
+						solsArrayJSON.add(answerToJson(uuid, aux, warnings));
 						RestApplication.answers.put(uuid, aux);
 						ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 						scheduler.schedule(new Runnable() {
@@ -91,12 +107,19 @@ public class AlloyGetInstances {
 				}
 				res = solsArrayJSON.build().toString();
 			} else {
-				res = "{\"unsat\": true}";
+				UUID uuid = UUID.randomUUID();
+				res = solsArrayJSON.add(answerToJson(uuid, ans, warnings)).build().toString();
+
 			}
 
 		} catch (Err e) {
 			System.out.println(e.getMessage());
-			return Response.ok("{\"alloy_error\": true, \"line\": "+ e.pos.y +", \"column\": "+ e.pos.x +", \"msg\": \""+ e.msg.replace("\"","\\\"").replace("\n"," ") +"\"}").build();
+			JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
+			instanceJSON.add("alloy_error", true);
+			instanceJSON.add("msg", e.msg);
+			instanceJSON.add("line", e.pos.y);
+			instanceJSON.add("column", e.pos.x);
+			return Response.ok(instanceJSON.build().toString()).build();
 		}
 
 		return Response.ok(res).build();
@@ -113,11 +136,19 @@ public class AlloyGetInstances {
 		return req;
 	}
 
-	public JsonObject answerToJson(UUID uuid, A4Solution answer) {
+	public JsonObject answerToJson(UUID uuid, A4Solution answer, List<ErrorWarning> warns) {
 		JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
 
 		if (!answer.satisfiable()) {
 			instanceJSON.add("unsat", "true");
+
+			if (warns.size() > 0) {
+				instanceJSON.add("warning_error", true);
+				instanceJSON.add("msg", warns.get(0).msg);
+				instanceJSON.add("line", warns.get(0).pos.y);
+				instanceJSON.add("column", warns.get(0).pos.x);
+			}
+
 			return instanceJSON.build();
 		}
 
@@ -147,6 +178,13 @@ public class AlloyGetInstances {
 			instanceJSON.add("fields", fieldsJSON);
 
 			instanceJSON.add("skolem", skolemsToJSON(answer));
+
+			if (warns.size() > 0) {
+				instanceJSON.add("warning_error", true);
+				instanceJSON.add("msg", warns.get(0).msg);
+				instanceJSON.add("line", warns.get(0).pos.y);
+				instanceJSON.add("column", warns.get(0).pos.x);
+			}
 
 			return instanceJSON.build();
 		} catch (Err er) {

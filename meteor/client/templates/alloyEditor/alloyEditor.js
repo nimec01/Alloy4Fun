@@ -245,6 +245,14 @@ function handleExecuteModel(err, result) {
         resmsg = resmsg + "\n"
         swal("There was a problem running the model!", resmsg + "Please validate your model.", "error");
     } else {
+
+        if (result.warning_error) {
+            let resmsg = result.msg
+            if (result.line)
+                resmsg = resmsg + " (" + result.line + ":" + result.column + ")"
+            resmsg = resmsg + "\n"
+            swal("There is a possible problem with the model!", resmsg, "warning");
+        }
         let log = document.createElement('div');
         log.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
         let paragraph = document.createElement('p');
