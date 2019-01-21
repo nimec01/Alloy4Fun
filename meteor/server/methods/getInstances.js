@@ -63,7 +63,7 @@ Meteor.methods({
 
                 let original
                 // if the model has secrets and the previous hadn't, then it is a new root
-                if (containsValidSecret(code) && (!currentModelId || !containsValidSecret(Model.findOne(currentModelId).code))) {
+                if (!currentModelId || (containsValidSecret(code) && !containsValidSecret(Model.findOne(currentModelId).code))) {
                     original = new_model_id
                 } 
                 // otherwise inherit the root
