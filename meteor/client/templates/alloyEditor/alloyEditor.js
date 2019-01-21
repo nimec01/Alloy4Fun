@@ -237,34 +237,41 @@ function handleExecuteModel(err, result) {
     storeInstances(result);
     if (Array.isArray(result))
         result = result[0];
-   
-    let log = document.createElement('div');
-    log.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
-    let paragraph = document.createElement('p');
-
-    if (result.unsat) {
-        $('#instancenav').hide();
-        paragraph.innerHTML = result.commandType ? "No instance found. " + command + " is inconsistent." : "No counter-examples. " + command + " solved!";
-        paragraph.className = result.commandType ? "log-wrong" : "log-complete";
+       
+    if (result.alloy_error) {
+        let resmsg = result.msg
+        if (result.line)
+            resmsg = resmsg + " (" + result.line + ":" + result.column + ")"
+        resmsg = resmsg + "\n"
+        swal("There was a problem running the model!", resmsg + "Please validate your model.", "error");
     } else {
-        paragraph.innerHTML = result.commandType ? "Instance found. " + command + " is consistent." : "Counter-example found. " + command + " is inconsistent.";
-        paragraph.className = result.commandType ? "log-complete" : "log-wrong";
-        updateGraph(result);
+        let log = document.createElement('div');
+        log.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
+        let paragraph = document.createElement('p');
 
-        $("#next").css("display", 'initial');
-        $("#prev").css("display", 'initial');
+        if (result.unsat) {
+            $('#instancenav').hide();
+            paragraph.innerHTML = result.commandType ? "No instance found. " + command + " is inconsistent." : "No counter-examples. " + command + " solved!";
+            paragraph.className = result.commandType ? "log-wrong" : "log-complete";
+        } else {
+            paragraph.innerHTML = result.commandType ? "Instance found. " + command + " is consistent." : "Counter-example found. " + command + " is inconsistent.";
+            paragraph.className = result.commandType ? "log-complete" : "log-wrong";
+            updateGraph(result);
+
+            $("#next").css("display", 'initial');
+            $("#prev").css("display", 'initial');
+        }
+
+        log.appendChild(paragraph);
+        $("#log")[0].appendChild(log);
+
+        if (result.unsat) { // no counter examples found
+            $('.empty-univ').fadeIn();
+            $('#instanceViewer').hide();
+            $("#genInstanceUrl").hide();
+        }
     }
 
-    log.appendChild(paragraph);
-    $("#log")[0].appendChild(log);
-
-    if (result.unsat) { // no counter examples found
-        $('.empty-univ').fadeIn();
-        $('#instanceViewer').hide();
-        $("#genInstanceUrl").hide();
-    }
-
-    if (result.syntax_error) swal("There is a syntax error!", "Please validate your model.", "error");
 
 }
 

@@ -12,10 +12,10 @@ export { defineAlloyMode };
 function defineAlloyMode() {
     CodeMirror.defineSimpleMode('alloy', {
         start: [{
-            regex: /(\W)(abstract|fun|all|iff|check|but|else|assert|extends|set|fact|implies|module|open|sig|and|disj|for|in|no|or|as|Int|pred|sum|exactly|iden|let|not|run|univ)(?:\b)/,
+            regex: /(\W)(abstract|fun|all|iff|check|but|else|assert|extends|set|fact|implies|module|open|sig|and|disj|for|in|no|or|as|Int|String|pred|sum|exactly|iden|let|not|run|univ)(?:\b)/,
             token: [null, 'keyword'],
         }, {
-            regex: /(abstract|fun|all|iff|check|but|else|assert|extends|set|fact|implies|module|open|sig|and|disj|for|in|no|or|as|Int|pred|sum|exactly|iden|let|not|run|univ)(?:\b)/,
+            regex: /(abstract|fun|all|iff|check|but|else|assert|extends|set|fact|implies|module|open|sig|and|disj|for|in|no|or|as|Int|String|pred|sum|exactly|iden|let|not|run|univ)(?:\b)/,
             token: 'keyword',
             sol: true,
         }, {

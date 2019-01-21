@@ -50,55 +50,55 @@ public class AlloyGetInstances {
 
 		try {
 			world = CompUtil.parseEverything_fromString(rep, req.model);			
+		} catch (Err e) {
+			System.out.println(e.getMessage());
+			return Response.ok("{\"alloy_error\": true, \"line\": "+ e.pos.y +", \"column\": "+ e.pos.x +", \"msg\": \""+ e.msg.replace("\"","\\\"").replace("\n"," ") +"\"}").build();
 		} catch (Exception e) {
-			return Response.ok("{\"syntax_error\": true}").build();
+			System.out.println(e.getMessage());
+			return Response.ok("{\"alloy_error\": true, \"msg\": \""+ e.getMessage().replace("\"","\\\"").replace("+\n"," ") +"\"}").build();
 		}
 
 		JsonArrayBuilder solsArrayJSON = Json.createArrayBuilder();
 		
 		A4Options opt = new A4Options();
 		opt.solver = A4Options.SatSolver.SAT4J;
-		String res = "ups";
-		for (Command command : world.getAllCommands()) {
-			if (command.label.equals(req.commandLabel)) {
+		String res = "";
+		Command command = world.getAllCommands().get(req.commandIndex);
+		A4Solution ans;
+		try {
+			ans = TranslateAlloyToKodkod.execute_command(rep, world.getAllReachableSigs(), command, opt);
 
-				A4Solution ans;
+			if (ans.satisfiable()) {
+
+				A4Solution aux = ans;
 				try {
-					ans = TranslateAlloyToKodkod.execute_command(rep, world.getAllReachableSigs(), command, opt);
-
-					if (ans.satisfiable()) {
-
-						A4Solution aux = ans;
-						try {
-							for (int n = 0; n < req.numberOfInstances && aux.satisfiable(); n++) {
-								UUID uuid = UUID.randomUUID();
-								solsArrayJSON.add(answerToJson(uuid, aux));
-								RestApplication.answers.put(uuid, aux);
-								ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-								scheduler.schedule(new Runnable() {
-									public void run() {
-										RestApplication.answers.remove(uuid);
-									}
-								}, 7200, TimeUnit.SECONDS);
-								aux = aux.next();
+					for (int n = 0; n < req.numberOfInstances && aux.satisfiable(); n++) {
+						UUID uuid = UUID.randomUUID();
+						solsArrayJSON.add(answerToJson(uuid, aux));
+						RestApplication.answers.put(uuid, aux);
+						ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+						scheduler.schedule(new Runnable() {
+							public void run() {
+								RestApplication.answers.remove(uuid);
 							}
-						} catch (Exception e) {
-							// this.iteration--;
-							System.out.println("There probably aren't that many solutions!");
-							res = e.getMessage();
-						}
-						res = solsArrayJSON.build().toString();
-					} else {
-						res = "{\"unsat\": true}";
+						}, 7200, TimeUnit.SECONDS);
+						aux = aux.next();
 					}
-
-				} catch (Err e) {
-					System.out.println(e.getMessage());
+				} catch (Exception e) {
+					// this.iteration--;
+					System.out.println("There probably aren't that many solutions!");
+					res = e.getMessage();
 				}
-
+				res = solsArrayJSON.build().toString();
+			} else {
+				res = "{\"unsat\": true}";
 			}
 
+		} catch (Err e) {
+			System.out.println(e.getMessage());
+			return Response.ok("{\"alloy_error\": true, \"line\": "+ e.pos.y +", \"column\": "+ e.pos.x +", \"msg\": \""+ e.msg.replace("\"","\\\"").replace("\n"," ") +"\"}").build();
 		}
+
 		return Response.ok(res).build();
 	}
 
@@ -108,7 +108,7 @@ public class AlloyGetInstances {
 
 		req.model = jo.getString("model");
 		req.numberOfInstances = jo.getInt("numberOfInstances");
-		req.commandLabel = jo.getString("commandLabel");
+		req.commandIndex = jo.getInt("commandIndex");
 
 		return req;
 	}
