@@ -4,24 +4,31 @@ import {
 
 Meteor.methods({
     /**
-     * Retrieves the information about the current node's descendants so as to 
-     * produce the derivation tree, that task is done client-side
-     * for efficiency purposes
-     * @param {String} linkId the link used on the page
+     * Meteor method to retrieve the information about the current node's
+       descendants so as to produce the derivation tree, relying on the
+       original field. The actual creation of the tree is done client-side for
+       efficiency purposes.
+
+       @param {String} linkId the (private) link that identifies the root node
+
+       @return all the descendants of the root node and itself
      */
     downloadTree: function(linkId) {
+        if (!linkId) throw new Meteor.Error(404, "No link provided")
         let link = Link.findOne(linkId)
         if (!link) throw new Meteor.Error(404, "Link not found")
         if (!link.private) throw new Meteor.Error(403, "No permission to get this model's tree (only private link will work)")
-        // get the starting node of the tree -> root
+        // get the root model from the provided link
         let root = Model.findOne(link.model_id)
+        // get all descendants (that have the root as original)
         if (!root) throw new Meteor.Error(404, "Model not found")
-
-        // compilation of result will be done client-side
-        return {
-            descendants: Model.find({ // get all descendants (direct or not)
+        let ds = Model.find({
                 original: root._id
-            }).fetch(),
+            }).fetch()
+
+        // treatment of result will be done client-side
+        return {
+            descendants: ds,
             root: root
         }
     }

@@ -80,7 +80,7 @@ Template.alloyEditor.events({
             });
         } else { // Execute command
             let model = textEditor.getValue();
-            Meteor.call('getInstances', model, commandLabel, Session.get("last_id"), Session.get("original_id"), Session.get("from_private"), handleExecuteModel);
+            Meteor.call('getInstances', model, commandLabel, Session.get("last_id"), Session.get("from_private"), handleExecuteModel);
         }
         // update button states after execution
         $("#exec > button").prop('disabled', true);
@@ -215,7 +215,7 @@ function handleExecuteModel(err, result) {
         return displayError(err)
     }
 
-    Session.set("last_id", result.last_id) // update the last_id for next derivations
+    Session.set("last_id", result.newModelId) // update the last_id for next derivations
 
     $.unblockUI();
     $('#exec > button').prop('disabled', true);

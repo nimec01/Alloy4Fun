@@ -27,6 +27,7 @@ Meteor.methods({
         // explicitly set optional to avoid nulls
         if (lastId) {
             model.derivationOf = lastId
+            model.original = Model.findOne(lastId).original
             if (!containsValidSecret(code)) {
                 model.code = model.code + extractSecrets(Model.findOne(lastId).code).secret
             }
