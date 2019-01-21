@@ -12,18 +12,11 @@ export { defineAlloyMode };
 function defineAlloyMode() {
     CodeMirror.defineSimpleMode('alloy', {
         start: [{
-            regex: /(\W)(abstract|fun|all|iff|check|but|else|assert|extends|set|fact|implies|module|open|sig|and|disj|for|in|no|or|as|Int|String|pred|sum|exactly|iden|let|not|run|univ)(?:\b)/,
+            regex: /(\W)(one|lone|none|some|abstract|fun|all|iff|check|but|else|assert|extends|set|fact|implies|module|open|sig|and|disj|for|in|no|or|as|Int|String|pred|sum|exactly|iden|let|not|run|univ)(?:\b)/,
             token: [null, 'keyword'],
         }, {
-            regex: /(abstract|fun|all|iff|check|but|else|assert|extends|set|fact|implies|module|open|sig|and|disj|for|in|no|or|as|Int|String|pred|sum|exactly|iden|let|not|run|univ)(?:\b)/,
+            regex: /(one|lone|none|some|abstract|fun|all|iff|check|but|else|assert|extends|set|fact|implies|module|open|sig|and|disj|for|in|no|or|as|Int|String|pred|sum|exactly|iden|let|not|run|univ)(?:\b)/,
             token: 'keyword',
-            sol: true,
-        }, {
-            regex: /(\W)(one|lone|none|some)(?:\b)/,
-            token: [null, 'atom'],
-        }, {
-            regex: /(one|lone|none|some)(?:\b)/,
-            token: 'atom',
             sol: true,
         }, {
             regex: /^\/\/SECRET$/mg,
