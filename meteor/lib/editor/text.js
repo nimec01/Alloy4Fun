@@ -12,7 +12,7 @@ export {
  Checks whether a the code of an Alloy model contains some valid 'secret' tag
  (i.e., a line exactly "//SECRET"). No white-spaces allowed before/after.
 
- @param code the code with the potential secret
+ @param {String} code the code with the potential secret
 
  @return true if there is a secrete tag 
  */
@@ -25,7 +25,7 @@ function containsValidSecret(code) {
  code of an Alloy model. If named, returns name, otherwise, returns indexed
  "run$"/"check$".
  
- @param code {String} code with the code
+ @param {String} code the code to be analysed
 
  @return a list of identifiers for commands in the code
  */
