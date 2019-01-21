@@ -1,20 +1,18 @@
 /**
- * File with utility function shared by both client and server
- * with regard to text parsing
+ * Utility functions for parsing and analysis of code of Alloy models, shared
+ * by both client and server.
  */
 
 export {
-    isParagraph,
     containsValidSecret,
-    getCommands,
     getCommandsFromCode
 }
 
 /**
- Checks whether the model code contains some valid 'secret' tag (i.e., a line
- exactly "//SECRET"). No white-spaces allowed before/after.
+ Checks whether a the code of an Alloy model contains some valid 'secret' tag
+ (i.e., a line exactly "//SECRET"). No white-spaces allowed before/after.
 
- @param the code with the potential secret
+ @param code the code with the potential secret
 
  @return true if there is a secrete tag 
  */
@@ -23,27 +21,21 @@ function containsValidSecret(code) {
 }
 
 /**
- * Check if word is a valid paragraph
- * @param word the word to check
- * @return true if valid paragraph, false otherwise
- */
-function isParagraph(word) {
-    let pattern_named = /^((one sig |sig |pred |fun |abstract sig )(\ )*[A-Za-z0-9]+)/m;
-    let pattern_nnamed = /^((fact|assert|run|check)(\ )*[A-Za-z0-9]*)/m;
-    if (word.match(pattern_named) == null && word.match(pattern_nnamed) == null) return false;
-    return true;
-}
+ Calculates a list of identifiers for the run/check commands defined in the
+ code of an Alloy model. If named, returns name, otherwise, returns indexed
+ "run$"/"check$".
+ 
+ @param code {String} code with the code
 
-/**
- * Function associated with 'text box' that parses command type paragraphs, to be used as data for the combobox.
- * @param {String} code with the code
+ @return a list of identifiers for commands in the code
  */
 function getCommandsFromCode(code) {
     let pattern = /((\W|^)run(\{|(\[\n\r\s]+\{)|([\n\r\s]+([^{\n\r\s]*)))|((\W|^)check(\{|(\[\n\r\s]+\{)|([\n\r\s]+([^{\n\r\s]*)))))/g;
     let commands = [];
     let commandNumber = 1;
 
-    // To avoid commands that are in comment, comments must be eliminated before parse
+    // To avoid commands that are in comment, comments must be eliminated
+    // before parse
     code = code.replace(/\/\/(.*)(\n)/g, "");
     let matches = pattern.exec(code);
 
@@ -58,5 +50,6 @@ function getCommandsFromCode(code) {
         commandNumber++;
         matches = pattern.exec(code);
     }
+
     return commands
 }
