@@ -69,8 +69,8 @@ Template.alloyEditor.events({
         atomPositions = {};
         $(".frame-navigation").hide();
 
-        let commandLabel = getCommandLabel();
-        if (!commandLabel || commandLabel.length == 0) { //no command to run
+        let commandIndex = getCommandIndex();
+        if (commandIndex < 0) { //no command to run
             swal({
                 title: "",
                 text: "There are no commands to execute",
@@ -80,7 +80,7 @@ Template.alloyEditor.events({
             });
         } else { // Execute command
             let model = textEditor.getValue();
-            Meteor.call('getInstances', model, commandLabel, Session.get("last_id"), Session.get("from_private"), handleExecuteModel);
+            Meteor.call('getInstances', model, commandIndex, Session.get("last_id"), Session.get("from_private"), handleExecuteModel);
         }
         // update button states after execution
         $("#exec > button").prop('disabled', true);
@@ -132,7 +132,7 @@ Template.alloyEditor.events({
             metaSubsetSigs,
         };
 
-        Meteor.call("storeInstance", Session.get("last_id"), getCommandLabel(), cy.json(), themeData, handleGenInstanceURLEvent)
+        Meteor.call("storeInstance", Session.get("last_id"), getCommandIndex(), cy.json(), themeData, handleGenInstanceURLEvent)
     },
     'click #validateModel'() { // click on the validate button
         Meteor.call('validate', textEditor.getValue(), (err, res) => {
@@ -178,7 +178,6 @@ Template.alloyEditor.onRendered(() => {
         textEditor.setValue(model.code); // update the textEditor
         // save the loaded model id for later derivations
         Session.set("last_id", model.model_id); // this will change on execute
-        Session.set("original_id", model.model_id); // this will only change on share model
         Session.set("from_private", model.from_private); // this will not change
         Session.set("hidden_commands", model.commands) // update the commands for public links that do not have them
         Session.set("commands", model.commands) // update the commands to start correct
@@ -234,7 +233,6 @@ function handleExecuteModel(err, result) {
     $("#log").empty();
     let command = $('.command-selection > select option:selected').text();
 
-
     result = result.instances
     storeInstances(result);
     if (Array.isArray(result))
@@ -287,8 +285,8 @@ function getPreviousInstance() {
     return instances[--instanceIndex];
 }
 
-function getCommandLabel() {
-    return Session.get("commands").length > 1 ? $('.command-selection > select option:selected').text() : Session.get("commands")[0];
+function getCommandIndex() {
+    return Session.get("commands").length > 0 ? $('.command-selection > select option:selected').index() : -1;
 }
 
 // geninstanceurlbtn event handler after storeInstance method

@@ -8,7 +8,7 @@ import {
   will be derived, and inherit the original root node from it.
 
   @param {String} code the Alloy model to execute
-  @param {String} commandLabel the label of the command to execute
+  @param {Number} commandIndex the index of the command to execute
   @param {String} currentModelId the id of the current model (from which the
       new will derive)
   @param {Boolean} from_private whether it was loaded from public link and
@@ -17,7 +17,7 @@ import {
   @returns the instance data and the id of the new saved model
  */
 Meteor.methods({
-    getInstances: function(code, commandLabel, currentModelId, from_private) {
+    getInstances: function(code, commandIndex, currentModelId, from_private) {
         return new Promise((resolve, reject) => {
             let originalId = undefined
             let code_with_secrets = code
@@ -39,7 +39,7 @@ Meteor.methods({
                 data: {
                     model: code_with_secrets,
                     numberOfInstances: Meteor.settings.env.MAX_INSTANCES,
-                    commandLabel: commandLabel
+                    commandIndex: commandIndex
                 }
             }, (error, result) => {
                 if (error) reject(error)
@@ -58,7 +58,7 @@ Meteor.methods({
                 let new_model = {
                     // original code, without secrets
                     code: code,
-                    command: commandLabel,
+                    command: commandIndex,
                     // sat means there was no counter-example (!! is for bool)
                     sat: !!content.unsat, 
                     time: new Date().toLocaleString(),
@@ -69,14 +69,6 @@ Meteor.methods({
                 }
                 // insert the new model
                 let new_model_id = Model.insert(new_model);
-
-                // assign the original root to itself if no previous model
-             //   if (!originalId) {
-             //       Model.update({ "_id": new_model_id }, {$set: { "original": new_model_id }})
-             //   }
-
-                console.log("** new model after exec")
-                console.log(new_model)
 
                 // resolve the promise
                 resolve({
