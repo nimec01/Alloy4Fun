@@ -6,8 +6,7 @@ import {
     displayError
 } from "../../lib/editor/feedback"
 export {
-    clickGenUrl,
-    containsValidSecretWithAnonymousCommand
+    clickGenUrl
 }
 
 /**

@@ -1,38 +1,33 @@
 import {
     extractSecrets
 } from "../lib/secrets"
+import {
+    containsValidSecret
+} from "../../lib/editor/text"
 
-/**
-  Meteor method to execute the current model and get model instances. This
-  will call the Alloy API (webService). Will set the current model as the one
-  will be derived, and inherit the original root node from it.
-
-  @param {String} code the Alloy model to execute
-  @param {Number} commandIndex the index of the command to execute
-  @param {Boolean} commandType whether the command was a run (true) or check (false)
-  @param {String} currentModelId the id of the current model (from which the
-      new will derive)
-  @param {Boolean} from_private whether it was loaded from public link and
-      must retrieve secrets
-
-  @returns the instance data and the id of the new saved model
- */
 Meteor.methods({
-    getInstances: function(code, commandIndex, commandType, currentModelId, from_private) {
+    /**
+     Meteor method to execute the current model and get model instances. This
+     will call the Alloy API (webService).  If the model contains secrets and
+     the previous didn't (if any), will become a new derivation root (although
+     it still registers the derivation).
+    
+     @param {String} code the Alloy model to execute
+     @param {Number} commandIndex the index of the command to execute
+     @param {Boolean} commandType whether the command was a run (true) or check (false)
+     @param {String} currentModelId the id of the current model (from which the
+         new will derive)
+    
+     @returns the instance data and the id of the new saved model
+    */
+    getInstances: function(code, commandIndex, commandType, currentModelId) {
         return new Promise((resolve, reject) => {
-            let originalId = undefined
+
+            // if no secrets, try to extract from original
             let code_with_secrets = code
-            if (currentModelId) {
-                // retrieve root derivation node
-                originalId = Model.findOne(currentModelId).original
-                // if no root, set parent as root
-                if (!originalId) originalId = currentModelId
-                if (from_private === false) { 
-                    // if public link was used, load secrets from original model
-                    code_with_secrets = code + extractSecrets(originalId).secret
-                }
-            } else {
-                currentModelId = undefined
+            if (currentModelId && !containsValidSecret(code)) {
+                let o = Model.findOne(currentModelId).original
+                code_with_secrets = code + extractSecrets(Model.findOne(o).code).secret                    
             }
 
             // call webservice to get instances
@@ -48,29 +43,36 @@ Meteor.methods({
                 // handle result (unsat vs sat)
                 let strType = commandType ? "run" : "check"
                 let content = JSON.parse(result.content);
-                if (content.unsat) { // no counter-examples found
-                    content.commandType = commandType;
-                } else { // counter-examples found
-                    Object.keys(content).forEach(k => {
-                        content[k].commandType = commandType;
-                    });
-                }
-
+                // if unsat, still list with single element
+                Object.keys(content).forEach(k => {
+                    content[k].commandType = commandType;
+                });
+                
                 // save executed model to database
                 let new_model = {
                     // original code, without secrets
                     code: code,
                     command: commandIndex,
-                    // sat means there was no counter-example (!! is for bool)
-                    sat: !!content.unsat, 
+                    sat: !(content[0].unsat), 
                     time: new Date().toLocaleString(),
-                    // will be undefined if no current model
                     derivationOf: currentModelId,
-                    // will be undefined if no current model
-                    original: originalId
                 }
+
                 // insert the new model
                 let new_model_id = Model.insert(new_model);
+
+                let original
+                // if the model has secrets and the previous hadn't, then it is a new root
+                if (containsValidSecret(code) && (!currentModelId || !containsValidSecret(Model.findOne(currentModelId).code))) {
+                    original = new_model_id
+                } 
+                // otherwise inherit the root
+                else {
+                    original = Model.findOne(currentModelId).original
+                }
+
+                // update the root
+                Model.update({ _id : new_model_id },{$set: {original : original}})
 
                 // resolve the promise
                 resolve({

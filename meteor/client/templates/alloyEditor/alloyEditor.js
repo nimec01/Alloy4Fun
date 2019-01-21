@@ -5,7 +5,7 @@ import {
     clickGenUrl
 } from "./genUrl"
 import {
-    downloadTree
+    processTree
 } from "./downloadTree"
 import {
     zeroclipboard,
@@ -80,7 +80,7 @@ Template.alloyEditor.events({
             });
         } else { // Execute command
             let model = textEditor.getValue();
-            Meteor.call('getInstances', model, commandIndex, isRunSelected(), Session.get("last_id"), Session.get("from_private"), handleExecuteModel);
+            Meteor.call('getInstances', model, commandIndex, isRunSelected(), Session.get("last_id"), handleExecuteModel);
         }
         // update button states after execution
         $("#exec > button").prop('disabled', true);
@@ -156,7 +156,7 @@ Template.alloyEditor.events({
             }
         });
     },
-    'click #downloadTree': downloadTree
+    'click #downloadTree': processTree
 });
 /* Callbacks added with this method are called once when an instance of Template.alloyEditor is rendered into DOM nodes and put into the document for the first time. */
 Template.alloyEditor.onRendered(() => {

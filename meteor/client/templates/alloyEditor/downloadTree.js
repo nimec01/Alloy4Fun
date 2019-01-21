@@ -2,7 +2,7 @@ import {
     displayError
 } from "../../lib/editor/feedback"
 
-function downloadTree() {
+function processTree() {
     let linkId = Router.current().params._id
     Meteor.call("downloadTree", linkId, (err, res) => {
         if (err) return displayError(err)
@@ -67,6 +67,5 @@ function lz(s) {
     return ('0' + s).slice(-2)
 }
 export {
-    downloadTree,
-    descendantsToTree
+    downloadTree
 }

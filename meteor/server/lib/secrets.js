@@ -1,3 +1,7 @@
+import {
+    containsValidSecret
+} from "../../lib/editor/text"
+
 export {
     extractSecrets
 }
