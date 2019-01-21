@@ -264,6 +264,7 @@ function handleExecuteModel(err, result) {
         } else {
             paragraph.innerHTML = result.commandType ? "Instance found. " + command + " is consistent." : "Counter-example found. " + command + " is inconsistent.";
             paragraph.className = result.commandType ? "log-complete" : "log-wrong";
+            initGraphViewer('instance');
             updateGraph(result);
 
             $("#next").css("display", 'initial');
