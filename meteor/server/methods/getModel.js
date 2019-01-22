@@ -32,9 +32,12 @@ function getModelFromLink(linkId) {
     if (!link) return //undefined if link does not exist
     let model = Model.findOne(link.model_id)
     let complete_model = model.code
-    if (!link.private) model.code = extractSecrets(model.code).public
+    if (!link.private) {
+        model.code = extractSecrets(model.code).public
+        let seccms = getCommandsFromCode(extractSecrets(complete_model).secret)
+        if (seccms) model.commands = seccms
+    }
     model.from_private = link.private // return info about the used link type
-    model.commands = getCommandsFromCode(complete_model)
     model.model_id = model._id // this is necessary because publish is for the linkId
     return model
 }

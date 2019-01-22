@@ -2,6 +2,9 @@ import classie from 'classie';
 import 'qtip2/src/core.css';
 
 import {
+    getCommandsFromCode
+} from "../../../lib/editor/text"
+import {
     clickGenUrl
 } from "./genUrl"
 import {
@@ -166,6 +169,7 @@ Template.alloyEditor.onRendered(() => {
         initGraphViewer('instance');
     }
 
+
     buttonsEffects(); //Adds click effects to Buttons
     hideButtons(); //Hide Next, Previous, Run... buttons on startup
 
@@ -180,7 +184,9 @@ Template.alloyEditor.onRendered(() => {
         Session.set("last_id", model.model_id); // this will change on execute
         Session.set("from_private", model.from_private); // this will not change
         Session.set("hidden_commands", model.commands) // update the commands for public links that do not have them
-        Session.set("commands", model.commands) // update the commands to start correct
+        let cs = getCommandsFromCode(model.code)
+        if (model.commands) cs.concat(model.commands)
+        Session.set("commands", cs) // update the commands to start correct
 
         if(model.from_private) $("#downloadTree > button").prop('disabled', false);
 
