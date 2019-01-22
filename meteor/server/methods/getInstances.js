@@ -44,8 +44,10 @@ Meteor.methods({
                 let strType = commandType ? "run" : "check"
                 let content = JSON.parse(result.content);
                 // if unsat, still list with single element
+                let sat
                 Object.keys(content).forEach(k => {
                     content[k].commandType = commandType;
+                    sat = content[k].unsat;
                 });
                 
                 // save executed model to database
@@ -53,7 +55,7 @@ Meteor.methods({
                     // original code, without secrets
                     code: code,
                     command: commandIndex,
-                    sat: !(content[0].unsat), 
+                    sat: sat, 
                     time: new Date().toLocaleString(),
                     derivationOf: currentModelId,
                 }
