@@ -69,5 +69,6 @@ function lz(s) {
     return ('0' + s).slice(-2)
 }
 export {
-    processTree
+    processTree,
+    descendantsToTree
 }

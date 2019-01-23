@@ -9,7 +9,8 @@ import {
     secretTag } 
 from "../../../lib/editor/text"
 export {
-    clickGenUrl
+    clickGenUrl,
+    containsValidSecretWithAnonymousCommand
 }
 
 /**
