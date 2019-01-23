@@ -103,15 +103,6 @@ pred checkStuff{
         chai.assert.equal(res.public, "\n")
         chai.assert.equal(res.secret, code.substr(1))
 
-        code = `
-//SECRET
-sig A {} //SECRET
-pred checkStuff{
-
-}`
-        res = extractSecrets(code)
-        chai.assert.equal(res.public, "\n")
-        chai.assert.equal(res.secret, code.substr(1))
     });
     it("returns correct public and secret", function() {
         let public_code = `
@@ -142,5 +133,15 @@ check validQuizz for 5`
         res = extractSecrets(code)
         chai.assert.equal(res.public, public_code)
         chai.assert.equal(res.secret, private)
+
+                code = `
+//SECRET
+sig A {} //SECRET
+pred checkStuff{
+
+}`
+        res = extractSecrets(code)
+        chai.assert.equal(res.public, "\npred checkStuff{\n\n}")
+        chai.assert.equal(res.secret, "//SECRET\nsig A {}\n//SECRET")
     });
 });
