@@ -2,9 +2,7 @@ import {
     Meteor
 } from "meteor/meteor";
 import {
-    extractSecrets
-} from "../lib/secrets"
-import {
+    extractSecrets,
     getCommandsFromCode
 } from "../../lib/editor/text";
 /**

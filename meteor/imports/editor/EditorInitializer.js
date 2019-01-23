@@ -99,9 +99,14 @@ function initializeEditor(htmlElement, mode) {
     return editor;
 }
 
-/*
-  Function associated with 'text box' that parses command type paragraphs, to be used as data for the combobox.
-*/
+/**
+ * Function associated with 'text box' that parses command type paragraphs, to
+ * be used as data for the combobox. The hidden commands were registed in the
+ * session when the original model was loaded; the remainder commands are
+ * retrieved from the current code.
+ *
+ * Secret commands will always appear last.
+ */
 function getCommands() {
     let hidden_commands = Session.get("hidden_commands") || []
     Session.set("commands", getCommandsFromCode(this.getValue()).concat(hidden_commands))

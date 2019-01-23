@@ -5,11 +5,9 @@ import {
     Link
 } from '../../lib/collections/link'
 import {
+    extractSecrets,
     containsValidSecret
 } from "../../lib/editor/text"
-import {
-    extractSecrets
-} from "../lib/secrets"
 
 Meteor.methods({
     /**

@@ -7,7 +7,8 @@ export {
     containsValidSecret,
     getCommandsFromCode,
     secretTag,
-    paragraphKeywords
+    paragraphKeywords,
+    extractSecrets
 }
 
 /** The secret tag used in Alloy code. */
@@ -16,15 +17,50 @@ secretTag = "//SECRET"
 paragraphKeywords = "sig|fact|assert|check|fun|pred|run"
 
 /**
- Checks whether a the code of an Alloy model contains some valid 'secret' tag
- (i.e., a line exactly "//SECRET"). No white-spaces allowed before/after.
-
- @param {String} code the Alloy model with the potential secret
-
- @return true if there is a secrete tag 
- */
+  * Checks whether a the code of an Alloy model contains some valid 'secret' tag
+  * (i.e., a line exactly the tag secret). No white-spaces allowed before/after.
+  * 
+  * @param {String} code the Alloy model with the potential secret
+  * 
+  * @return true if there is a secrete tag 
+  */
 function containsValidSecret(code) {
-    return (code.indexOf("\n"+secretTag+"\n") != -1 || code.indexOf(secretTag+"\n") == 0);
+    console.log(extractSecrets(code))
+    return (extractSecrets(code).secret != "")
+}
+
+/**
+  * Splits the Alloy code of a model between public and private paragraphs.
+  * Private paragraphs are preceeded by a secret tag.
+  * 
+  * @param {String} code the complete code with possible secrets
+  * @return the public and private paragraphs of the code 
+  */
+function extractSecrets(code) {
+    let secret = "",
+        public_code = "";
+    let s, i;
+    let tag = secretTag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    let pgs = paragraphKeywords
+    let exp = `(?:\\/\\*(?:.|\\n)*?\\*\/|(${tag}\\s*?\\n\\s*(?:(?:(?:abstract|one|lone|some)\\s+)*${pgs})(?:.*|\\n)*?)(?:${tag}\\s*?\\n\\s*)?(?:(?:(?:one|abstract|lone|some)\\s+)*${pgs}|$))`
+    console.log(RegExp(exp))
+    while (s = code.match(RegExp(exp))) {
+        if (s[0].match(/^\/\*(?:.|\n)*?\*\/$/)) {
+            i = code.indexOf(s[0]);
+            public_code += code.substr(0, i + s[0].length);
+            code = code.substr(i + s[0].length);
+        } else {
+            i = code.indexOf(s[0]);
+            public_code += code.substr(0, i);
+            secret += s[1];
+            code = code.substr(i + s[1].length);
+        }
+    }
+    public_code += code;
+    return {
+        public: public_code,
+        secret: secret
+    };
 }
 
 /**

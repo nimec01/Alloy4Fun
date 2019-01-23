@@ -1,7 +1,5 @@
 import {
-    extractSecrets
-} from "../lib/secrets"
-import {
+    extractSecrets,
     containsValidSecret
 } from "../../lib/editor/text"
 
