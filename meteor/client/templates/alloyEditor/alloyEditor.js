@@ -2,10 +2,13 @@ import classie from 'classie';
 import 'qtip2/src/core.css';
 
 import {
+    getCommandsFromCode
+} from "../../../lib/editor/text"
+import {
     clickGenUrl
 } from "./genUrl"
 import {
-    downloadTree
+    processTree
 } from "./downloadTree"
 import {
     zeroclipboard,
@@ -69,8 +72,8 @@ Template.alloyEditor.events({
         atomPositions = {};
         $(".frame-navigation").hide();
 
-        let commandLabel = getCommandLabel();
-        if (!commandLabel || commandLabel.length == 0) { //no command to run
+        let commandIndex = getCommandIndex();
+        if (commandIndex < 0) { //no command to run
             swal({
                 title: "",
                 text: "There are no commands to execute",
@@ -80,7 +83,7 @@ Template.alloyEditor.events({
             });
         } else { // Execute command
             let model = textEditor.getValue();
-            Meteor.call('getInstances', model, commandLabel, Session.get("last_id"), Session.get("original_id"), Session.get("from_private"), handleExecuteModel);
+            Meteor.call('getInstances', model, commandIndex, isRunSelected(), Session.get("last_id"), handleExecuteModel);
         }
         // update button states after execution
         $("#exec > button").prop('disabled', true);
@@ -132,7 +135,7 @@ Template.alloyEditor.events({
             metaSubsetSigs,
         };
 
-        Meteor.call("storeInstance", Session.get("last_id"), getCommandLabel(), cy.json(), themeData, handleGenInstanceURLEvent)
+        Meteor.call("storeInstance", Session.get("last_id"), getCommandIndex(), cy.json(), themeData, handleGenInstanceURLEvent)
     },
     'click #validateModel'() { // click on the validate button
         Meteor.call('validate', textEditor.getValue(), (err, res) => {
@@ -156,7 +159,7 @@ Template.alloyEditor.events({
             }
         });
     },
-    'click #downloadTree': downloadTree
+    'click #downloadTree': processTree
 });
 /* Callbacks added with this method are called once when an instance of Template.alloyEditor is rendered into DOM nodes and put into the document for the first time. */
 Template.alloyEditor.onRendered(() => {
@@ -165,6 +168,7 @@ Template.alloyEditor.onRendered(() => {
     } catch (e) {
         initGraphViewer('instance');
     }
+
 
     buttonsEffects(); //Adds click effects to Buttons
     hideButtons(); //Hide Next, Previous, Run... buttons on startup
@@ -178,10 +182,11 @@ Template.alloyEditor.onRendered(() => {
         textEditor.setValue(model.code); // update the textEditor
         // save the loaded model id for later derivations
         Session.set("last_id", model.model_id); // this will change on execute
-        Session.set("original_id", model.model_id); // this will only change on share model
         Session.set("from_private", model.from_private); // this will not change
         Session.set("hidden_commands", model.commands) // update the commands for public links that do not have them
-        Session.set("commands", model.commands) // update the commands to start correct
+        let cs = getCommandsFromCode(model.code)
+        if (model.commands) cs.concat(model.commands)
+        Session.set("commands", cs) // update the commands to start correct
 
         if(model.from_private) $("#downloadTree > button").prop('disabled', false);
 
@@ -215,7 +220,7 @@ function handleExecuteModel(err, result) {
         return displayError(err)
     }
 
-    Session.set("last_id", result.last_id) // update the last_id for next derivations
+    Session.set("last_id", result.newModelId) // update the last_id for next derivations
 
     $.unblockUI();
     $('#exec > button').prop('disabled', true);
@@ -234,25 +239,38 @@ function handleExecuteModel(err, result) {
     $("#log").empty();
     let command = $('.command-selection > select option:selected').text();
 
-
     result = result.instances
     storeInstances(result);
     if (Array.isArray(result))
         result = result[0];
-    if (result.commandType && result.commandType == "check") {
-        /* if the commandType == check */
+       
+    if (result.alloy_error) {
+        let resmsg = result.msg
+        if (result.line)
+            resmsg = resmsg + " (" + result.line + ":" + result.column + ")"
+        resmsg = resmsg + "\n"
+        swal("There was a problem running the model!", resmsg + "Please validate your model.", "error");
+    } else {
 
+        if (result.warning_error) {
+            let resmsg = result.msg
+            if (result.line)
+                resmsg = resmsg + " (" + result.line + ":" + result.column + ")"
+            resmsg = resmsg + "\n"
+            swal("There is a possible problem with the model!", resmsg, "warning");
+        }
         let log = document.createElement('div');
         log.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
         let paragraph = document.createElement('p');
 
         if (result.unsat) {
             $('#instancenav').hide();
-            paragraph.innerHTML = "No counter-examples. " + command + " solved!";
-            paragraph.className = "log-complete";
+            paragraph.innerHTML = result.commandType ? "No instance found. " + command + " is inconsistent." : "No counter-examples. " + command + " solved!";
+            paragraph.className = result.commandType ? "log-wrong" : "log-complete";
         } else {
-            paragraph.innerHTML = "Invalid solution, checking " + command + " revealed a counter-example.";
-            paragraph.className = "log-wrong";
+            paragraph.innerHTML = result.commandType ? "Instance found. " + command + " is consistent." : "Counter-example found. " + command + " is inconsistent.";
+            paragraph.className = result.commandType ? "log-complete" : "log-wrong";
+            initGraphViewer('instance');
             updateGraph(result);
 
             $("#next").css("display", 'initial');
@@ -261,15 +279,14 @@ function handleExecuteModel(err, result) {
 
         log.appendChild(paragraph);
         $("#log")[0].appendChild(log);
+
+        if (result.unsat) { // no counter examples found
+            $('.empty-univ').fadeIn();
+            $('#instanceViewer').hide();
+            $("#genInstanceUrl").hide();
+        }
     }
 
-    if (result.unsat) { // no counter examples found
-        $('.empty-univ').fadeIn();
-        $('#instanceViewer').hide();
-        $("#genInstanceUrl").hide();
-    }
-
-    if (result.syntax_error) swal("There is a syntax error!", "Please validate your model.", "error");
 
 }
 
@@ -287,8 +304,13 @@ function getPreviousInstance() {
     return instances[--instanceIndex];
 }
 
-function getCommandLabel() {
-    return Session.get("commands").length > 1 ? $('.command-selection > select option:selected').text() : Session.get("commands")[0];
+function isRunSelected() {
+    if (Session.get("commands").length <= 0) return false;
+    return $('.command-selection > select option:selected').text().startsWith("run");
+}
+
+function getCommandIndex() {
+    return Session.get("commands").length > 0 ? $('.command-selection > select option:selected').index() : -1;
 }
 
 // geninstanceurlbtn event handler after storeInstance method

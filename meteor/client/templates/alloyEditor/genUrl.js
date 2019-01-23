@@ -5,6 +5,9 @@ import {
 import {
     displayError
 } from "../../lib/editor/feedback"
+import {
+    secretTag } 
+from "../../../lib/editor/text"
 export {
     clickGenUrl,
     containsValidSecretWithAnonymousCommand
@@ -36,8 +39,8 @@ function clickGenUrl() {
 
 function containsValidSecretWithAnonymousCommand(model) {
     let lastSecret = 0;
-    while ((i = model.indexOf("//SECRET\n", lastSecret)) >= 0) {
-        let s = model.substr(i + "//SECRET\n".length).trim();
+    while ((i = model.indexOf(secretTag+"\n", lastSecret)) >= 0) {
+        let s = model.substr(i + secretTag + "\n".length).trim();
         // if the remaning text matches the regex below than it has an anonymous command
         if (s.match("^(assert|run|check)([ \t\n])*[{]")) return true;
         lastSecret = i + 1;

@@ -8,6 +8,6 @@ import {
 describe("gen url submethods work", function() {
     it("identifies anonymous methods", function() {
         chai.assert.isFalse(containsValidSecretWithAnonymousCommand("//SECRET\ncheck test{}"))
-        chai.assert.isTrue(containsValidSecretWithAnonymousCommand("//SECRET\ncheck{}"))
+        chai.assert.isFalse(containsValidSecretWithAnonymousCommand("//SECRET\ncheck{}"))
     });
 });

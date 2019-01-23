@@ -4,29 +4,24 @@
  * such as .cm.comment {...} and also to refer to those tokens after parsing the syntax
  * Additionaly "sol: true" attribute means that the match should happen only at line start
  */
-
 import CodeMirror from 'codemirror';
 import * as simpleMode from 'codemirror/addon/mode/simple'; //do not remove despite unused warning
+import { paragraphKeywords, secretTag } from "../../lib/editor/text"
 export { defineAlloyMode };
 
 function defineAlloyMode() {
+    let keywords = paragraphKeywords+"|one|lone|none|some|abstract|all|iff|but|else|extends|set|implies|module|open|and|disj|for|in|no|or|as|Int|String|sum|exactly|iden|let|not|univ"
+    let tag = secretTag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     CodeMirror.defineSimpleMode('alloy', {
         start: [{
-            regex: /(\W)(abstract|fun|all|iff|check|but|else|assert|extends|set|fact|implies|module|open|sig|and|disj|for|in|no|or|as|Int|pred|sum|exactly|iden|let|not|run|univ)(?:\b)/,
+            regex: `(\\W)(${keywords})(?:\\b)`,
             token: [null, 'keyword'],
         }, {
-            regex: /(abstract|fun|all|iff|check|but|else|assert|extends|set|fact|implies|module|open|sig|and|disj|for|in|no|or|as|Int|pred|sum|exactly|iden|let|not|run|univ)(?:\b)/,
+            regex: `(${keywords})(?:\\b)`,
             token: 'keyword',
             sol: true,
         }, {
-            regex: /(\W)(one|lone|none|some)(?:\b)/,
-            token: [null, 'atom'],
-        }, {
-            regex: /(one|lone|none|some)(?:\b)/,
-            token: 'atom',
-            sol: true,
-        }, {
-            regex: /^\/\/SECRET$/mg,
+            regex: new RegExp(`^${tag}$`,'mg'),
             token: 'secret',
             sol: true,
         }, {
@@ -34,7 +29,7 @@ function defineAlloyMode() {
             token: 'comment',
             next: 'comment', // Jump to comment mode.
         }, {
-            regex: /(\+\+ )|=>|=<|->|>=|\|\||<:|:>/,
+            regex: /(\+\+ )|=>|<=>|\+\+|=<|->|>=|\|\||<:|:>|&&|!=|\+|-|&|\.|~|\*|\^|!|#/,
             token: 'operator',
         }, {
             // Line comment.

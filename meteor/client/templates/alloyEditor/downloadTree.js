@@ -2,8 +2,8 @@ import {
     displayError
 } from "../../lib/editor/feedback"
 
-function downloadTree() {
-    let linkId = Router.current().data()._id
+function processTree() {
+    let linkId = Router.current().params._id
     Meteor.call("downloadTree", linkId, (err, res) => {
         if (err) return displayError(err)
         let d = new Date()
@@ -26,7 +26,9 @@ function descendantsToTree(res) {
     let hashmap = {}
     ids.forEach(id => hashmap[id] = []);
     descendants.forEach(model => {
-        hashmap[model.derivationOf].push(model)
+        // the root may derive from other model
+        if (hashmap[model.derivationOf])
+            hashmap[model.derivationOf].push(model)
     });
     //depth first search to obtain recursive tree structure
     let current, queue = [root]
@@ -67,6 +69,6 @@ function lz(s) {
     return ('0' + s).slice(-2)
 }
 export {
-    downloadTree,
+    processTree,
     descendantsToTree
 }

@@ -1,23 +1,32 @@
 import {
-    extractSecrets
-} from "../lib/secrets"
-/**
- * Meteor method to get a model instance
- * This will call the API (webService)
- * @param code the Alloy code to validate
- * @param instanceNumber the index of the instance to retrieve
- * @param commandLabel (alloy commands [run, check, assert, ...])
- * @param last_id the model this one derives from
- * @param from_private false means it was loaded from public link and must retrieve //SECRET code
- * @returns Object with the instance data
- */
+    extractSecrets,
+    containsValidSecret
+} from "../../lib/editor/text"
+
 Meteor.methods({
-    getInstances: function(code, commandLabel, last_id, original, from_private) {
+    /**
+      * Meteor method to execute the current model and get model instances.
+      * This will call the Alloy API (webService). If the model contains
+      * secrets and the previous didn't (if any), will become a new derivation
+      * root (although it still registers the derivation).
+      * 
+      * @param {String} code the Alloy model to execute
+      * @param {Number} commandIndex the index of the command to execute
+      * @param {Boolean} commandType whether the command was a run (true) or
+      *     check (false)
+      * @param {String} currentModelId the id of the current model (from which
+      *     the new will derive)
+      * 
+      * @returns the instance data and the id of the new saved model
+      */
+    getInstances: function(code, commandIndex, commandType, currentModelId) {
         return new Promise((resolve, reject) => {
+
+            // if no secrets, try to extract from original
             let code_with_secrets = code
-            if (from_private === false) { //if public link was used, load secrets
-                //load original model, extract secrets and append to code
-                code_with_secrets = code + extractSecrets(Model.findOne(original).code).secret
+            if (currentModelId && !containsValidSecret(code)) {
+                let o = Model.findOne(currentModelId).original
+                code_with_secrets = code + extractSecrets(Model.findOne(o).code).secret                    
             }
 
             // call webservice to get instances
@@ -25,38 +34,51 @@ Meteor.methods({
                 data: {
                     model: code_with_secrets,
                     numberOfInstances: Meteor.settings.env.MAX_INSTANCES,
-                    commandLabel: commandLabel
+                    commandIndex: commandIndex
                 }
             }, (error, result) => {
                 if (error) reject(error)
 
                 // handle result (unsat vs sat)
+                let strType = commandType ? "run" : "check"
                 let content = JSON.parse(result.content);
-                if (content.unsat) { // no counter-examples found
-                    content.commandType = "check";
-                } else { // counter-examples found
-                    Object.keys(content).forEach(k => {
-                        content[k].commandType = "check";
-                    });
-                }
-
+                // if unsat, still list with single element
+                let sat
+                Object.keys(content).forEach(k => {
+                    content[k].commandType = commandType;
+                    sat = content[k].unsat;
+                });
+                
                 // save executed model to database
                 let new_model = {
-                    code: code, // should not be code_with_secrets
-                    command: commandLabel,
-                    sat: !!content.unsat, // sat means there was no counter-example (!! is for bool)
-                    time: new Date().toLocaleString()
+                    // original code, without secrets
+                    code: code,
+                    command: commandIndex,
+                    sat: sat, 
+                    time: new Date().toLocaleString(),
+                    derivationOf: currentModelId,
                 }
-                // optional params explictly to avoid_idnull
-                if (last_id) new_model.derivationOf = last_id
-                if (original) new_model.original = original
-                // insert
-                let model_id = Model.insert(new_model);
+
+                // insert the new model
+                let new_model_id = Model.insert(new_model);
+
+                let original
+                // if the model has secrets and the previous hadn't, then it is a new root
+                if (!currentModelId || (containsValidSecret(code) && !containsValidSecret(Model.findOne(currentModelId).code))) {
+                    original = new_model_id
+                } 
+                // otherwise inherit the root
+                else {
+                    original = Model.findOne(currentModelId).original
+                }
+
+                // update the root
+                Model.update({ _id : new_model_id },{$set: {original : original}})
 
                 // resolve the promise
                 resolve({
                     instances: content,
-                    last_id: model_id
+                    newModelId: new_model_id
                 });
             });
         })

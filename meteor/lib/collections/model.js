@@ -1,6 +1,13 @@
 /**
- * Models created through the editor feature.
- * An Alloy model, with the code
+ * Alloy models created through the editor feature. A model may be derived
+ * from another one, and also store the original root for efficiency purposes.
+ *
+ * This original model should only be udpated when a model with secrets is
+ * shared (meaning that public versions always refer to the original model
+ * unless new secrets are introduced).
+ *
+ * Models are created when executed or shared. If created when executed,
+ * stores additional information.
  */
 
 Model = new Meteor.Collection('Model');
@@ -9,38 +16,43 @@ Model.attachSchema(new SimpleSchema({
     _id: {
         type: String
     },
-    code: { // has all of the code
+    /** the complete code of the model. */
+    code: {
         type: String
     },
-    derivationOf: { // which model does it derive from (null if original)
+    /** which model does it derive from (null if original).*/
+    derivationOf: { 
         type: String,
         optional: true
     },
     /**
-     * which model does it originally derive from
-     * different from derivation, as this is the original model
-     * and remains the same after derivation to preserve the
-     * original SECRETs
-     * if a user shares a model it is considered the new original
-     * and all the previous secrets are forgotten
+     * the root of the derivation tree. Different from derivation, as this is
+     * the original model and remains the same after derivation to preserve
+     * the original secrets. Should only change when a model with secrets is
+     * shared (i.e., sharing public versions of a model with secrets should
+     * not break the derivaton).
      */
     original: {
         type: String,
         optional: true
     },
     /**
-     * optional field for the command selected when model was created.
-     * genUrl will not set command
-     * execute will set the command
+     * optional field for the index of the executed command, if created by
+     * execution.
      */
     command: {
-        type: String,
+        type: Number,
         optional: true
     },
-    sat: { // was the command satisfied?
+    /**
+     * optional field, whether the command was satisfiable, if created by
+     * execution.
+     */
+    sat: { 
         type: Boolean,
         optional: true
     },
+    /** the timestamp. */
     time: {
         type: String,
     },

@@ -5,6 +5,8 @@ import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -19,6 +21,7 @@ import org.json.JSONObject;
 
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.Err;
+import edu.mit.csail.sdg.alloy4.ErrorWarning;
 import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.ExprVar;
 import edu.mit.csail.sdg.ast.Sig;
@@ -43,62 +46,82 @@ public class AlloyGetInstances {
 	@Produces("text/json")
 	public Response doGet(String body) throws IOException {
 		InstancesRequest req = parseJSON(body);
-		A4Reporter rep = new A4Reporter();
+		List<ErrorWarning> warnings = new ArrayList<ErrorWarning>();
+		A4Reporter rep = new A4Reporter() {
+			public void warning (ErrorWarning msg) {
+				warnings.add(msg);
+   			}
+		};
 		File tempFile = File.createTempFile("a4f", "als");
 		tempFile.deleteOnExit();
 		CompModule world;
 
 		try {
 			world = CompUtil.parseEverything_fromString(rep, req.model);			
+		} catch (Err e) {
+			System.out.println(e.getMessage());
+			JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
+			instanceJSON.add("alloy_error", true);
+			instanceJSON.add("msg", e.msg);
+			instanceJSON.add("line", e.pos.y);
+			instanceJSON.add("column", e.pos.x);
+			return Response.ok(instanceJSON.build().toString()).build();
 		} catch (Exception e) {
-			return Response.ok("{\"syntax_error\": true}").build();
+			JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
+			System.out.println(e.getMessage());
+			instanceJSON.add("alloy_error", true);
+			instanceJSON.add("msg", e.getMessage());
+			return Response.ok(instanceJSON.build().toString()).build();
 		}
 
 		JsonArrayBuilder solsArrayJSON = Json.createArrayBuilder();
 		
 		A4Options opt = new A4Options();
 		opt.solver = A4Options.SatSolver.SAT4J;
-		String res = "ups";
-		for (Command command : world.getAllCommands()) {
-			if (command.label.equals(req.commandLabel)) {
+		String res = "";
+		Command command = world.getAllCommands().get(req.commandIndex);
+		A4Solution ans;
+		try {
+			ans = TranslateAlloyToKodkod.execute_command(rep, world.getAllReachableSigs(), command, opt);
 
-				A4Solution ans;
+			if (ans.satisfiable()) {
+
+				A4Solution aux = ans;
 				try {
-					ans = TranslateAlloyToKodkod.execute_command(rep, world.getAllReachableSigs(), command, opt);
-
-					if (ans.satisfiable()) {
-
-						A4Solution aux = ans;
-						try {
-							for (int n = 0; n < req.numberOfInstances && aux.satisfiable(); n++) {
-								UUID uuid = UUID.randomUUID();
-								solsArrayJSON.add(answerToJson(uuid, aux));
-								RestApplication.answers.put(uuid, aux);
-								ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-								scheduler.schedule(new Runnable() {
-									public void run() {
-										RestApplication.answers.remove(uuid);
-									}
-								}, 7200, TimeUnit.SECONDS);
-								aux = aux.next();
+					for (int n = 0; n < req.numberOfInstances && aux.satisfiable(); n++) {
+						UUID uuid = UUID.randomUUID();
+						solsArrayJSON.add(answerToJson(uuid, aux, warnings));
+						RestApplication.answers.put(uuid, aux);
+						ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+						scheduler.schedule(new Runnable() {
+							public void run() {
+								RestApplication.answers.remove(uuid);
 							}
-						} catch (Exception e) {
-							// this.iteration--;
-							System.out.println("There probably aren't that many solutions!");
-							res = e.getMessage();
-						}
-						res = solsArrayJSON.build().toString();
-					} else {
-						res = "{\"unsat\": true}";
+						}, 7200, TimeUnit.SECONDS);
+						aux = aux.next();
 					}
-
-				} catch (Err e) {
-					System.out.println(e.getMessage());
+				} catch (Exception e) {
+					// this.iteration--;
+					System.out.println("There probably aren't that many solutions!");
+					res = e.getMessage();
 				}
+				res = solsArrayJSON.build().toString();
+			} else {
+				UUID uuid = UUID.randomUUID();
+				res = solsArrayJSON.add(answerToJson(uuid, ans, warnings)).build().toString();
 
 			}
 
+		} catch (Err e) {
+			System.out.println(e.getMessage());
+			JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
+			instanceJSON.add("alloy_error", true);
+			instanceJSON.add("msg", e.msg);
+			instanceJSON.add("line", e.pos.y);
+			instanceJSON.add("column", e.pos.x);
+			return Response.ok(instanceJSON.build().toString()).build();
 		}
+
 		return Response.ok(res).build();
 	}
 
@@ -108,16 +131,24 @@ public class AlloyGetInstances {
 
 		req.model = jo.getString("model");
 		req.numberOfInstances = jo.getInt("numberOfInstances");
-		req.commandLabel = jo.getString("commandLabel");
+		req.commandIndex = jo.getInt("commandIndex");
 
 		return req;
 	}
 
-	public JsonObject answerToJson(UUID uuid, A4Solution answer) {
+	public JsonObject answerToJson(UUID uuid, A4Solution answer, List<ErrorWarning> warns) {
 		JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
 
 		if (!answer.satisfiable()) {
 			instanceJSON.add("unsat", "true");
+
+			if (warns.size() > 0) {
+				instanceJSON.add("warning_error", true);
+				instanceJSON.add("msg", warns.get(0).msg);
+				instanceJSON.add("line", warns.get(0).pos.y);
+				instanceJSON.add("column", warns.get(0).pos.x);
+			}
+
 			return instanceJSON.build();
 		}
 
@@ -147,6 +178,13 @@ public class AlloyGetInstances {
 			instanceJSON.add("fields", fieldsJSON);
 
 			instanceJSON.add("skolem", skolemsToJSON(answer));
+
+			if (warns.size() > 0) {
+				instanceJSON.add("warning_error", true);
+				instanceJSON.add("msg", warns.get(0).msg);
+				instanceJSON.add("line", warns.get(0).pos.y);
+				instanceJSON.add("column", warns.get(0).pos.x);
+			}
 
 			return instanceJSON.build();
 		} catch (Err er) {

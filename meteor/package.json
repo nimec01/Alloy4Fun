@@ -12,7 +12,7 @@
         "@babel/runtime": "^7.1.5",
         "classie": "^1.0.0",
         "codemirror": "^5.42.2",
-        "cytoscape": "2.7.14",
+        "cytoscape": "^2.7.14",
         "meteor-node-stubs": "^0.4.1",
         "qtip2": "^3.0.3",
         "simpl-schema": "^1.5.3"
@@ -53,9 +53,15 @@
             "no-underscore-dangle": "off",
             "no-undef": "off",
             "no-plusplus": "off",
-            "semi": ["error", "never"],
+            "semi": [
+                "error",
+                "never"
+            ],
             "no-var": "error",
-            "comma-dangle": ["error", "never"],
+            "comma-dangle": [
+                "error",
+                "never"
+            ],
             "object-curly-newline": [
                 "error",
                 {

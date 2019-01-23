@@ -5,44 +5,58 @@ import {
     Link
 } from '../../lib/collections/link'
 import {
+    extractSecrets,
     containsValidSecret
 } from "../../lib/editor/text"
 
-/**
- * Meteor method to get a model share URL
- * Stores the model specified in the function argument
- * @return The 'id' of the model link, used in Share Model option
- */
 Meteor.methods({
-    genURL: function(code, lastId) {
-        // A Model is always created, regardless of having secrets or not
+    /**
+      * Meteor method to get persistent links to share an Alloy model. Only
+      * generates private link if secrets are present. If the model contains
+      * secrets, will become a new derivation root (although it still
+      * registers the derivation).
+      * 
+      * @param {String} code the Alloy model to be shared
+      * @param {String} currentModelId the id of the current model
+      * 
+      * @return The 'id' of the model link, used in Share Model option
+      */
+    genURL: function(code, currentModelId) {
+        // a new model is always created, regardless of having secrets or not
         let model = {
             code: code,
-            time: new Date().toLocaleString()
+            time: new Date().toLocaleString(),
+            derivationOf: currentModelId
         }
-        // explicitly set optional to avoid nulls
-        if (lastId) model.derivationOf = lastId
-        // insert
+
+        // insert new model
         let modelId = Model.insert(model);
 
-        //Generate the public link
+        // generate the public link
         let publicLinkId = Link.insert({
             model_id: modelId,
             private: false
         });
 
-        //Generate private link if SECRET is present
+        // generate the private link if secrets are present
         let privateLinkId
+        let original
         if (containsValidSecret(code)) {
+            original = modelId
             privateLinkId = Link.insert({
                 model_id: modelId,
                 private: true
             });
+        } else {
+            original = Model.findOne(currentModelId).original
         }
+
+        Model.update({ _id : modelId },{$set: {original : original}})
 
         return {
             public: publicLinkId,
-            private: privateLinkId, // will be undefined if no secret is present
+            // will be undefined if no secret is present
+            private: privateLinkId,
             last_id: modelId
         }
     }

@@ -15,6 +15,9 @@ import '../server/methods/downloadTree'
 
 import './publications/modelFromLink'
 
+/**
+  If the database is empty, seeds a set of default models after startup.
+*/
 Meteor.startup(() => {
     if (!Model.find().count()) {
         // if there are no models, insert default ones
