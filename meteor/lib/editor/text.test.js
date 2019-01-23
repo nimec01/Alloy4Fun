@@ -20,7 +20,7 @@ describe("editor text util functions", function() {
         chai.assert.isFalse(containsValidSecret("something//SECRET\n"))
         chai.assert.isFalse(containsValidSecret("something\n//SECRET\nthis is the secret"))
         chai.assert.isFalse(containsValidSecret("\n//SECRET\nthis is the secret"))
-        chai.assert.isFalse(containsValidSecret("sig a {} //SECRET\n"))
+        chai.assert.isFalse(containsValidSecret("sig a {} //SECRET\nsig b {}"))
     });
     it("identifies valid secrets", function() {
         chai.assert.isTrue(containsValidSecret(" //SECRET\nsig a {}"))
@@ -75,7 +75,8 @@ pred checkStuff{
         chai.assert.equal(res.secret, "")
 
         code = `
-sig A {} //SECRET
+//SECRETs
+sig A {}
 pred checkStuff{
 
 }`
