@@ -49,10 +49,12 @@ function getModelFromLink(linkId) {
 }
 
 /**
-  * Receives an instance id and returns the associated model. Does not remove
-  * secrets.
+  * Receives an instance id and returns the associated model. Does not
+  * distinguish between public or private, will present model as was when
+  * shared.
   *
   * @param {String} instanceId the potential instance id
+  * @return the model associated with the instance
   */
 function getModelFromInstance(instanceId) {
     let instance = Instance.findOne(instanceId)
