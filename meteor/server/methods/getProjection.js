@@ -1,11 +1,14 @@
-/**
- * Meteor method to get a model's projection
- * This will call the API (webService)
- * @param sessionId id of the session
- * @param frameInfo object with information about the frame
- * @return JSON object with the projection
- */
 Meteor.methods({
+    
+    /**
+      * Meteor method to get the projection of an Alloy instance. This will
+      * call the Alloy API (webService).
+      *
+      * @param uuid id of the session
+      * @param frameInfo object with information about the frame
+      *
+      * @return JSON object with the projection
+      */
     getProjection: function(uuid, frameInfo) {
         let type = [];
         for (var key in frameInfo) {

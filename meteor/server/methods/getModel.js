@@ -5,33 +5,41 @@ import {
     extractSecrets,
     getCommandsFromCode
 } from "../../lib/editor/text";
-/**
- * Receives a link (private or public) and returns the corresponding Model
- * with or without the SECRET code
- */
+
 Meteor.methods({
+
     /**
-     * retrieves the Link -> the Model -> extracts Secrets if necessary ->
-     * extracts secret commands -> returns the model
-     * @param {String} id
-     */
+      * Receives an id and returns the corresponding model or instance. If a
+      * link to a model, returns the code with or without code depending on
+      * whether it is a public or private link. If public, stores the secret
+      * commands so that they are still publicly available.
+      *
+      * @param {String} id the document id
+      * @return the respective model or instance
+      */
     getModel: function(id) {
         return getModelFromLink(id) || getModelFromInstance(id)
     }
 })
 
 /**
- * retrieves the Link -> the Model -> extracts Secrets if necessary ->
- * extracts secret commands -> returns the model
- * @param {String} id
- */
+  * Receives a link id and returns the corresponding model. If a
+  * link to a model, returns the code with or without code depending on
+  * whether it is a public or private link. If public, stores the secret
+  * commands so that they are still publicly available.
+  *
+  * @param {String} linkId the potential link id
+  * @return the respective model
+  */
 function getModelFromLink(linkId) {
     let link = Link.findOne(linkId)
     if (!link) return //undefined if link does not exist
     let model = Model.findOne(link.model_id)
     let complete_model = model.code
     if (!link.private) {
+        // remove the secrets
         model.code = extractSecrets(model.code).public
+        // still register secret commands
         let seccms = getCommandsFromCode(extractSecrets(complete_model).secret)
         if (seccms) model.commands = seccms
     }
@@ -41,9 +49,11 @@ function getModelFromLink(linkId) {
 }
 
 /**
- * Does not have to clean SECRETS as share instance sends the code as-is
- * @param {String} instanceId the potential instance id
- */
+  * Receives an instance id and returns the associated model. Does not remove
+  * secrets.
+  *
+  * @param {String} instanceId the potential instance id
+  */
 function getModelFromInstance(instanceId) {
     let instance = Instance.findOne(instanceId)
     if (!instance) return //undefined if instance does not exist

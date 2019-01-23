@@ -11,16 +11,16 @@ import {
 
 Meteor.methods({
     /**
-     Meteor method to get persistent links to share an Alloy model. Only
-     generates private link if secrets are present. If the model contains
-     secrets, will become a new derivation root (although it still registers
-     the derivation).
-
-     @param {String} code the Alloy model to be shared
-     @param {String} currentModelId the id of the current model
-
-     @return The 'id' of the model link, used in Share Model option
-     */
+      * Meteor method to get persistent links to share an Alloy model. Only
+      * generates private link if secrets are present. If the model contains
+      * secrets, will become a new derivation root (although it still
+      * registers the derivation).
+      * 
+      * @param {String} code the Alloy model to be shared
+      * @param {String} currentModelId the id of the current model
+      * 
+      * @return The 'id' of the model link, used in Share Model option
+      */
     genURL: function(code, currentModelId) {
         // a new model is always created, regardless of having secrets or not
         let model = {
