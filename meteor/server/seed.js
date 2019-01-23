@@ -2,6 +2,14 @@ export {
     seedWithModels
 }
 
+import { 
+    secretTag
+} from "../lib/editor/text"
+
+/**
+  Seed the database with a set of default models, with fixed ids so that they
+  can be accessed from a fixed address.
+*/
 function seedWithModels() {
     let initialModels = [{
         publicLink: "3cy7jaB4ESqdb2txK",
@@ -17,7 +25,7 @@ pred Quizz{
 
 }
 
-//SECRET
+${secretTag}
 check Solution {
 	Quizz iff all s:Student | some s.enrolledin
 }`,
@@ -41,7 +49,7 @@ pred Quizz {
     
 }
 
-//SECRET
+${secretTag}
 check Solution {
     Quizz iff {  
     all d:Department | one  Company.isDirectorOf.d and
@@ -67,7 +75,7 @@ pred Quizz {
     
 }   
 
-//SECRET
+${secretTag}
 check Solution{
     Quizz iff {all r:researcher | some r.collaborate and one r.affiliated}
 }`,
@@ -92,7 +100,7 @@ pred Quizz { // "the instructor of a course cannot be enrolled in such course"
 
 }
 
-//SECRET
+${secretTag}
 check Solution{
     Quizz iff {all c:Course | no c.taughtby & c.enrolled}
 }`,
@@ -123,7 +131,7 @@ pred Quizz {
 }
 
 
-//SECRET
+${secretTag}
 check Solution{
     Quizz iff (courses = ~enrolled)
 }`,
@@ -158,11 +166,11 @@ sig Call {
 pred Inv1 { // A phone number cannot belong to two different contacts
 
 }
-//SECRET
+${secretTag}
 pred Inv1' {
     all n : Number | lone phones.n	
 }
-//SECRET
+${secretTag}
 check Inv1OK {
     (Inv2' and Inv3' and Inv4') implies (Inv1 iff Inv1')
 }
@@ -170,12 +178,12 @@ check Inv1OK {
 pred Inv2 { // Every called number belongs to a contact
 
 }
-//SECRET
+${secretTag}
 pred Inv2' {
     Call.number in Contact.phones
 }
 
-//SECRET
+${secretTag}
 check Inv2OK {
     (Inv1' and Inv3' and Inv4') implies (Inv2 iff Inv2')
 }
@@ -183,11 +191,11 @@ check Inv2OK {
 pred Inv3 { // Simultaneous calls cannot exist
 
 }
-//SECRET
+${secretTag}
 pred Inv3' {
     all t : Time | lone time.t	
 }
-//SECRET
+${secretTag}
 check Inv3OK {
     (Inv1' and Inv2' and Inv4') implies (Inv3 iff Inv3')
 }
@@ -195,11 +203,11 @@ check Inv3OK {
 pred Inv4 { // All calls were made in the past
 
 }
-//SECRET
+${secretTag}
 pred Inv4' {
     all c : Call | c.time in Now.prevs
 }
-//SECRET
+${secretTag}
 check Inv4OK {
     (Inv1' and Inv2' and Inv3') implies (Inv4 iff Inv4')
 }`,
@@ -227,11 +235,11 @@ sig Course {
 pred Inv1 { // Each student must be enrolled in at least one course
 
 }
-//SECRET
+${secretTag}
 pred Inv1' {
     all s : Student | some enrolled.s	
 }
-//SECRET
+${secretTag}
 check Inv1OK {
     (Inv2' and Inv3' and Inv4' and Inv5') implies (Inv1 iff Inv1')
 }
@@ -239,11 +247,11 @@ check Inv1OK {
 pred Inv2 { // All the members of a team are enrolled in the respective courses
 
 }
-//SECRET
+${secretTag}
 pred Inv2' {
     all c : Course | c.teams.members in c.enrolled
 }
-//SECRET
+${secretTag}
 check Inv2OK {
     (Inv1' and Inv3' and Inv4' and Inv5') implies (Inv2 iff Inv2')
 }
@@ -251,11 +259,11 @@ check Inv2OK {
 pred Inv3 { // Only enrolled students can have a grade in a course
 
 }
-//SECRET
+${secretTag}
 pred Inv3' {
     all c : Course | c.grade in c.enrolled -> Grade
 }
-//SECRET
+${secretTag}
 check Inv3OK {
     (Inv1' and Inv2' and Inv4' and Inv5') implies (Inv3 iff Inv3')
 }
@@ -264,11 +272,11 @@ pred Inv4 {
 // Each student enrolled in a course belongs to exactly one of its teams
 
 }
-//SECRET
+${secretTag}
 pred Inv4' {
     all c : Course, s : c.enrolled | one (c.teams & members.s)
 }
-//SECRET
+${secretTag}
 check Inv4OK {
     (Inv1' and Inv2' and Inv3' and Inv5') implies (Inv4 iff Inv4')
 }
@@ -276,11 +284,11 @@ check Inv4OK {
 pred Inv5 { // All members of a team that already have been graded have the same grade
 
 }
-//SECRET
+${secretTag}
 pred Inv5' {
     all c : Course, t : c.teams | lone (t.members).(c.grade)
 }
-//SECRET
+${secretTag}
 check Inv5OK {
     (Inv1' and Inv2' and Inv3' and Inv4') implies (Inv5 iff Inv5')
 }`,
@@ -309,11 +317,11 @@ sig Block { pointer : one Addr }
 pred Inv1 { // Each memory address is either free or allocated to a block
 
 }
-//SECRET
+${secretTag}
 pred Inv1' {
     Free = Addr-allocated.Block
 }
-//SECRET
+${secretTag}
 check Inv1OK {
     (Inv2' and Inv3' and Inv4') implies (Inv1 iff Inv1')
 }
@@ -321,11 +329,11 @@ check Inv1OK {
 pred Inv2 { // A block pointer is one of its allocated addresses
 
 }
-//SECRET
+${secretTag}
 pred Inv2' {
     all b : Block | b.pointer in allocated.b
 }
-//SECRET
+${secretTag}
 check Inv2OK {
     (Inv1' and Inv3' and Inv4') implies (Inv2 iff Inv2')
 }
@@ -334,11 +342,11 @@ pred Inv3 {
 // All memory addresses allocated to a block are contiguous
 
 }
-//SECRET
+${secretTag}
 pred Inv3' {
     all b : Block, x,y : allocated.b | (x.nexts & y.prevs) in allocated.b
 }
-//SECRET
+${secretTag}
 check Inv3OK {
     (Inv1' and Inv2' and Inv4') implies (Inv3 iff Inv3')
 }
@@ -347,11 +355,11 @@ pred Inv4 {
 // The pointer to a block is smaller then all its allocated addresses
 
 }
-//SECRET
+${secretTag}
 pred Inv4' {
     all b : Block, a : allocated.b | lte[b.pointer,a]
 }
-//SECRET
+${secretTag}
 check Inv4OK {
     (Inv1' and Inv2' and Inv3') implies (Inv4 iff Inv4')
 }`,
@@ -377,11 +385,11 @@ sig User {
 pred Inv1 { // Every auction belongs to an user
 
 }
-//SECRET
+${secretTag}
 pred Inv1' {
     Auction in User.auctions
 }
-//SECRET
+${secretTag}
 check Inv1OK {
     (Inv2' and Inv3') implies (Inv1 iff Inv1')
 }
@@ -389,11 +397,11 @@ check Inv1OK {
 pred Inv2 { // An user cannot bid on its own auctions
 
 }
-//SECRET
+${secretTag}
 pred Inv2' {
     all u : User | no u.auctions & u.bids.Bid
 }
-//SECRET
+${secretTag}
 check Inv2OK {
     (Inv1' and Inv3') implies (Inv2 iff Inv2')
 }
@@ -401,11 +409,11 @@ check Inv2OK {
 pred Inv3 { // All the bids in an auction are different
 
 }
-//SECRET
+${secretTag}
 pred Inv3' {
     all a : Auction, b : Bid | lone (bids.b).a
 }
-//SECRET
+${secretTag}
 check Inv3OK {
     (Inv1' and Inv2') implies (Inv3 iff Inv3')
 }`,
@@ -430,11 +438,11 @@ sig Name {}
 pred Inv1 { // The object class has no instance variables
 
 }
-//SECRET
+${secretTag}
 pred Inv1' {
     no Object.vars
 }
-//SECRET
+${secretTag}
 check Inv1OK {
     (Inv2' and Inv3' and Inv4') implies (Inv1 iff Inv1')
 }
@@ -442,12 +450,12 @@ check Inv1OK {
 pred Inv2 { // All classes except Object have a superclass
 
 }
-//SECRET
+${secretTag}
 pred Inv2' {
     all c : Class - Object | one c.super
     no Object.super
 }
-//SECRET
+${secretTag}
 check Inv2OK {
     (Inv1' and Inv3' and Inv4') implies (Inv2 iff Inv2')
 }
@@ -455,11 +463,11 @@ check Inv2OK {
 pred Inv3 { // A class cannot declare two instance variables with the same name
 
 }
-//SECRET
+${secretTag}
 pred Inv3' {
     all c : Class, disj x,y : c.vars | x.name != y.name
 }
-//SECRET
+${secretTag}
 check Inv3OK {
     (Inv1' and Inv2' and Inv4') implies (Inv3 iff Inv3')
 }
@@ -467,11 +475,11 @@ check Inv3OK {
 pred Inv4 { // A class cannot inherit from itself
 
 }
-//SECRET
+${secretTag}
 pred Inv4' {
     all c : Class | c not in c.^super
 }
-//SECRET
+${secretTag}
 check Inv4OK {
     (Inv1' and Inv2' and Inv3') implies (Inv4 iff Inv4')
 }`,
@@ -505,11 +513,11 @@ sig Accepted in Article {}
 pred Inv1 { // Each article has at most one review by each person
 
 }
-//SECRET
+${secretTag}
 pred Inv1' {
     all a : Article, p : Person | lone p.(a.reviews)
 }
-//SECRET
+${secretTag}
 check Inv1OK {
     (Inv2' and Inv3' and Inv4') implies (Inv1 iff Inv1')
 }
@@ -517,11 +525,11 @@ check Inv1OK {
 pred Inv2 { // An article cannot be reviewed by its authors
 
 }
-//SECRET
+${secretTag}
 pred Inv2' {
     all a : Article | no a.reviews.Decision & a.authors
 }
-//SECRET
+${secretTag}
 check Inv2OK {
     (Inv1' and Inv3' and Inv4') implies (Inv2 iff Inv2')
 }
@@ -529,11 +537,11 @@ check Inv2OK {
 pred Inv3 { // All accepted articles must have at least one review
 
 }
-//SECRET
+${secretTag}
 pred Inv3' {
     all a : Accepted | some a.reviews
 }
-//SECRET
+${secretTag}
 check Inv3OK {
     (Inv1' and Inv2' and Inv4') implies (Inv3 iff Inv3')
 }
@@ -541,11 +549,11 @@ check Inv3OK {
 pred Inv4 { // All articles with an Accept decision are automatically accepted
     
 }
-//SECRET
+${secretTag}
 pred Inv4' {
     (reviews.Accept).Person in Accepted
 }
-//SECRET
+${secretTag}
 check Inv4OK {
     (Inv1' and Inv2' and Inv3') implies (Inv4 iff Inv4')
 }`,
@@ -583,11 +591,11 @@ sig Robot {
 pred Inv1 { // A component requires at least one part
 
 }
-//SECRET
+${secretTag}
 pred Inv1' {
     all c : Component | some c.parts
 }
-//SECRET
+${secretTag}
 check Inv1OK {
     (Inv2' and Inv3' and Inv4') implies (Inv1 iff Inv1')
 }
@@ -595,11 +603,11 @@ check Inv1OK {
 pred Inv2 { // A component cannot be a part of itself
 
 }
-//SECRET
+${secretTag}
 pred Inv2' {
     all c : Component | c not in c.^parts
 }
-//SECRET
+${secretTag}
 check Inv2OK {
     (Inv1' and Inv3' and Inv4') implies (Inv2 iff Inv2')
 }
@@ -607,11 +615,11 @@ check Inv2OK {
 pred Inv3 { // The position where a component is assembled must have at least one robot
 
 }
-//SECRET
+${secretTag}
 pred Inv3' {
     all c : Component | some position.(c.position) & Robot
 }
-//SECRET
+${secretTag}
 check Inv3OK {
     (Inv1' and Inv2' and Inv4') implies (Inv3 iff Inv3')
 }
@@ -619,11 +627,11 @@ check Inv3OK {
 pred Inv4 { // The parts required by a component cannot be assembled in a later position
     
 }
-//SECRET
+${secretTag}
 pred Inv4' {
     all c : Component, p : c.parts & Component | lte[p.position,c.position]
 }
-//SECRET
+${secretTag}
 check Inv4OK {
     (Inv1' and Inv2' and Inv3') implies (Inv4 iff Inv4')
 }`,
@@ -661,11 +669,11 @@ sig Work {
 pred Inv1 { // The works publicly visible in a curriculum must be part of its profile
 
 }
-//SECRET
+${secretTag}
 pred Inv1' {
     all u : User | u.visible in u.profile
 }
-//SECRET
+${secretTag}
 check Inv1OK {
     (Inv2' and Inv3' and Inv4') implies (Inv1 iff Inv1')
 }
@@ -673,11 +681,11 @@ check Inv1OK {
 pred Inv2 { // An user profile can only have works added by himself or some external institution
 
 }
-//SECRET
+${secretTag}
 pred Inv2' {
     all u : User | u.profile.source in Institution+u
 }
-//SECRET
+${secretTag}
 check Inv2OK {
     (Inv1' and Inv3' and Inv4') implies (Inv2 iff Inv2')
 }
@@ -685,11 +693,11 @@ check Inv2OK {
 pred Inv3 { // The works added to a profile by a given source cannot have common identifiers
 
 }
-//SECRET
+${secretTag}
 pred Inv3' {
     all u : User, disj x,y : u.profile | x.source = y.source implies no (x.ids & y.ids)
 }
-//SECRET
+${secretTag}
 check Inv3OK {
     (Inv1' and Inv2' and Inv4') implies (Inv3 iff Inv3')
 }
@@ -697,11 +705,11 @@ check Inv3OK {
 pred Inv4 { // The profile of an user cannot have two visible versions of the same work
     
 }
-//SECRET
+${secretTag}
 pred Inv4' {
     all u : User, disj x,y : u.visible | x not in y.^(ids.~ids)
 }
-//SECRET
+${secretTag}
 check Inv4OK {
     (Inv1' and Inv2' and Inv3') implies (Inv4 iff Inv4')
 }`,
@@ -725,30 +733,30 @@ pred Ring { // The graph is a single ring, with edges pointing to successors
 pred Tree { // The graph is a single tree, with edges pointing to parents
 
 }
-//SECRET
+${secretTag}
 sig Node {
     Edge : set Node
 }
-//SECRET
+${secretTag}
 pred Dag' {
     all n : Node | n not in n.^Edge
 }
-//SECRET
+${secretTag}
 check DagOK { Dag iff Dag' }
-//SECRET
+${secretTag}
 pred Ring' {
     all n : Node | one n.Edge
     all n : Node | Node in n.^Edge
 }
-//SECRET
+${secretTag}
 check RingOK { Ring iff Ring' }
-//SECRET
+${secretTag}
 pred Tree' {
     Dag'
     all n : Node | lone n.Edge
     some n : Node | Node-n in ^Edge.n
 }
-//SECRET
+${secretTag}
 check TreeOk { Tree iff Tree' }`,
             time: new Date().toLocaleString()
         }
@@ -766,7 +774,7 @@ pred Quizz {
     // A Person cannot be simultaneous man and woman
 }
 
-//SECRET
+${secretTag}
 check solution {
     Quizz iff {no Man & Woman and Person = Man + Woman}
 }`,
@@ -787,12 +795,12 @@ pred Insere[g:Graph,p1: Point, p2:Point,g':Graph] {
     
 }
 
-//SECRET
+${secretTag}
 pred InsereSolution[g:Graph,p1: Point, p2:Point,g':Graph] {
 g'.edge = g.edge + p1->p2
 }
 
-//SECRET
+${secretTag}
 check Quizz {
     {all g,g':Graph, p,p': Point | Insere[g,p,p',g'] iff (g'.edge = g.edge + p->p') }
 }`,
@@ -816,12 +824,12 @@ fun remedge [ e: edge, p0:Point] : set edge{
     e - p0->Point - Point->p0
 }
 
-//SECRET
+${secretTag}
 pred biconnectedSol {
     all p0: Point, p1,p2 : Point-p0 | p1 in p2.^(remedge[edge, p0])
 }
 
-//SECRET
+${secretTag}
 check Quizz{
     biconnected iff biconnectedSol
 }`,

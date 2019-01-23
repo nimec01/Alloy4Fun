@@ -1,5 +1,7 @@
 import {
-    containsValidSecret
+    containsValidSecret,
+    secretTag,
+    paragraphKeywords
 } from "../../lib/editor/text"
 
 export {
@@ -7,14 +9,21 @@ export {
 }
 
 /**
- * Given the code of a model, with //SECRET paragrahs, split them into public and private code
- * @param {String} code the complete code
- */
+ Splits the Alloy code of a model between public and private paragraphs.
+ Private paragraphs are preceeded by a secret tag.
+ 
+ @param {String} code the complete code with possible secrets
+ @return the public and private paragraphs of the code 
+*/
 function extractSecrets(code) {
     let secret = "",
         public_code = "";
     let s, i;
-    while (s = code.match(RegExp(/(?:\/\*(?:.|\n)*?\*\/|(\/\/SECRET\s*?\n\s*(?:(?:(?:abstract|one|lone|some)\s+)*sig|fact|assert|check|fun|pred|run)(?:.*|\n)*?)(?:\/\/SECRET\s*?\n\s*)?(?:(?:(?:one|abstract|lone|some)\s+)*sig|fact|assert|check|fun|pred|run|$))/))) {
+    let tag = secretTag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    let pgs = paragraphKeywords
+    let exp = `(?:\\/\\*(?:.|\\n)*?\\*\/|(${tag}\\s*?\\n\\s*(?:(?:(?:abstract|one|lone|some)\\s+)*${pgs})(?:.*|\\n)*?)(?:${tag}\\s*?\\n\\s*)?(?:(?:(?:one|abstract|lone|some)\\s+)*${pgs}|$))`
+    console.log(RegExp(exp))
+    while (s = code.match(RegExp(exp))) {
         if (s[0].match(/^\/\*(?:.|\n)*?\*\/$/)) {
             i = code.indexOf(s[0]);
             public_code += code.substr(0, i + s[0].length);

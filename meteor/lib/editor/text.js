@@ -5,8 +5,15 @@
 
 export {
     containsValidSecret,
-    getCommandsFromCode
+    getCommandsFromCode,
+    secretTag,
+    paragraphKeywords
 }
+
+/** The secret tag used in Alloy code. */
+secretTag = "//SECRET"
+/** The keywords that identify paragraphs. */
+paragraphKeywords = "sig|fact|assert|check|fun|pred|run"
 
 /**
  Checks whether a the code of an Alloy model contains some valid 'secret' tag
@@ -17,7 +24,7 @@ export {
  @return true if there is a secrete tag 
  */
 function containsValidSecret(code) {
-    return (code.indexOf("\n//SECRET\n") != -1 || code.indexOf("//SECRET\n") == 0);
+    return (code.indexOf("\n"+secretTag+"\n") != -1 || code.indexOf(secretTag+"\n") == 0);
 }
 
 /**
