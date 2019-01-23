@@ -15,14 +15,15 @@ import {
 describe("editor text util functions", function() {
     it("identifies invalid secrets", function() {
         chai.assert.isFalse(containsValidSecret("/*\n//SECRET\n*/\nsig a {}"))
-        chai.assert.isFalse(containsValidSecret(" //SECRET\nsig a {}"))
         chai.assert.isFalse(containsValidSecret("something"))
         chai.assert.isFalse(containsValidSecret("something/SECRET"))
         chai.assert.isFalse(containsValidSecret("something//SECRET\n"))
         chai.assert.isFalse(containsValidSecret("something\n//SECRET\nthis is the secret"))
         chai.assert.isFalse(containsValidSecret("\n//SECRET\nthis is the secret"))
+        chai.assert.isFalse(containsValidSecret("sig a {} //SECRET\n"))
     });
     it("identifies valid secrets", function() {
+        chai.assert.isTrue(containsValidSecret(" //SECRET\nsig a {}"))
         chai.assert.isTrue(containsValidSecret("//SECRET\nsig a {}"))
         chai.assert.isTrue(containsValidSecret("//SECRET  \nsig a {}"))
     });
@@ -56,6 +57,25 @@ describe("extracting secrets method", function() {
 
         code = `
 sig A {}
+pred checkStuff{
+
+}`
+        res = extractSecrets(code)
+        chai.assert.equal(res.public, code)
+        chai.assert.equal(res.secret, "")
+
+        code = `
+/* //SECRET */
+sig A {}
+pred checkStuff{
+
+}`
+        res = extractSecrets(code)
+        chai.assert.equal(res.public, code)
+        chai.assert.equal(res.secret, "")
+
+        code = `
+sig A {} //SECRET
 pred checkStuff{
 
 }`
