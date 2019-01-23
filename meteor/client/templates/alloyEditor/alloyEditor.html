@@ -18,7 +18,7 @@
                 {{> textEditor}}
 
                 <!--Command combo box -->
-                <div class="col-xs-4">
+                <div class="col-lg-4 col-md-12 col-xs-12">
                     <div class="command-selection">
                         <label>Command : </label>
                         {{#with getCommands}}
@@ -35,23 +35,16 @@
                 <!-- Previous Instance : prev div
                  Execute : exec div
                  Next Instance : next div -->
-                <div class="col-md-4 col-xs-12">
+                <div class="col-lg-4 col-md-12 col-xs-12">
                     <div class="text-center">
-                        <div id="exec" class="col-xs-6">
+                        <div id="exec" class="col-lg-12 col-md-4 col-xs-4">
                             <button class="cbutton cbutton--effect-boris">
                                 <div class="col-xs-12">
                                     <i class="cbutton__icon fa fa-fw fa-play auto-margin"></i></div>
                                 <span class="cbutton__text">Play</span><i class="legend">Execute</i>
                             </button>
                         </div>
-                        <div id="validateModel" class="col-xs-6">
-                            <button class="cbutton cbutton--effect-boris">
-                                <div class="col-xs-12">
-                                    <i class="cbutton__icon fa fa-fw fa-check auto-margin"></i></div>
-                                <span class="cbutton__text">Validate</span><i class="legend">Validate</i>
-                            </button>
-                        </div>
-                        <div id="genUrl" class="col-xs-6 text-center permalink">
+                        <div id="genUrl" class="col-lg-12 col-md-4 col-xs-4 text-center permalink">
                             <button id="genurlbtn" class="cbutton cbutton--effect-boris ">
                                 <div class="col-xs-12">
                                     <span class="glyphicon glyphicon-link"></span>
@@ -59,7 +52,7 @@
                                 <span class="cbutton__text">GenUrl</span><i class="legend">Share model</i>
                             </button>
                         </div>
-                        <div id="downloadTree" class="col-xs-6">
+                        <div id="downloadTree" class="col-lg-12 col-md-4 col-xs-4">
                             <button class="cbutton cbutton--effect-boris">
                                 <div class="col-xs-12">
                                     <i class="cbutton__icon fa fa-fw fa-arrow-down auto-margin"></i></div>
@@ -70,13 +63,13 @@
                 </div>
 
                 <!-- URL div -->
-                <div id="url-permalink" class="col-md-4 col-xs-12"></div>
+                <div id="url-permalink" class="col-lg-4 col-md-12 col-xs-12"></div>
 
 
-                <div class="col-xs-10 col-xs-offset-1" id="log"></div>
+                <div class="col-lg-6 col-xs-10 col-xs-offset-1" id="log"></div>
 
                 <!-- Instance Viewer -->
-                <div class="col-xs-10 col-xs-offset-1">
+                <div class="col-lg-8 col-lg-offset-0 col-xs-10 col-xs-offset-1">
                     {{drawInstance}}
                     <div id="instanceViewer" class="instanceViewer col-xs-12">
                         {{> frameNavigation}}
@@ -85,16 +78,17 @@
                     </div>
                 </div>
 
-                <div id="prev" class="col-xs-6">
-                    <button class="cbutton cbutton--effect-boris float-right">
+                <div class="text-center">
+                <div id="prev" class="col-lg-4 col-md-4 col-xs-4 col-lg-offset-0  col-md-offset-2 col-xs-offset-2">
+                    <button class="cbutton cbutton--effect-boris">
                         <div class="col-xs-12">
                             <i class="cbutton__icon fa fa-fw fa-step-backward auto-margin"></i></div>
                         <span class="cbutton__text">Backward</span><i class="legend">Previous instance</i>
                     </button>
                 </div>
 
-                <div id="next" class="col-xs-6">
-                    <button class="cbutton cbutton--effect-boris float-left">
+                <div id="next" class="col-lg-4 col-md-4 col-xs-4 col-lg-offset-0 col-md-offset-0 col-xs-offset-0">
+                    <button class="cbutton cbutton--effect-boris">
                         <div class="col-xs-12">
                             <i class="cbutton__icon fa fa-fw fa-step-forward auto-margin"></i></div>
                         <span class="cbutton__text">Forward</span><i class="legend">Next instance</i>
@@ -102,7 +96,7 @@
                 </div>
 
                 <!-- Share Instance */ -->
-                <div class="col-xs-12">
+                <div class="col-lg-4 col-md-12 col-xs-12">
                     <div id="genInstanceUrl" class="text-center permalink">
                         <button id="geninstanceurlbtn" class="cbutton cbutton--effect-boris ">
                             <div class="col-xs-12">
@@ -112,7 +106,8 @@
                         </button>
                     </div>
                 </div>
-                <div id="url-instance-permalink" class="col-xs-12"></div>
+                <div id="url-instance-permalink" class="col-lg-4 col-md-12 col-xs-12"></div>
+                </div>
 
             </div>
             <footer class="footer">
