@@ -15,16 +15,16 @@ import {
 describe("editor text util functions", function() {
     it("identifies invalid secrets", function() {
         chai.assert.isFalse(containsValidSecret("/*\n//SECRET\n*/\nsig a {}"))
-        chai.assert.isFalse(containsValidSecret("//SECRET  \nsig a {}"))
         chai.assert.isFalse(containsValidSecret(" //SECRET\nsig a {}"))
         chai.assert.isFalse(containsValidSecret("something"))
         chai.assert.isFalse(containsValidSecret("something/SECRET"))
         chai.assert.isFalse(containsValidSecret("something//SECRET\n"))
+        chai.assert.isFalse(containsValidSecret("something\n//SECRET\nthis is the secret"))
+        chai.assert.isFalse(containsValidSecret("\n//SECRET\nthis is the secret"))
     });
     it("identifies valid secrets", function() {
         chai.assert.isTrue(containsValidSecret("//SECRET\nsig a {}"))
-        chai.assert.isTrue(containsValidSecret("something\n//SECRET\nthis is the secret"))
-        chai.assert.isTrue(containsValidSecret("\n//SECRET\nthis is the secret"))
+        chai.assert.isTrue(containsValidSecret("//SECRET  \nsig a {}"))
     });
     it("identifies correct commands in code", function() {
         let code = `
