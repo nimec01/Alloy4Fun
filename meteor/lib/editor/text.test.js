@@ -142,6 +142,6 @@ pred checkStuff{
 }`
         res = extractSecrets(code)
         chai.assert.equal(res.public, "\npred checkStuff{\n\n}")
-        chai.assert.equal(res.secret, "//SECRET\nsig A {}\n//SECRET\n")
+        chai.assert.equal(res.secret, "//SECRET\nsig A {} //SECRET\n")
     });
 });
