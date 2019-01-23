@@ -1,19 +1,28 @@
 /**
- * Link merely links to Models.
- * When a challenge is created two links are provided: one public and another private.
- * This corresponds to two Link instances (with different _ids)
- * but both have the same model_id as they both point to same model.
+ * A link creates identifiers to access registed models. The identifier of the
+ * link acts as the address of the resource.
+ *
+ * When a model (with secrets) is shared two links are provided: one public
+ * and another private. This corresponds to two link instances (with different
+ * ids) but both pointing to same model id. If the model has no secrets, only
+ * the public link is created.
  */
+
 Link = new Meteor.Collection('Link');
 
 Link.attachSchema(new SimpleSchema({
     _id: {
         type: String
     },
-    private: { // whether this is a private or public link (shows SECRETs for private)
+    /** 
+      * whether this is a private or public link (will show secrets for
+      * private).
+      */
+    private: { 
         type: Boolean
     },
-    model_id: { // the id of the model associated
+    /** the id of the model to be shared. */
+    model_id: { 
         type: String
     }
 }))

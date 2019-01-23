@@ -1,6 +1,6 @@
 /**
  * Theme that a user specified
- * Must me saved so that shared models can keep the instances appearance
+ * Must be saved so that shared models can keep the instances appearance
  */
 
 Theme = new Meteor.Collection('Theme');
