@@ -6,7 +6,8 @@ import {
     isParagraph,
     containsValidSecret,
     getCommandsFromCode,
-    secretTag
+    secretTag,
+    extractSecrets
 } from "./text"
 /**
  * Default meteor tests for programming principles to be forced

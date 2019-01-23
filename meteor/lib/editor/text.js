@@ -25,7 +25,6 @@ paragraphKeywords = "sig|fact|assert|check|fun|pred|run"
   * @return true if there is a secrete tag 
   */
 function containsValidSecret(code) {
-    console.log(extractSecrets(code))
     return (extractSecrets(code).secret != "")
 }
 
@@ -43,7 +42,6 @@ function extractSecrets(code) {
     let tag = secretTag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     let pgs = paragraphKeywords
     let exp = `(?:\\/\\*(?:.|\\n)*?\\*\/|(${tag}\\s*?\\n\\s*(?:(?:(?:abstract|one|lone|some)\\s+)*${pgs})(?:.*|\\n)*?)(?:${tag}\\s*?\\n\\s*)?(?:(?:(?:one|abstract|lone|some)\\s+)*${pgs}|$))`
-    console.log(RegExp(exp))
     while (s = code.match(RegExp(exp))) {
         if (s[0].match(/^\/\*(?:.|\n)*?\*\/$/)) {
             i = code.indexOf(s[0]);
