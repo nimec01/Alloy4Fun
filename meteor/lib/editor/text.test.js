@@ -55,7 +55,17 @@ describe("extracting secrets method", function() {
         chai.assert.equal(res.secret, "")
         chai.assert.equal(res.public, code)
 
-        code = `
+        code = 
+`sig A {}
+pred checkStuff{
+
+}`
+        res = extractSecrets(code)
+        chai.assert.equal(res.public, code)
+        chai.assert.equal(res.secret, "")
+
+        code = 
+`/* //SECRET */
 sig A {}
 pred checkStuff{
 
@@ -64,44 +74,104 @@ pred checkStuff{
         chai.assert.equal(res.public, code)
         chai.assert.equal(res.secret, "")
 
-        code = `
-/* //SECRET */
-sig A {}
+        code = 
+`//SECRETs
+abstract sig A {}
 pred checkStuff{
 
 }`
         res = extractSecrets(code)
         chai.assert.equal(res.public, code)
         chai.assert.equal(res.secret, "")
-
-        code = `
-//SECRETs
-sig A {}
-pred checkStuff{
-
-}`
+   
+        code = 
+`//SECRET sig A {}`
         res = extractSecrets(code)
         chai.assert.equal(res.public, code)
         chai.assert.equal(res.secret, "")
-    });
+  
+        code = 
+`//SECRET
+`
+        res = extractSecrets(code)
+        chai.assert.equal(res.public, code)
+        chai.assert.equal(res.secret, "")
+
+        code = 
+`//SECRET
+/* sig a {} */
+no sig b {}`
+        res = extractSecrets(code)
+        chai.assert.equal(res.public, code)
+        chai.assert.equal(res.secret, "")
+
+        code = 
+`sig A{} //SECRET sig B {}`
+        res = extractSecrets(code)
+        chai.assert.equal(res.public, code)
+        chai.assert.equal(res.secret, "")
+
+
+    });    
+
+
     it("returns empty public and correct secret", function() {
-        code = `
-//SECRET
+        code = 
+`//SECRET
 sig A {}`
         res = extractSecrets(code)
-        chai.assert.equal(res.public, "\n")
-        chai.assert.equal(res.secret, code.substr(1))
+        chai.assert.equal(res.public, "")
+        chai.assert.equal(res.secret, code)
 
-        code = `
-//SECRET
+        code = 
+`//SECRET
 sig A {}
 //SECRET
 pred checkStuff{
 
 }`
         res = extractSecrets(code)
-        chai.assert.equal(res.public, "\n")
-        chai.assert.equal(res.secret, code.substr(1))
+        chai.assert.equal(res.public, "")
+        chai.assert.equal(res.secret, code)
+
+        code = 
+`//SECRET
+abstract lone sig A {} //SECRET
+pred checkStuff{
+
+}`
+        res = extractSecrets(code)
+        chai.assert.equal(res.public, "")
+        chai.assert.equal(res.secret, code)
+
+        code = 
+`//SECRET
+sig A {} //SECRET 
+pred checkStuff{
+    //SECRET
+}`
+        res = extractSecrets(code)
+        chai.assert.equal(res.public, "")
+        chai.assert.equal(res.secret, code)
+
+        code = 
+`    //SECRET      
+sig A {}     //SECRET 
+pred checkStuff{}`
+        res = extractSecrets(code)
+        chai.assert.equal(res.public, "    ")
+        chai.assert.equal(res.secret, code.substr(4))
+
+        code = 
+`//SECRET
+lone sig A {} //SECRET
+pred checkStuff{
+
+}`
+        res = extractSecrets(code)
+        chai.assert.equal(res.public, "")
+        chai.assert.equal(res.secret, code)
+
 
     });
     it("returns correct public and secret", function() {
@@ -134,14 +204,70 @@ check validQuizz for 5`
         chai.assert.equal(res.public, public_code)
         chai.assert.equal(res.secret, private)
 
-                code = `
-//SECRET
-sig A {} //SECRET
+        code = 
+`//SECRET
+sig A {}
 pred checkStuff{
 
 }`
         res = extractSecrets(code)
-        chai.assert.equal(res.public, "\npred checkStuff{\n\n}")
-        chai.assert.equal(res.secret, "//SECRET\nsig A {} //SECRET\n")
+        chai.assert.equal(res.public, "pred checkStuff{\n\n}")
+        chai.assert.equal(res.secret, "//SECRET\nsig A {}\n")
+
+        code = 
+`//SECRET
+sig A {} //SECRETs
+pred checkStuff{
+
+}`
+        res = extractSecrets(code)
+        chai.assert.equal(res.public, "pred checkStuff{\n\n}")
+        chai.assert.equal(res.secret, "//SECRET\nsig A {} //SECRETs\n")
+
+        code = 
+`//SECRET
+sig A{} sig B {}`
+        res = extractSecrets(code)
+        chai.assert.equal(res.public, "sig B {}")
+        chai.assert.equal(res.secret, "//SECRET\nsig A{} ")
+
+        code = 
+`sig A{} //SECRET sig B {}`
+        res = extractSecrets(code)
+        chai.assert.equal(res.public, code)
+        chai.assert.equal(res.secret, "")
+
+        code = 
+`sig A{}
+    //SECRET    
+    one   sig B {}
+           sig C   {}`
+        res = extractSecrets(code)
+        chai.assert.equal(res.public, "sig A{}\n    sig C   {}")
+        chai.assert.equal(res.secret, "//SECRET    \n    one   sig B {}\n           ")
+
+        code = 
+`//SECRET
+//SECRET
+one sig a {}`
+        res = extractSecrets(code)
+        chai.assert.equal(res.public, "//SECRET\n")
+        chai.assert.equal(res.secret, "//SECRET\none sig a {}")
+
+        code = 
+`//SECRET //SECRET
+sig a {}`
+        res = extractSecrets(code)
+        chai.assert.equal(res.public, "//SECRET ")
+        chai.assert.equal(res.secret, "//SECRET\nsig a {}")        
+
+        code = 
+`/* comment */
+//SECRET
+  sig   a{}
+`
+        res = extractSecrets(code)
+        chai.assert.equal(res.public, "/* comment */\n")
+        chai.assert.equal(res.secret, "//SECRET\n  sig   a{}\n")        
     });
 });
