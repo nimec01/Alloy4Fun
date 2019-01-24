@@ -98,14 +98,6 @@ pred checkStuff{
         chai.assert.equal(res.secret, "")
 
         code = 
-`//SECRET
-/* sig a {} */
-no sig b {}`
-        res = extractSecrets(code)
-        chai.assert.equal(res.public, code)
-        chai.assert.equal(res.secret, "")
-
-        code = 
 `sig A{} //SECRET sig B {}`
         res = extractSecrets(code)
         chai.assert.equal(res.public, code)
@@ -168,6 +160,30 @@ lone sig A {} //SECRET
 pred checkStuff{
 
 }`
+        res = extractSecrets(code)
+        chai.assert.equal(res.public, "")
+        chai.assert.equal(res.secret, code)
+
+        code = 
+`//SECRET
+/* sig a {} */
+lone sig b {}`
+        res = extractSecrets(code)
+        chai.assert.equal(res.public, "")
+        chai.assert.equal(res.secret, code)
+
+        code = 
+`//SECRET  
+  /* sig a {} */
+lone sig b {}`
+        res = extractSecrets(code)
+        chai.assert.equal(res.public, "")
+        chai.assert.equal(res.secret, code)
+
+        code = 
+`//SECRET  
+/* //SECRET */   
+   lone sig b {}`
         res = extractSecrets(code)
         chai.assert.equal(res.public, "")
         chai.assert.equal(res.secret, code)
