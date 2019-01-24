@@ -52,7 +52,37 @@ getAtoms = function (instance) {
     var atoms = [];
     if (instance.atoms){
         instance.atoms.forEach(function (atom) {
-            if (atom.type.toLowerCase().indexOf("this/") > -1) {
+            if (atom.type == "String") {
+                    metaPrimSigs.push({
+                        type: atom.type,
+                        parent: atom.parent,
+                    });
+                    getAtomBorder(atom.type);
+                    getAtomColor(atom.type);
+                    getAtomShape(atom.type);
+                    atom.values.forEach((value) => {
+                        var type = value;
+                        atoms.push(
+                            {
+                                group: 'nodes',
+                                classes: 'multiline-manual',
+                                data: {
+                                    number: value.substr(7,value.length - 8),
+                                    numberBackup: value.substr(7,value.length - 8),
+                                    color: getAtomColor(type),
+                                    shape: getAtomShape(type),
+                                    id: value,
+                                    type: 'String',
+                                    label: 'String',
+                                    dollar: '',
+                                    border: getAtomBorder(type),
+                                    subsetSigs: []
+                                }
+                            });
+                        return atoms;
+                    });
+            }
+            else if (atom.type.toLowerCase().indexOf("this/") > -1) {
                 if (atom.isPrimSig) {
                     metaPrimSigs.push({
                         type: atom.type.split('/')[1],
