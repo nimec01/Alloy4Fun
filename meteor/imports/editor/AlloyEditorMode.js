@@ -21,9 +21,9 @@ function defineAlloyMode() {
             token: 'keyword',
             sol: true,
         }, {
-            regex: new RegExp(`^${tag}$`,'mg'),
+            regex: new RegExp(`\s*${tag}.*`,'mg'),
             token: 'secret',
-            sol: true,
+            sol: false,
         }, {
             regex: /\/\*/,
             token: 'comment',
