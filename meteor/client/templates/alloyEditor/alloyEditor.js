@@ -137,7 +137,7 @@ Template.alloyEditor.events({
 
         Meteor.call("storeInstance", Session.get("last_id"), getCommandIndex(), cy.json(), themeData, handleGenInstanceURLEvent)
     },
-    'click #validateModel'() { // click on the validate button
+    /*'click #validateModel'() { // click on the validate button
         Meteor.call('validate', textEditor.getValue(), (err, res) => {
             if (err) return displayError(err)
             else {
@@ -158,7 +158,7 @@ Template.alloyEditor.events({
                 }
             }
         });
-    },
+    },*/
     'click #downloadTree': processTree
 });
 /* Callbacks added with this method are called once when an instance of Template.alloyEditor is rendered into DOM nodes and put into the document for the first time. */
@@ -395,7 +395,7 @@ function hideButtons() {
     $('#exec > button').prop('disabled', true);
     $('#next > button').prop('disabled', true);
     $('#prev > button').prop('disabled', true);
-    $('#validateModel > button').prop('disabled', true);
+//    $('#validateModel > button').prop('disabled', true);
     $('#downloadTree > button').prop('disabled', true);
     $('.permalink > button').prop('disabled', true);
 }

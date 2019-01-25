@@ -41,20 +41,15 @@ function extractSecrets(code) {
     let s, i;
     let tag = secretTag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     let pgs = paragraphKeywords
-    let exp = `(?:\\/\\*(?:.|\\n)*?\\*\/|(${tag}\\s*?\\n\\s*(?:(?:(?:abstract|one|lone|some)\\s+)*${pgs})(?:.*|\\n)*?)(?:${tag}\\s*?\\n\\s*)?(?:(?:(?:one|abstract|lone|some)\\s+)*${pgs}|$))`
+    let pgd = `(?:(?:one|abstract|lone|some)\\s+)*${pgs}`
+    let exp = `(${tag}\\s*?\\n\\s*(?:\\/\\*(?:.|\\n)*?\\*\\/\\s*\\n)?\\s*(?:${pgd})(?:.|\\n)*?)(?:${tag}\\s*?\\n\\s*)?(?:(?:${pgd})\\s|$)`
     while (s = code.match(RegExp(exp))) {
-        if (s[0].match(/^\/\*(?:.|\n)*?\*\/$/)) {
-            i = code.indexOf(s[0]);
-            public_code += code.substr(0, i + s[0].length);
-            code = code.substr(i + s[0].length);
-        } else {
-            i = code.indexOf(s[0]);
-            public_code += code.substr(0, i);
-            secret += s[1];
-            code = code.substr(i + s[1].length);
-        }
+        i = code.indexOf(s[0]);
+        public_code += code.substr(0, i);
+        secret += s[1];
+        code = code.substr(i + s[1].length);
     }
-    public_code += code;
+    public_code += code; 
     return {
         public: public_code,
         secret: secret
