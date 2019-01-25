@@ -61,19 +61,19 @@ getAtoms = function (instance) {
                     getAtomColor(atom.type);
                     getAtomShape(atom.type);
                     atom.values.forEach((value) => {
-                        var type = value;
+                        var type = value.substr(1,value.length - 2);
                         atoms.push(
                             {
                                 group: 'nodes',
                                 classes: 'multiline-manual',
                                 data: {
-                                    number: value.substr(7,value.length - 8),
-                                    numberBackup: value.substr(7,value.length - 8),
+                                    number: value,
+                                    numberBackup: value,
                                     color: getAtomColor(type),
                                     shape: getAtomShape(type),
                                     id: value,
-                                    type: 'String',
-                                    label: 'String',
+                                    type: "String",
+                                    label: value,
                                     dollar: '',
                                     border: getAtomBorder(type),
                                     subsetSigs: []
@@ -233,17 +233,18 @@ initGraphViewer = function (element) {
                         return color;
                     },
                     'label': function (ele) {
+                        var l = ele.data().label == "String" ? ele.data().number : ele.data().label + ele.data().dollar + ele.data().number;
                         if (!ele.data().attributes || Object.keys(ele.data().attributes).length == 0) {
-                            return ele.data().label + ele.data().dollar + ele.data().number + (ele.data().subsetSigs.length > 0 ? "\n(" + ele.data().subsetSigs.map(getAtomLabel) + ")\n" : "") + (typeof ele.data().skolem != "undefined" ? "\n" + ele.data().skolem : "");
+                            return l + (ele.data().subsetSigs.length > 0 ? "\n(" + ele.data().subsetSigs.map(getAtomLabel) + ")\n" : "") + (typeof ele.data().skolem != "undefined" ? "\n" + ele.data().skolem : "");
                         }
                         else {
                             var attributes = "";
                             for (var i in ele.data().attributes) {
                                 attributes += cy.edges("[relation='" + i + "']")[0].data().label + " : " + ele.data().attributes[i].toString() + "\n";
                             }
-                            return ele.data().label + ele.data().dollar + ele.data().number + (ele.data().subsetSigs.length > 0 ? "\n(" + ele.data().subsetSigs.map(getAtomLabel) + ")\n" : "") + "\n" + attributes + (typeof ele.data().skolem != "undefined" ? "\n" + ele.data().skolem : "");
+                            return l + (ele.data().subsetSigs.length > 0 ? "\n(" + ele.data().subsetSigs.map(getAtomLabel) + ")\n" : "") + "\n" + attributes + (typeof ele.data().skolem != "undefined" ? "\n" + ele.data().skolem : "");
                         }
-                        return `${ele.data().label + ele.data().dollar + ele.data().number + (ele.data().subsetSigs.length > 0 ? `\n(${ele.data().subsetSigs.map(getAtomLabel)})\n` : '')}\n${attributes}${typeof ele.data().skolem !== 'undefined' ? `\n${ele.data().skolem}` : ''}`;
+                        return `${l + (ele.data().subsetSigs.length > 0 ? `\n(${ele.data().subsetSigs.map(getAtomLabel)})\n` : '')}\n${attributes}${typeof ele.data().skolem !== 'undefined' ? `\n${ele.data().skolem}` : ''}`;
                     },
                     'border-style': function (ele) {
                         if (ele.data().subsetSigs.length > 0) {
