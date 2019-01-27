@@ -382,7 +382,7 @@ sig User {
 // You can check their correctness with the different commands and
 // specifying a given invariant you can assume the others to be true.
 
-pred Inv1 { // Every auction belongs to an user
+pred Inv1 { // Every auction belongs to a user
 
 }
 ${secretTag}
@@ -394,7 +394,7 @@ check Inv1OK {
     (Inv2' and Inv3') implies (Inv1 iff Inv1')
 }
 
-pred Inv2 { // An user cannot bid on its own auctions
+pred Inv2 { // A user cannot bid on its own auctions
 
 }
 ${secretTag}
@@ -678,7 +678,7 @@ check Inv1OK {
     (Inv2' and Inv3' and Inv4') implies (Inv1 iff Inv1')
 }
 
-pred Inv2 { // An user profile can only have works added by himself or some external institution
+pred Inv2 { // A user profile can only have works added by himself or some external institution
 
 }
 ${secretTag}
@@ -702,7 +702,7 @@ check Inv3OK {
     (Inv1' and Inv2' and Inv4') implies (Inv3 iff Inv3')
 }
 
-pred Inv4 { // The profile of an user cannot have two visible versions of the same work
+pred Inv4 { // The profile of a user cannot have two visible versions of the same work
     
 }
 ${secretTag}
