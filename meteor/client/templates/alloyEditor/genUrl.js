@@ -9,8 +9,7 @@ import {
     secretTag } 
 from "../../../lib/editor/text"
 export {
-    clickGenUrl,
-    containsValidSecretWithAnonymousCommand
+    clickGenUrl
 }
 
 /**
@@ -20,32 +19,7 @@ function clickGenUrl() {
     if ($("#genURL > button").is(":disabled")) return
 
     let modelToShare = textEditor.getValue();
-    let callGenerate = function() { // reusable function
-        Meteor.call('genURL', modelToShare, Session.get("last_id"), handleGenURLEvent);
-    }
-
-    if (containsValidSecretWithAnonymousCommand(modelToShare)) {
-        swal({
-            title: "This model contains an anonymous Command!",
-            text: "Are you sure you want to share it?",
-            type: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#DD6B55",
-            confirmButtonText: "Yes, share it!",
-            closeOnConfirm: true
-        }, callGenerate)
-    } else callGenerate()
-}
-
-function containsValidSecretWithAnonymousCommand(model) {
-    let lastSecret = 0;
-    while ((i = model.indexOf(secretTag+"\n", lastSecret)) >= 0) {
-        let s = model.substr(i + secretTag + "\n".length).trim();
-        // if the remaning text matches the regex below than it has an anonymous command
-        if (s.match("^(assert|run|check)([ \t\n])*[{]")) return true;
-        lastSecret = i + 1;
-    }
-    return false;
+    Meteor.call('genURL', modelToShare, Session.get("last_id"), handleGenURLEvent);
 }
 
 /* genUrlbtn event handler after genUrl method */
