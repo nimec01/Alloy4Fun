@@ -172,7 +172,6 @@ Template.alloyEditor.onRendered(() => {
         initGraphViewer('instance');
     }
 
-
     buttonsEffects(); //Adds click effects to Buttons
     hideButtons(); //Hide Next, Previous, Run... buttons on startup
 
@@ -270,6 +269,11 @@ function handleExecuteModel (fresh) {
                 $('#instancenav').hide();
                 paragraph.innerHTML = result.commandType ? "No instance found. " + command + " is inconsistent." : "No counter-examples. " + command + " solved!";
                 paragraph.className = result.commandType ? "log-wrong" : "log-complete";
+
+                $('#next > button').prop('disabled', true);
+                $('#prev > button').prop('disabled', true);
+                $("#next").css("display", 'none');
+                $("#prev").css("display", 'none');
             } else {
                 paragraph.innerHTML = result.commandType ? "Instance found. " + command + " is consistent." : "Counter-example found. " + command + " is inconsistent.";
                 paragraph.className = result.commandType ? "log-complete" : "log-wrong";
