@@ -83,7 +83,7 @@ Template.alloyEditor.events({
             });
         } else { // Execute command
             let model = textEditor.getValue();
-            Meteor.call('getInstances', model, commandIndex, isRunSelected(), Session.get("last_id"), handleExecuteModel);
+            Meteor.call('getInstances', model, commandIndex, isRunSelected(), Session.get("last_id"), handleExecuteModel(true));
         }
         // update button states after execution
         $("#exec > button").prop('disabled', true);
@@ -109,16 +109,19 @@ Template.alloyEditor.events({
     'click #next': function (evt) {
         if ($("#next > button").is(":disabled")) return
         if (evt.toElement.id != "next") {
+            if (instanceIndex == maxInstanceNumber-1) {
+                let model = textEditor.getValue();
+                Meteor.call('nextInstances', getCommandIndex(), isRunSelected(), Session.get("last_id"), handleExecuteModel(false));
+                //$("#next > button").prop('disabled', true);
+            }
             let ni = getNextInstance();
             if (typeof ni !== 'undefined') {
                 if (ni.unsat) {
                     $('#next > button').prop('disabled', true);
                     swal("No more satisfying instances!", "", "error");
+                    instanceIndex--;
                 } else {
                     updateGraph(ni);
-                }
-                if (instanceIndex + 1 == maxInstanceNumber) {
-                    $("#next > button").prop('disabled', true);
                 }
                 $("#prev > button").prop('disabled', false);
             }
@@ -213,87 +216,91 @@ Template.alloyEditor.onRendered(() => {
 /* ------------- Server HANDLERS methods && Aux Functions ----------- */
 
 
-function handleExecuteModel(err, result) {
-    if (err) {
-        $('#next > button').prop('disabled', true);
-        $('#prev > button').prop('disabled', true);
-        return displayError(err)
-    }
+function handleExecuteModel (fresh) {
+    return (err, result) => {
+        if (err) {
+            $('#next > button').prop('disabled', true);
+            $('#prev > button').prop('disabled', true);
+            return displayError(err)
+        }
+        Session.set("last_id", result.newModelId) // update the last_id for next derivations
 
-    Session.set("last_id", result.newModelId) // update the last_id for next derivations
+        $.unblockUI();
+        $('#exec > button').prop('disabled', true);
+        $('#url-permalink').empty() //remove previous links
+        $("#genUrl > button").prop('disabled', false); // Restart shareModel option
 
-    $.unblockUI();
-    $('#exec > button').prop('disabled', true);
-    $('#url-permalink').empty() //remove previous links
-    $("#genUrl > button").prop('disabled', false); // Restart shareModel option
+        //clear projection combo box
+        let select = document.getElementsByClassName("framePickerTarget");
+        if (select) select = select[0];
+        if (select) {
+            let length = select.options.length;
+            for (i = 0; i < length; i++) select.remove(0);
+        }
 
-    //clear projection combo box
-    let select = document.getElementsByClassName("framePickerTarget");
-    if (select) select = select[0];
-    if (select) {
-        let length = select.options.length;
-        for (i = 0; i < length; i++) select.remove(0);
-    }
+        $('#instanceViewer').hide();
+        $("#log").empty();
+        let command = $('.command-selection > select option:selected').text();
 
-    $('#instanceViewer').hide();
-    $("#log").empty();
-    let command = $('.command-selection > select option:selected').text();
-
-    result = result.instances
-    storeInstances(result);
-    if (Array.isArray(result))
-        result = result[0];
-       
-    if (result.alloy_error) {
-        let resmsg = result.msg
-        if (result.line)
-            resmsg = resmsg + " (" + result.line + ":" + result.column + ")"
-        resmsg = resmsg + "\n"
-        swal("There was a problem running the model!", resmsg + "Please validate your model.", "error");
-    } else {
-
-        if (result.warning_error) {
+        result = result.instances
+        storeInstances(result, fresh);
+        if (Array.isArray(result))
+            result = result[0];
+           
+        if (result.alloy_error) {
             let resmsg = result.msg
             if (result.line)
                 resmsg = resmsg + " (" + result.line + ":" + result.column + ")"
             resmsg = resmsg + "\n"
-            swal("There is a possible problem with the model!", resmsg, "warning");
-        }
-        let log = document.createElement('div');
-        log.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
-        let paragraph = document.createElement('p');
-
-        if (result.unsat) {
-            $('#instancenav').hide();
-            paragraph.innerHTML = result.commandType ? "No instance found. " + command + " is inconsistent." : "No counter-examples. " + command + " solved!";
-            paragraph.className = result.commandType ? "log-wrong" : "log-complete";
+            swal("There was a problem running the model!", resmsg + "Please validate your model.", "error");
         } else {
-            paragraph.innerHTML = result.commandType ? "Instance found. " + command + " is consistent." : "Counter-example found. " + command + " is inconsistent.";
-            paragraph.className = result.commandType ? "log-complete" : "log-wrong";
-            initGraphViewer('instance');
-            updateGraph(result);
 
-            $("#next").css("display", 'initial');
-            $("#prev").css("display", 'initial');
+            if (result.warning_error) {
+                let resmsg = result.msg
+                if (result.line)
+                    resmsg = resmsg + " (" + result.line + ":" + result.column + ")"
+                resmsg = resmsg + "\n"
+                swal("There is a possible problem with the model!", resmsg, "warning");
+            }
+            let log = document.createElement('div');
+            log.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
+            let paragraph = document.createElement('p');
+
+            if (result.unsat) {
+                $('#instancenav').hide();
+                paragraph.innerHTML = result.commandType ? "No instance found. " + command + " is inconsistent." : "No counter-examples. " + command + " solved!";
+                paragraph.className = result.commandType ? "log-wrong" : "log-complete";
+            } else {
+                paragraph.innerHTML = result.commandType ? "Instance found. " + command + " is consistent." : "Counter-example found. " + command + " is inconsistent.";
+                paragraph.className = result.commandType ? "log-complete" : "log-wrong";
+                initGraphViewer('instance');
+                updateGraph(result);
+
+                $("#next").css("display", 'initial');
+                $("#prev").css("display", 'initial');
+            }
+
+            log.appendChild(paragraph);
+            $("#log")[0].appendChild(log);
+
+            if (result.unsat) { // no counter examples found
+                $('.empty-univ').fadeIn();
+                $('#instanceViewer').hide();
+                $("#genInstanceUrl").hide();
+            }
         }
-
-        log.appendChild(paragraph);
-        $("#log")[0].appendChild(log);
-
-        if (result.unsat) { // no counter examples found
-            $('.empty-univ').fadeIn();
-            $('#instanceViewer').hide();
-            $("#genInstanceUrl").hide();
-        }
-    }
-
-
+};
 }
 
-function storeInstances(allInstances) {
-    instances = allInstances;
-    instanceIndex = 0;
-    maxInstanceNumber = allInstances.length;
+function storeInstances(allInstances,fresh) {
+    if (fresh) {
+        instances = allInstances;
+        instanceIndex = 0;
+        maxInstanceNumber = allInstances.length;
+    } else {
+        instances = instances.concat(allInstances)
+        maxInstanceNumber += allInstances.length;
+    }
 }
 
 function getNextInstance() {

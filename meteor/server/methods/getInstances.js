@@ -21,7 +21,6 @@ Meteor.methods({
       */
     getInstances: function(code, commandIndex, commandType, currentModelId) {
         return new Promise((resolve, reject) => {
-
             // if no secrets, try to extract from original
             let code_with_secrets = code
             if (currentModelId && !containsValidSecret(code)) {
@@ -29,18 +28,29 @@ Meteor.methods({
                 code_with_secrets = code + extractSecrets(Model.findOne(o).code).secret                    
             }
 
+            // save executed model to database
+            let new_model = {
+                // original code, without secrets
+                code: code,
+                command: commandIndex,
+                time: new Date().toLocaleString(),
+                derivationOf: currentModelId,
+            }
+
+            // insert the new model
+            let new_model_id = Model.insert(new_model);
+
             // call webservice to get instances
             HTTP.call('POST', `${Meteor.settings.env.API_URL}/getInstances`, {
                 data: {
                     model: code_with_secrets,
                     numberOfInstances: Meteor.settings.env.MAX_INSTANCES,
-                    commandIndex: commandIndex
+                    commandIndex: commandIndex,
+                    sessionId: new_model_id
                 }
             }, (error, result) => {
                 if (error) reject(error)
 
-                // handle result (unsat vs sat)
-                let strType = commandType ? "run" : "check"
                 let content = JSON.parse(result.content);
                 // if unsat, still list with single element
                 let sat
@@ -48,19 +58,6 @@ Meteor.methods({
                     content[k].commandType = commandType;
                     sat = content[k].unsat;
                 });
-                
-                // save executed model to database
-                let new_model = {
-                    // original code, without secrets
-                    code: code,
-                    command: commandIndex,
-                    sat: sat, 
-                    time: new Date().toLocaleString(),
-                    derivationOf: currentModelId,
-                }
-
-                // insert the new model
-                let new_model_id = Model.insert(new_model);
 
                 let original
                 // if the model has secrets and the previous hadn't, then it is a new root
@@ -73,7 +70,7 @@ Meteor.methods({
                 }
 
                 // update the root
-                Model.update({ _id : new_model_id },{$set: {original : original}})
+                Model.update({ _id : new_model_id },{$set: {original : original, sat : sat}})
 
                 // resolve the promise
                 resolve({
