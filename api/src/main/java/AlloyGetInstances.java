@@ -61,8 +61,6 @@ public class AlloyGetInstances {
 					warnings.add(msg);
 	   			}
 			};
-			File tempFile = File.createTempFile("a4f", "als");
-			tempFile.deleteOnExit();
 			CompModule world;
 
 			try {
