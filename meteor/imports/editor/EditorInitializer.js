@@ -31,7 +31,7 @@ const options = {
     // TODO: This is broken. Must be fixed to permit block folding.
     foldGutter: true,
     // Adds gutters to the editor. In this case a single one is added for the error icon placement
-    gutters: ['error-gutter', 'breakpoints'],
+    gutters: [],
 };
 
 /*
@@ -41,11 +41,12 @@ function initializeAlloyEditor(htmlElement) {
     defineAlloyMode(); //specify syntax highlighting
 
     var editor = initializeEditor(htmlElement, "alloy");
+
     //Text change event for the editor on alloy4fun/editor page
     editor.on('change', function(editor) {
         $(".qtip").remove();
         //[gutter] -> A gutter is the clear empty space between an element's boundaries and the element's content.
-        editor.clearGutter("error-gutter");
+
 
         //Delete previous existing permalink elements if existent.
         //uncomment the following lines if it is desirable to hide the share links on code updates
