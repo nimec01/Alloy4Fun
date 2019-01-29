@@ -83,7 +83,7 @@ Template.alloyEditor.events({
             });
         } else { // Execute command
             let model = textEditor.getValue();
-            Meteor.call('getInstances', model, commandIndex, isRunSelected(), Session.get("last_id"), handleExecuteModel(true));
+            Meteor.call('getInstances', model, commandIndex, isRunSelected(), Session.get("last_id"), handleExecuteModel);
         }
         // update button states after execution
         $("#exec > button").prop('disabled', true);
@@ -111,7 +111,7 @@ Template.alloyEditor.events({
         if (evt.toElement.id != "next") {
             if (instanceIndex == maxInstanceNumber-1) {
                 let model = textEditor.getValue();
-                Meteor.call('nextInstances', getCommandIndex(), isRunSelected(), Session.get("last_id"), handleExecuteModel(false));
+                Meteor.call('nextInstances', model, getCommandIndex(), isRunSelected(), Session.get("last_id"), handleExecuteModel);
                 //$("#next > button").prop('disabled', true);
             }
             let ni = getNextInstance();
@@ -164,6 +164,7 @@ Template.alloyEditor.events({
     },*/
     'click #downloadTree': processTree
 });
+
 /* Callbacks added with this method are called once when an instance of Template.alloyEditor is rendered into DOM nodes and put into the document for the first time. */
 Template.alloyEditor.onRendered(() => {
     try {
@@ -215,8 +216,7 @@ Template.alloyEditor.onRendered(() => {
 /* ------------- Server HANDLERS methods && Aux Functions ----------- */
 
 
-function handleExecuteModel (fresh) {
-    return (err, result) => {
+function handleExecuteModel(err, result) {
         if (err) {
             $('#next > button').prop('disabled', true);
             $('#prev > button').prop('disabled', true);
@@ -241,8 +241,8 @@ function handleExecuteModel (fresh) {
         $("#log").empty();
         let command = $('.command-selection > select option:selected').text();
 
-        result = result.instances
-        storeInstances(result, fresh);
+        result = result.instances;
+        storeInstances(result);
         if (Array.isArray(result))
             result = result[0];
            
@@ -293,11 +293,10 @@ function handleExecuteModel (fresh) {
                 $("#genInstanceUrl").hide();
             }
         }
-};
 }
 
-function storeInstances(allInstances,fresh) {
-    if (fresh) {
+function storeInstances(allInstances) {
+    if (allInstances[0].cnt == 0) {
         instances = allInstances;
         instanceIndex = 0;
         maxInstanceNumber = allInstances.length;
