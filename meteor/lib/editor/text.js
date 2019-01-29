@@ -42,7 +42,7 @@ function extractSecrets(code) {
     let tag = secretTag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     let pgs = paragraphKeywords
     let pgd = `(?:(?:one|abstract|lone|some)\\s+)*${pgs}`
-    let exp = `(${tag}\\s*?\\n\\s*(?:\\/\\*(?:.|\\n)*?\\*\\/\\s*\\n)?\\s*(?:${pgd})(?:.|\\n)*?)(?:${tag}\\s*?\\n\\s*)?(?:(?:${pgd})\\s|$)`
+    let exp = `(${tag}\\s*?\\n\\s*(?:(?:\\/\\*(?:.|\\n)*?\\*\\/\\s*)|(?:\\/\\/.*\\n))*?\\s*(?:${pgd})(?:.|\\n)*?)(?:${tag}\\s*?\\n\\s*)?(?:(?:${pgd})\\s|$)`
     while (s = code.match(RegExp(exp))) {
         i = code.indexOf(s[0]);
         public_code += code.substr(0, i);

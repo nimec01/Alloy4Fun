@@ -1,7 +1,6 @@
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -42,87 +41,88 @@ import utils.InstancesRequest;
 
 @Path("/getInstances")
 public class AlloyGetInstances {
+
 	@POST
 	@Produces("text/json")
 	public Response doGet(String body) throws IOException {
 		InstancesRequest req = parseJSON(body);
-		List<ErrorWarning> warnings = new ArrayList<ErrorWarning>();
-		A4Reporter rep = new A4Reporter() {
-			public void warning (ErrorWarning msg) {
-				warnings.add(msg);
-   			}
-		};
-		File tempFile = File.createTempFile("a4f", "als");
-		tempFile.deleteOnExit();
-		CompModule world;
-
-		try {
-			world = CompUtil.parseEverything_fromString(rep, req.model);			
-		} catch (Err e) {
-			System.out.println(e.getMessage());
-			JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
-			instanceJSON.add("alloy_error", true);
-			instanceJSON.add("msg", e.msg);
-			instanceJSON.add("line", e.pos.y);
-			instanceJSON.add("column", e.pos.x);
-			return Response.ok(instanceJSON.build().toString()).build();
-		} catch (Exception e) {
-			JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
-			System.out.println(e.getMessage());
-			instanceJSON.add("alloy_error", true);
-			instanceJSON.add("msg", e.getMessage());
-			return Response.ok(instanceJSON.build().toString()).build();
-		}
-
-		JsonArrayBuilder solsArrayJSON = Json.createArrayBuilder();
-		
-		A4Options opt = new A4Options();
-		opt.solver = A4Options.SatSolver.SAT4J;
 		String res = "";
-		Command command = world.getAllCommands().get(req.commandIndex);
-		A4Solution ans;
-		try {
-			ans = TranslateAlloyToKodkod.execute_command(rep, world.getAllReachableSigs(), command, opt);
+		List<ErrorWarning> warnings = new ArrayList<ErrorWarning>();
 
-			if (ans.satisfiable()) {
-
-				A4Solution aux = ans;
-				try {
-					for (int n = 0; n < req.numberOfInstances && aux.satisfiable(); n++) {
-						UUID uuid = UUID.randomUUID();
-						solsArrayJSON.add(answerToJson(uuid, aux, warnings));
-						RestApplication.answers.put(uuid, aux);
-						ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-						scheduler.schedule(new Runnable() {
-							public void run() {
-								RestApplication.answers.remove(uuid);
-							}
-						}, 7200, TimeUnit.SECONDS);
-						aux = aux.next();
-					}
-				} catch (Exception e) {
-					// this.iteration--;
-					System.out.println("There probably aren't that many solutions!");
-					res = e.getMessage();
-				}
-				res = solsArrayJSON.build().toString();
-			} else {
-				UUID uuid = UUID.randomUUID();
-				res = solsArrayJSON.add(answerToJson(uuid, ans, warnings)).build().toString();
-
-			}
-
-		} catch (Err e) {
-			System.out.println(e.getMessage());
-			JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
-			instanceJSON.add("alloy_error", true);
-			instanceJSON.add("msg", e.msg);
-			instanceJSON.add("line", e.pos.y);
-			instanceJSON.add("column", e.pos.x);
-			return Response.ok(instanceJSON.build().toString()).build();
+		// session opened, recover solution object
+		if (RestApplication.alive(req.sessionId)) { 
+			res = batchAdd(req,warnings);
 		}
+		// create new solving session
+		else {
+			A4Reporter rep = new A4Reporter() {
+				public void warning (ErrorWarning msg) {
+					warnings.add(msg);
+	   			}
+			};
+			CompModule world;
 
+			try {
+				world = CompUtil.parseEverything_fromString(rep, req.model);			
+			} catch (Err e) {
+				System.out.println(e.getMessage());
+				JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
+				instanceJSON.add("alloy_error", true);
+				instanceJSON.add("msg", e.msg);
+				instanceJSON.add("line", e.pos.y);
+				instanceJSON.add("column", e.pos.x);
+				return Response.ok(instanceJSON.build().toString()).build();
+			} catch (Exception e) {
+				JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
+				System.out.println(e.getMessage());
+				instanceJSON.add("alloy_error", true);
+				instanceJSON.add("msg", e.getMessage());
+				return Response.ok(instanceJSON.build().toString()).build();
+			}
+			
+			A4Options opt = new A4Options();
+			opt.solver = A4Options.SatSolver.SAT4J;
+			Command command = world.getAllCommands().get(req.commandIndex);
+			try {
+				A4Solution ans = TranslateAlloyToKodkod.execute_command(rep, world.getAllReachableSigs(), command, opt);
+				RestApplication.add(req.sessionId,ans);
+
+				res = batchAdd(req,warnings);
+
+				ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+				scheduler.schedule(new Runnable() {
+					public void run() {
+						RestApplication.remove(req.sessionId);
+					}
+				}, 600, TimeUnit.SECONDS);
+			} catch (Err e) {
+				System.out.println(e.getMessage());
+				JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
+				instanceJSON.add("alloy_error", true);
+				instanceJSON.add("msg", e.msg);
+				instanceJSON.add("line", e.pos.y);
+				instanceJSON.add("column", e.pos.x);
+				return Response.ok(instanceJSON.build().toString()).build();
+			}
+		}
 		return Response.ok(res).build();
+	}
+
+	private String batchAdd(InstancesRequest req,List<ErrorWarning> warnings) {
+		JsonArrayBuilder solsArrayJSON = Json.createArrayBuilder();
+		A4Solution ans = RestApplication.getSol(req.sessionId);
+		int cnt = 0;
+		for (int n = 0; n < req.numberOfInstances && ans.satisfiable(); n++) {
+			ans = RestApplication.getSol(req.sessionId);
+			cnt = RestApplication.getCnt(req.sessionId);
+			solsArrayJSON.add(answerToJson(req.sessionId, ans, warnings, cnt));
+			RestApplication.next(req.sessionId);
+		}
+		if (!ans.satisfiable())
+			solsArrayJSON.add(answerToJson(req.sessionId, ans, warnings, cnt));
+		String res = solsArrayJSON.build().toString();
+
+		return res;
 	}
 
 	private InstancesRequest parseJSON(String body) {
@@ -132,66 +132,56 @@ public class AlloyGetInstances {
 		req.model = jo.getString("model");
 		req.numberOfInstances = jo.getInt("numberOfInstances");
 		req.commandIndex = jo.getInt("commandIndex");
+		req.sessionId = jo.getString("sessionId");
 
 		return req;
 	}
 
-	public JsonObject answerToJson(UUID uuid, A4Solution answer, List<ErrorWarning> warns) {
+	public JsonObject answerToJson(String sessionId, A4Solution answer, List<ErrorWarning> warns, int cnt) {
 		JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
 
-		if (!answer.satisfiable()) {
-			instanceJSON.add("unsat", "true");
-
-			if (warns.size() > 0) {
-				instanceJSON.add("warning_error", true);
-				instanceJSON.add("msg", warns.get(0).msg);
-				instanceJSON.add("line", warns.get(0).pos.y);
-				instanceJSON.add("column", warns.get(0).pos.x);
-			}
-
-			return instanceJSON.build();
+		if (warns.size() > 0) {
+			instanceJSON.add("warning_error", true);
+			instanceJSON.add("msg", warns.get(0).msg);
+			instanceJSON.add("line", warns.get(0).pos.y);
+			instanceJSON.add("column", warns.get(0).pos.x);
 		}
 
-		try {
-			instanceJSON.add("uuid", uuid.toString());
-			Instance sol = answer.debugExtractKInstance();
-			instanceJSON.add("unsat", false);
+		instanceJSON.add("sessionId", sessionId.toString());
+		instanceJSON.add("unsat", !answer.satisfiable());
+		instanceJSON.add("cnt", cnt);
 
-			JsonArrayBuilder integersArrayJSON = Json.createArrayBuilder();
-			for (IndexedEntry<TupleSet> e : sol.intTuples()) {
-				Object atom = e.value().iterator().next().atom(0);
-				integersArrayJSON.add(atom.toString());
-			}
-			instanceJSON.add("integers", integersArrayJSON);
+		if (answer.satisfiable()) {
+			try {
+				Instance sol = answer.debugExtractKInstance();
 
-			JsonArrayBuilder atomsJSON = Json.createArrayBuilder();
-			JsonArrayBuilder fieldsJSON = Json.createArrayBuilder();
-
-			for (Sig signature : answer.getAllReachableSigs()) {
-				atomsJSON.add(sigToJSON(answer, signature));
-
-				for (Field field : signature.getFields()) {
-					fieldsJSON.add(fieldToJSON(answer, signature, field));
+				JsonArrayBuilder integersArrayJSON = Json.createArrayBuilder();
+				for (IndexedEntry<TupleSet> e : sol.intTuples()) {
+					Object atom = e.value().iterator().next().atom(0);
+					integersArrayJSON.add(atom.toString());
 				}
+				instanceJSON.add("integers", integersArrayJSON);
+
+				JsonArrayBuilder atomsJSON = Json.createArrayBuilder();
+				JsonArrayBuilder fieldsJSON = Json.createArrayBuilder();
+
+				for (Sig signature : answer.getAllReachableSigs()) {
+					atomsJSON.add(sigToJSON(answer, signature));
+
+					for (Field field : signature.getFields()) {
+						fieldsJSON.add(fieldToJSON(answer, signature, field));
+					}
+				}
+				instanceJSON.add("atoms", atomsJSON);
+				instanceJSON.add("fields", fieldsJSON);
+				instanceJSON.add("skolem", skolemsToJSON(answer));
+			} catch (Err er) {
+				JsonObjectBuilder errorJSON = Json.createObjectBuilder();
+				errorJSON.add("err", String.format("Evaluator error occurred: %s", er));
+				return errorJSON.build();
 			}
-			instanceJSON.add("atoms", atomsJSON);
-			instanceJSON.add("fields", fieldsJSON);
-
-			instanceJSON.add("skolem", skolemsToJSON(answer));
-
-			if (warns.size() > 0) {
-				instanceJSON.add("warning_error", true);
-				instanceJSON.add("msg", warns.get(0).msg);
-				instanceJSON.add("line", warns.get(0).pos.y);
-				instanceJSON.add("column", warns.get(0).pos.x);
-			}
-
-			return instanceJSON.build();
-		} catch (Err er) {
-			JsonObjectBuilder errorJSON = Json.createObjectBuilder();
-			errorJSON.add("err", String.format("Evaluator error occurred: %s", er));
-			return errorJSON.build();
 		}
+		return instanceJSON.build();
 	}
 
 	JsonObjectBuilder skolemsToJSON(A4Solution answer) throws Err {
