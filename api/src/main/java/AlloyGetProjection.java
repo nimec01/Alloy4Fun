@@ -4,7 +4,6 @@ import java.util.AbstractMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -36,10 +35,10 @@ public class AlloyGetProjection {
 	public Response doGet(String body) throws IOException {
 		String res = "";
 		System.out.println(body);
-		AbstractMap.SimpleEntry<UUID, List<Object> > req;
+		AbstractMap.SimpleEntry<String, List<Object> > req;
 		try {
 			req = parseJSON(body);
-			A4Solution sol = RestApplication.answers.get(req.getKey());
+			A4Solution sol = RestApplication.getSol(req.getKey());
 			File tempFile = File.createTempFile("a4f", "als");
 			tempFile.deleteOnExit();
 			sol.writeXML(tempFile.getAbsolutePath());
@@ -130,15 +129,15 @@ public class AlloyGetProjection {
 		return projectionsJSON;
 	}
 	
-	private AbstractMap.SimpleEntry<UUID, List<Object> > parseJSON(String body) throws Exception {
+	private AbstractMap.SimpleEntry<String, List<Object> > parseJSON(String body) throws Exception {
 
 		JSONObject jo = new JSONObject(body);
-		UUID uuid = UUID.fromString(jo.getString("uuid"));
+		String uuid = jo.getString("sessionId");
 		JSONArray typesArray = jo.getJSONArray("type");
 		List<Object> types = typesArray.toList();
 	
 
-		AbstractMap.SimpleEntry<UUID, List<Object> > req = new AbstractMap.SimpleEntry<>(uuid, types);
+		AbstractMap.SimpleEntry<String, List<Object> > req = new AbstractMap.SimpleEntry<>(uuid, types);
 
 		return req;
 	}

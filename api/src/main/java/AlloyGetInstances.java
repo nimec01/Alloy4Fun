@@ -50,9 +50,8 @@ public class AlloyGetInstances {
 		List<ErrorWarning> warnings = new ArrayList<ErrorWarning>();
 
 		// session opened, recover solution object
-		if (RestApplication.answers.get(req.sessionId) != null) { 
-			A4Solution ans = RestApplication.answers.get(req.sessionId);
-			res = batchAdd(req,ans,warnings);
+		if (RestApplication.alive(req.sessionId)) { 
+			res = batchAdd(req,warnings);
 		}
 		// create new solving session
 		else {
@@ -86,12 +85,14 @@ public class AlloyGetInstances {
 			Command command = world.getAllCommands().get(req.commandIndex);
 			try {
 				A4Solution ans = TranslateAlloyToKodkod.execute_command(rep, world.getAllReachableSigs(), command, opt);
-				res = batchAdd(req,ans,warnings);
+				RestApplication.add(req.sessionId,ans);
+
+				res = batchAdd(req,warnings);
 
 				ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 				scheduler.schedule(new Runnable() {
 					public void run() {
-						RestApplication.answers.remove(req.sessionId);
+						RestApplication.remove(req.sessionId);
 					}
 				}, 600, TimeUnit.SECONDS);
 			} catch (Err e) {
@@ -107,16 +108,20 @@ public class AlloyGetInstances {
 		return Response.ok(res).build();
 	}
 
-	String batchAdd(InstancesRequest req,A4Solution ans,List<ErrorWarning> warnings) {
+	private String batchAdd(InstancesRequest req,List<ErrorWarning> warnings) {
 		JsonArrayBuilder solsArrayJSON = Json.createArrayBuilder();
+		A4Solution ans = RestApplication.getSol(req.sessionId);
+		int cnt = 0;
 		for (int n = 0; n < req.numberOfInstances && ans.satisfiable(); n++) {
-			solsArrayJSON.add(answerToJson(req.sessionId, ans, warnings));
-			ans = ans.next();
+			ans = RestApplication.getSol(req.sessionId);
+			cnt = RestApplication.getCnt(req.sessionId);
+			solsArrayJSON.add(answerToJson(req.sessionId, ans, warnings, cnt));
+			RestApplication.next(req.sessionId);
 		}
 		if (!ans.satisfiable())
-			solsArrayJSON.add(answerToJson(req.sessionId, ans, warnings));
+			solsArrayJSON.add(answerToJson(req.sessionId, ans, warnings, cnt));
 		String res = solsArrayJSON.build().toString();
-		RestApplication.answers.put(req.sessionId, ans);
+
 		return res;
 	}
 
@@ -132,54 +137,51 @@ public class AlloyGetInstances {
 		return req;
 	}
 
-	public JsonObject answerToJson(String sessionId, A4Solution answer, List<ErrorWarning> warns) {
+	public JsonObject answerToJson(String sessionId, A4Solution answer, List<ErrorWarning> warns, int cnt) {
 		JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
 
 		if (warns.size() > 0) {
-				instanceJSON.add("warning_error", true);
-				instanceJSON.add("msg", warns.get(0).msg);
-				instanceJSON.add("line", warns.get(0).pos.y);
-				instanceJSON.add("column", warns.get(0).pos.x);
+			instanceJSON.add("warning_error", true);
+			instanceJSON.add("msg", warns.get(0).msg);
+			instanceJSON.add("line", warns.get(0).pos.y);
+			instanceJSON.add("column", warns.get(0).pos.x);
 		}
 
-		if (!answer.satisfiable()) {
-			instanceJSON.add("unsat", true);
-			return instanceJSON.build();
-		}
+		instanceJSON.add("sessionId", sessionId.toString());
+		instanceJSON.add("unsat", !answer.satisfiable());
+		instanceJSON.add("cnt", cnt);
 
-		try {
-			instanceJSON.add("sessionId", sessionId.toString());
-			Instance sol = answer.debugExtractKInstance();
-			instanceJSON.add("unsat", false);
+		if (answer.satisfiable()) {
+			try {
+				Instance sol = answer.debugExtractKInstance();
 
-			JsonArrayBuilder integersArrayJSON = Json.createArrayBuilder();
-			for (IndexedEntry<TupleSet> e : sol.intTuples()) {
-				Object atom = e.value().iterator().next().atom(0);
-				integersArrayJSON.add(atom.toString());
-			}
-			instanceJSON.add("integers", integersArrayJSON);
-
-			JsonArrayBuilder atomsJSON = Json.createArrayBuilder();
-			JsonArrayBuilder fieldsJSON = Json.createArrayBuilder();
-
-			for (Sig signature : answer.getAllReachableSigs()) {
-				atomsJSON.add(sigToJSON(answer, signature));
-
-				for (Field field : signature.getFields()) {
-					fieldsJSON.add(fieldToJSON(answer, signature, field));
+				JsonArrayBuilder integersArrayJSON = Json.createArrayBuilder();
+				for (IndexedEntry<TupleSet> e : sol.intTuples()) {
+					Object atom = e.value().iterator().next().atom(0);
+					integersArrayJSON.add(atom.toString());
 				}
+				instanceJSON.add("integers", integersArrayJSON);
+
+				JsonArrayBuilder atomsJSON = Json.createArrayBuilder();
+				JsonArrayBuilder fieldsJSON = Json.createArrayBuilder();
+
+				for (Sig signature : answer.getAllReachableSigs()) {
+					atomsJSON.add(sigToJSON(answer, signature));
+
+					for (Field field : signature.getFields()) {
+						fieldsJSON.add(fieldToJSON(answer, signature, field));
+					}
+				}
+				instanceJSON.add("atoms", atomsJSON);
+				instanceJSON.add("fields", fieldsJSON);
+				instanceJSON.add("skolem", skolemsToJSON(answer));
+			} catch (Err er) {
+				JsonObjectBuilder errorJSON = Json.createObjectBuilder();
+				errorJSON.add("err", String.format("Evaluator error occurred: %s", er));
+				return errorJSON.build();
 			}
-			instanceJSON.add("atoms", atomsJSON);
-			instanceJSON.add("fields", fieldsJSON);
-
-			instanceJSON.add("skolem", skolemsToJSON(answer));
-
-			return instanceJSON.build();
-		} catch (Err er) {
-			JsonObjectBuilder errorJSON = Json.createObjectBuilder();
-			errorJSON.add("err", String.format("Evaluator error occurred: %s", er));
-			return errorJSON.build();
 		}
+		return instanceJSON.build();
 	}
 
 	JsonObjectBuilder skolemsToJSON(A4Solution answer) throws Err {
