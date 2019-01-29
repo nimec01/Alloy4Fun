@@ -183,7 +183,8 @@ Template.alloyEditor.onRendered(() => {
 
     $("#next").css("display", 'none');
     $("#prev").css("display", 'none');
-    
+    $("#hidden_icon").css("display", 'none');
+
 
     if (Router.current().data && textEditor) { // if there's subscribed data, process it.
         let model = Router.current().data(); // load the model from controller
@@ -196,7 +197,11 @@ Template.alloyEditor.onRendered(() => {
         if (model.commands) cs.concat(model.commands)
         Session.set("commands", cs) // update the commands to start correct
 
-        if(model.from_private) $("#downloadTree > button").prop('disabled', false);
+        if(model.from_private) {
+            $("#downloadTree > button").prop('disabled', false);
+        } else {
+            $("#hidden_icon").css("display", 'initial');
+        }
 
         if (model.instance) { // if there is an instance to show
             let themeData = model.instance.theme;
