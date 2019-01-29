@@ -63,6 +63,11 @@ Template.alloyEditor.helpers({
 
 });
 Template.alloyEditor.events({
+    'keydown': function(e) { 
+        if (e.ctrlKey && e.key == 'e')
+            $('#exec').trigger("click");
+    },
+
     'click #exec': function () {
         if ($("#exec > button").is(":disabled")) return;
 
