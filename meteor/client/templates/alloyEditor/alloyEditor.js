@@ -185,10 +185,8 @@ Template.alloyEditor.onRendered(() => {
     $("#prev").css("display", 'none');
     $("#hidden_icon").css("display", 'none');
 
-
     if (Router.current().data && textEditor) { // if there's subscribed data, process it.
         let model = Router.current().data(); // load the model from controller
-        textEditor.setValue(model.code); // update the textEditor
         // save the loaded model id for later derivations
         Session.set("last_id", model.model_id); // this will change on execute
         Session.set("from_private", model.from_private); // this will not change
@@ -196,6 +194,8 @@ Template.alloyEditor.onRendered(() => {
         let cs = getCommandsFromCode(model.code)
         if (model.commands) cs.concat(model.commands)
         Session.set("commands", cs) // update the commands to start correct
+      
+        textEditor.setValue(model.code); // update the textEditor
 
         if(model.from_private) {
             $("#downloadTree > button").prop('disabled', false);
@@ -236,9 +236,7 @@ function handleExecuteModel(err, result) {
 
         $.unblockUI();
         $('#exec > button').prop('disabled', true);
-        $('#url-permalink').empty() //remove previous links
-        $("#genUrl > button").prop('disabled', false); // Restart shareModel option
-
+        
         //clear projection combo box
         let select = document.getElementsByClassName("framePickerTarget");
         if (select) select = select[0];
