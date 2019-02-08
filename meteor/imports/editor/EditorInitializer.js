@@ -41,7 +41,7 @@ function initializeAlloyEditor(htmlElement) {
     defineAlloyMode(); //specify syntax highlighting
 
     var editor = initializeEditor(htmlElement, "alloy");
-    
+
     //Text change event for the editor on alloy4fun/editor page
     editor.on('change', function(editor) {
         $(".qtip").remove();
@@ -72,6 +72,7 @@ function initializeAlloyEditor(htmlElement) {
             $('#prev > button').prop('disabled', true);
             $('.permalink').prop('disabled', false);
             $('#url-permalink').empty() //remove previous links
+            $("#url-instance-permalink").empty()
             $('.empty-univ').hide();
             $('.permalink > button').prop('disabled', false);
             $("#validateModel > button").prop('disabled', false);

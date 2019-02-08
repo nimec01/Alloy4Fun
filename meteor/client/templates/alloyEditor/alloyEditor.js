@@ -93,6 +93,7 @@ Template.alloyEditor.events({
         // update button states after execution
         $("#exec > button").prop('disabled', true);
         $("#next > button").prop('disabled', false);
+        $("#url-instance-permalink").empty()
     },
     'change .command-selection > select'() {
         $('#exec > button').prop('disabled', false);
@@ -109,6 +110,8 @@ Template.alloyEditor.events({
                 }
                 $("#next > button").prop('disabled', false);
             }
+            $("#url-instance-permalink").empty()
+            $("#genInstanceUrl > button").prop('disabled', false);
         }
     },
     'click #next': function (evt) {
@@ -129,6 +132,8 @@ Template.alloyEditor.events({
                     updateGraph(ni);
                 }
                 $("#prev > button").prop('disabled', false);
+                $("#url-instance-permalink").empty()
+                $("#genInstanceUrl > button").prop('disabled', false);
             }
         }
     },
