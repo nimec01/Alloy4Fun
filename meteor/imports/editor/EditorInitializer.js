@@ -57,7 +57,6 @@ function initializeAlloyEditor(htmlElement) {
         $("#genInstanceUrl").hide();
         $("#log").empty();
 
-
         if ($.trim(editor.getValue()) == '') {
             //When editor is empty
             Session.set("commands", []);
@@ -68,15 +67,19 @@ function initializeAlloyEditor(htmlElement) {
         } else {
             // Populate commands combo box
             editor.getCommands();
-            if (Session.get("commands") && Session.get("commands").length >= 0) {
-                $('#instanceViewer').hide();
+            $('#instanceViewer').hide();
+            $('#next > button').prop('disabled', true);
+            $('#prev > button').prop('disabled', true);
+            $('.permalink').prop('disabled', false);
+            $('#url-permalink').empty() //remove previous links
+            $("#url-instance-permalink").empty()
+            $('.empty-univ').hide();
+            $('.permalink > button').prop('disabled', false);
+            $("#validateModel > button").prop('disabled', false);
+            if (Session.get("commands") && Session.get("commands").length > 0) {
                 $('#exec > button').prop('disabled', false);
-                $('.permalink').prop('disabled', false);
-                $('#next > button').prop('disabled', true);
-                $('#prev > button').prop('disabled', true);
-                $('.empty-univ').hide();
-                $('.permalink > button').prop('disabled', false);
-                $("#validateModel > button").prop('disabled', false);
+            } else {
+                $('#exec > button').prop('disabled', true);
             }
         }
         Session.set("currentInstance", undefined);
