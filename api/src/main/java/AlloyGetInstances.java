@@ -112,7 +112,7 @@ public class AlloyGetInstances {
 		JsonArrayBuilder solsArrayJSON = Json.createArrayBuilder();
 		A4Solution ans = RestApplication.getSol(req.sessionId);
 		Command cmd = RestApplication.getCommand(req.sessionId);
-		int cnt = 0;
+		int cnt = RestApplication.getCnt(req.sessionId);
 		for (int n = 0; n < req.numberOfInstances && ans.satisfiable(); n++) {
 			solsArrayJSON.add(answerToJson(req.sessionId, ans, warnings, cmd, cnt));
 			RestApplication.next(req.sessionId);
