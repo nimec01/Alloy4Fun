@@ -17,11 +17,11 @@ Meteor.methods({
       * 
       * @returns the instance data and the id of the new saved model
       */
-    getInstances: function(code, commandIndex, currentModelId) {
+    getInstances: function(code, commandIndex, fromPrivate, currentModelId) {
         return new Promise((resolve, reject) => {
             // if no secrets, try to extract from original
             let code_with_secrets = code
-            if (currentModelId && !containsValidSecret(code)) {
+            if (currentModelId && !containsValidSecret(code) && !fromPrivate) {
                 let o = Model.findOne(currentModelId).original
                 code_with_secrets = code + extractSecrets(Model.findOne(o).code).secret                    
             }
