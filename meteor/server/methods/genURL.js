@@ -24,8 +24,8 @@ Meteor.methods({
     genURL: function(code, currentModelId) {
         // a new model is always created, regardless of having secrets or not
         let model = {
-            code: code,
             time: new Date().toLocaleString(),
+            code: code,
             derivationOf: currentModelId
         }
 
