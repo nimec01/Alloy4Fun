@@ -309,7 +309,7 @@ function handleExecuteModel(err, result) {
 }
 
 function storeInstances(allInstances) {
-    if (allInstances[0].cnt == 0) {
+    if (allInstances.alloy_error || allInstances[0].cnt == 0) {
         instances = allInstances;
         instanceIndex = 0;
         maxInstanceNumber = allInstances.length;
