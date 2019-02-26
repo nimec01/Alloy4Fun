@@ -3,6 +3,8 @@ import {
 } from "../../lib/editor/feedback"
 
 function processTree() {
+    if ($("#downloadTree > button").is(":disabled")) return
+
     let linkId = Router.current().params._id
     Meteor.call("downloadTree", linkId, (err, res) => {
         if (err) return displayError(err)

@@ -40,16 +40,39 @@ Model.attachSchema(new SimpleSchema({
      * optional field for the index of the executed command, if created by
      * execution.
      */
-    command: {
+    cmd_i: {
         type: Number,
         optional: true
     },
     /**
-     * optional field, whether the command was satisfiable, if created by
+     * optional field for the name of the executed command, if created by
      * execution.
      */
-    sat: { 
+    cmd_n: {
+        type: String,
+        optional: true
+    },
+    /**
+     * optional field, whether the command was a check (1) or a run (0), if
+     * created by execution.
+     */
+    cmd_c: {
         type: Boolean,
+        optional: true
+    },
+    /**
+     * optional field, whether the command was satisfiable (1) or unsatisfiable 
+     * (0), if created by execution. if execution fails, then -1.
+     */
+    sat: { 
+        type: Number,
+        optional: true
+    },
+    /**
+     * optional field, a possible error or warning message.
+     */
+    msg: { 
+        type: String,
         optional: true
     },
     /** the timestamp. */

@@ -85,7 +85,7 @@ public class AlloyGetInstances {
 			Command command = world.getAllCommands().get(req.commandIndex);
 			try {
 				A4Solution ans = TranslateAlloyToKodkod.execute_command(rep, world.getAllReachableSigs(), command, opt);
-				RestApplication.add(req.sessionId,ans);
+				RestApplication.add(req.sessionId,ans,command);
 
 				res = batchAdd(req,warnings);
 
@@ -111,15 +111,16 @@ public class AlloyGetInstances {
 	private String batchAdd(InstancesRequest req,List<ErrorWarning> warnings) {
 		JsonArrayBuilder solsArrayJSON = Json.createArrayBuilder();
 		A4Solution ans = RestApplication.getSol(req.sessionId);
+		Command cmd = RestApplication.getCommand(req.sessionId);
 		int cnt = 0;
 		for (int n = 0; n < req.numberOfInstances && ans.satisfiable(); n++) {
+			solsArrayJSON.add(answerToJson(req.sessionId, ans, warnings, cmd, cnt));
+			RestApplication.next(req.sessionId);
 			ans = RestApplication.getSol(req.sessionId);
 			cnt = RestApplication.getCnt(req.sessionId);
-			solsArrayJSON.add(answerToJson(req.sessionId, ans, warnings, cnt));
-			RestApplication.next(req.sessionId);
 		}
 		if (!ans.satisfiable())
-			solsArrayJSON.add(answerToJson(req.sessionId, ans, warnings, cnt));
+			solsArrayJSON.add(answerToJson(req.sessionId, ans, warnings, cmd, cnt));
 		String res = solsArrayJSON.build().toString();
 
 		return res;
@@ -137,7 +138,7 @@ public class AlloyGetInstances {
 		return req;
 	}
 
-	public JsonObject answerToJson(String sessionId, A4Solution answer, List<ErrorWarning> warns, int cnt) {
+	public JsonObject answerToJson(String sessionId, A4Solution answer, List<ErrorWarning> warns, Command cmd, int cnt) {
 		JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
 
 		if (warns.size() > 0) {
@@ -149,6 +150,8 @@ public class AlloyGetInstances {
 
 		instanceJSON.add("sessionId", sessionId.toString());
 		instanceJSON.add("unsat", !answer.satisfiable());
+		instanceJSON.add("check", cmd.check);
+		instanceJSON.add("cmd_n", cmd.label);
 		instanceJSON.add("cnt", cnt);
 
 		if (answer.satisfiable()) {

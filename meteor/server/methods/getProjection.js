@@ -24,10 +24,10 @@ Meteor.methods({
                 if (error) reject(error)
                 let content = JSON.parse(result.content)
                 if (content.unsat) {
-                    content.commandType = "check";
+                    content.check = true;
                 } else {
                     Object.keys(content).forEach(k => {
-                        content[k].commandType = "check";
+                        content[k].check = true;
                     });
                 }
                 resolve(content);

@@ -12,28 +12,26 @@ Meteor.methods({
       * 
       * @param {String} code the Alloy model to execute
       * @param {Number} commandIndex the index of the command to execute
-      * @param {Boolean} commandType whether the command was a run (true) or
-      *     check (false)
       * @param {String} currentModelId the id of the current model (from which
       *     the new will derive)
       * 
       * @returns the instance data and the id of the new saved model
       */
-    getInstances: function(code, commandIndex, commandType, currentModelId) {
+    getInstances: function(code, commandIndex, fromPrivate, currentModelId) {
         return new Promise((resolve, reject) => {
             // if no secrets, try to extract from original
             let code_with_secrets = code
-            if (currentModelId && !containsValidSecret(code)) {
+            if (currentModelId && !containsValidSecret(code) && !fromPrivate) {
                 let o = Model.findOne(currentModelId).original
                 code_with_secrets = code + extractSecrets(Model.findOne(o).code).secret                    
             }
 
             // save executed model to database
             let new_model = {
+                time: new Date().toLocaleString(),
                 // original code, without secrets
                 code: code,
-                command: commandIndex,
-                time: new Date().toLocaleString(),
+                cmd_i: commandIndex,
                 derivationOf: currentModelId,
             }
 
@@ -52,13 +50,19 @@ Meteor.methods({
                 if (error) reject(error)
 
                 let content = JSON.parse(result.content);
-                // if unsat, still list with single element
                 let sat
-                Object.keys(content).forEach(k => {
-                    content[k].commandType = commandType;
-                    sat = content[k].unsat;
-                });
-
+                let cmd_n
+                let chk
+                if (content.alloy_error) {
+                    msg = content.msg
+                    sat = -1;
+                } else {
+                    // if unsat, still list with single element
+                    sat = content[0].unsat?0:1;
+                    msg = content[0].msg
+                    cmd_n = content[0].cmd_n
+                    chk = content[0].check
+                }
                 let original
                 // if the model has secrets and the previous hadn't, then it is a new root
                 if (!currentModelId || (containsValidSecret(code) && !containsValidSecret(Model.findOne(currentModelId).code))) {
@@ -70,7 +74,7 @@ Meteor.methods({
                 }
 
                 // update the root
-                Model.update({ _id : new_model_id },{$set: {original : original, sat : sat}})
+                Model.update({ _id : new_model_id },{$set: {original : original, sat : sat, cmd_n: cmd_n, cmd_c : chk, msg : msg}})
 
                 // resolve the promise
                 resolve({
