@@ -119,7 +119,7 @@ Template.alloyEditor.events({
         if (evt.toElement.id != "next") {
             if (instanceIndex == maxInstanceNumber-1) {
                 let model = textEditor.getValue();
-                Meteor.call('nextInstances', model, getCommandIndex(), isRunSelected(), Session.get("last_id"), handleExecuteModel);
+                Meteor.call('nextInstances', model, getCommandIndex(), Session.get("last_id"), handleExecuteModel);
                 //$("#next > button").prop('disabled', true);
             }
             let ni = getNextInstance();
