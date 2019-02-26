@@ -419,4 +419,9 @@ initGraphViewer = function (element) {
     cy.on('tap', function (event) {
         $("#optionsMenu").hide();
     });
+
+    cy.on('render', function (event) {
+        $("#genInstanceUrl > button").prop('disabled', false);
+    });
+
 };

@@ -133,7 +133,6 @@ layouts = {
 
 };
 
-
 applyCurrentLayout = function () {
     if (cy.elements().size() > 0)cy.layout(layouts[currentLayout]);
 };
