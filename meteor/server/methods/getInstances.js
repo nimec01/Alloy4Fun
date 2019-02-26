@@ -52,10 +52,12 @@ Meteor.methods({
                 let content = JSON.parse(result.content);
                 let sat
                 if (content.alloy_error) {
+                    msg = content.msg
                     sat = -1;
                 } else {
                     // if unsat, still list with single element
                     sat = content[0].unsat?0:1;
+                    msg = content[0].msg
                 }
                 let original
                 // if the model has secrets and the previous hadn't, then it is a new root
@@ -68,7 +70,7 @@ Meteor.methods({
                 }
 
                 // update the root
-                Model.update({ _id : new_model_id },{$set: {original : original, sat : sat}})
+                Model.update({ _id : new_model_id },{$set: {original : original, sat : sat, msg : msg}})
 
                 // resolve the promise
                 resolve({
