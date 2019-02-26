@@ -8,7 +8,7 @@ allAtoms = [];
 atomPositions = {};
 
 project = function() {
-    Meteor.call("getProjection", getCurrentInstance().uuid, currentFramePosition, processProjection);
+    Meteor.call("getProjection", getCurrentInstance().sessionId, currentFramePosition, processProjection);
 };
 
 processProjection = function(err, projection) {

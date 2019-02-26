@@ -17,7 +17,7 @@ Meteor.methods({
         return new Promise((resolve, reject) => {
             HTTP.call('POST', `${Meteor.settings.env.API_URL}/getProjection`, {
                 data: {
-                    uuid: uuid,
+                    sessionId: uuid,
                     type: type
                 }
             }, (error, result) => {
