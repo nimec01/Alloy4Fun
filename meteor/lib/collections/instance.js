@@ -13,7 +13,7 @@ Instance.attachSchema(new SimpleSchema({
         type: String
     },
     /* index, within the model, of the command that generated the instance. */
-    command: {
+    cmd_i: {
         type: Number
     },
     /** the entire cytoscape graph. */
