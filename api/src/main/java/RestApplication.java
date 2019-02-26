@@ -11,15 +11,18 @@ public class RestApplication extends Application {
 	
 	private static HashMap<String, A4Solution> answers = new HashMap<String, A4Solution>();
 	private static HashMap<String, Integer> count = new HashMap<String, Integer>();
+	private static HashMap<String, Boolean> type = new HashMap<String, Boolean>();
     
 	public static void remove(String str) {
 		answers.remove(str);
 		count.remove(str);
+		type.remove(str);
 	}
 
-	public static void add(String str, A4Solution ans) {
+	public static void add(String str, A4Solution ans, boolean tp) {
 		answers.put(str,ans);
 		count.put(str,0);
+		type.put(str,tp);
 	}
 
 	public static A4Solution getSol(String str) {
@@ -28,6 +31,10 @@ public class RestApplication extends Application {
 
 	public static int getCnt(String str) {
 		return count.get(str);
+	}
+
+	public static boolean getType(String str) {
+		return type.get(str);
 	}
 
 	public static void next(String str) {
