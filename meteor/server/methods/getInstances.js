@@ -28,10 +28,10 @@ Meteor.methods({
 
             // save executed model to database
             let new_model = {
+                time: new Date().toLocaleString(),
                 // original code, without secrets
                 code: code,
-                command: commandIndex,
-                time: new Date().toLocaleString(),
+                cmd_i: commandIndex,
                 derivationOf: currentModelId,
             }
 
@@ -51,6 +51,8 @@ Meteor.methods({
 
                 let content = JSON.parse(result.content);
                 let sat
+                let cmd_n
+                let chk
                 if (content.alloy_error) {
                     msg = content.msg
                     sat = -1;
@@ -58,6 +60,8 @@ Meteor.methods({
                     // if unsat, still list with single element
                     sat = content[0].unsat?0:1;
                     msg = content[0].msg
+                    cmd_n = content[0].cmd_n
+                    chk = content[0].check
                 }
                 let original
                 // if the model has secrets and the previous hadn't, then it is a new root
@@ -70,7 +74,7 @@ Meteor.methods({
                 }
 
                 // update the root
-                Model.update({ _id : new_model_id },{$set: {original : original, sat : sat, msg : msg}})
+                Model.update({ _id : new_model_id },{$set: {original : original, sat : sat, cmd_n: cmd_n, cmd_c : chk, msg : msg}})
 
                 // resolve the promise
                 resolve({

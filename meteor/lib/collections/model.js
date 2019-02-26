@@ -40,8 +40,24 @@ Model.attachSchema(new SimpleSchema({
      * optional field for the index of the executed command, if created by
      * execution.
      */
-    command: {
+    cmd_i: {
         type: Number,
+        optional: true
+    },
+    /**
+     * optional field for the name of the executed command, if created by
+     * execution.
+     */
+    cmd_n: {
+        type: String,
+        optional: true
+    },
+    /**
+     * optional field, whether the command was a check (1) or a run (0), if
+     * created by execution.
+     */
+    cmd_c: {
+        type: Boolean,
         optional: true
     },
     /**

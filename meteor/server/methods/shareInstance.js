@@ -16,7 +16,7 @@ Meteor.methods({
     storeInstance: function(modelId, command, instance, themeData) {
         return Instance.insert({
             model_id: modelId,
-            command: command,
+            cmd_i: command,
             graph: instance,
             theme: themeData,
             time: new Date().toLocaleString()
