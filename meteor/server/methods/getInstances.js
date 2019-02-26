@@ -52,13 +52,16 @@ Meteor.methods({
                 if (error) reject(error)
 
                 let content = JSON.parse(result.content);
-                // if unsat, still list with single element
                 let sat
-                Object.keys(content).forEach(k => {
-                    content[k].commandType = commandType;
-                    sat = content[k].unsat;
-                });
-
+                if (content.alloy_error) {
+                    sat = -1;
+                } else {
+                    // if unsat, still list with single element
+                    Object.keys(content).forEach(k => {
+                        content[k].commandType = commandType;
+                        sat = content[k].unsat?0:1;
+                    });
+                }
                 let original
                 // if the model has secrets and the previous hadn't, then it is a new root
                 if (!currentModelId || (containsValidSecret(code) && !containsValidSecret(Model.findOne(currentModelId).code))) {

@@ -49,7 +49,7 @@ Model.attachSchema(new SimpleSchema({
      * execution.
      */
     sat: { 
-        type: Boolean,
+        type: Number,
         optional: true
     },
     /** the timestamp. */
