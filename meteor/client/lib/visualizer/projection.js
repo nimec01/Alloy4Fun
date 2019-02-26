@@ -61,8 +61,6 @@ addTypeToProjection = function(newType) {
             .text(newType));
     } else throw `${newType} already being projected.`;
     const atoms = lastFrame(newType);
-    // FIXED o lastframe devovle o index do ultimo atom por isso
-    // abaixo tem de estar >=
     if (atoms >= 1) {
         $('#nextFrame').addClass('enabled');
         $('#previousFrame').removeClass('enabled');
@@ -99,6 +97,10 @@ newInstanceSetup = function() {
         $('.current-frame').html(currentFramePositionToString());
         allAtoms = cy.nodes();
         project();
+        const atoms = lastFrame($('.framePickerTarget')[0].value);
+        if (atoms >= 1) 
+            $('#nextFrame').addClass('enabled');
+        $('#previousFrame').removeClass('enabled');
     }
 };
 
