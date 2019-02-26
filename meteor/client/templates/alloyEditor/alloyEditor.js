@@ -34,17 +34,6 @@ Template.alloyEditor.helpers({
     getMaxIntanceNumber() {
         return process.env.MAX_INSTANCES;
     },
-
-    drawInstance() {
-        const instanceNumber = Session.get('currentInstance');
-        if (instanceNumber == 0) $('#prev > button').prop('disabled', true);
-        if (instanceNumber != undefined) {
-            const instance = getCurrentInstance(instanceNumber);
-            if (instance) {
-                updateGraph(instance);
-            }
-        }
-    },
     getCommands() {
         const commands = Session.get('commands');
         if (commands && commands.length > 1) {

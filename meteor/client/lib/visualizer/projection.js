@@ -80,11 +80,8 @@ removeTypeFromProjection = function(type) {
     }
     if (currentlyProjectedTypes.length == 0) {
         $('.frame-navigation').hide();
-        const instanceNumber = Session.get('currentInstance');
-        if (instanceNumber != undefined) {
-            const instance = getCurrentInstance(instanceNumber);
-            if (instance) updateGraph(instance);
-        }
+        const instance = getCurrentInstance();
+        if (instance) updateGraph(instance);
     } else {
         $('.current-frame').html(currentFramePositionToString());
         project();
