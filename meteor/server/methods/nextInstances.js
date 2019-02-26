@@ -10,14 +10,12 @@ Meteor.methods({
       * the database.
       * 
       * @param {Number} commandIndex the index of the command to execute
-      * @param {Boolean} commandType whether the command was a run (true) or
-      *     check (false)
       * @param {String} currentModelId the id of the current model (from which
       *     the new will derive)
       * 
       * @returns the instance data and the id of the new saved model
       */
-    nextInstances: function(code, commandIndex, commandType, currentModelId) {
+    nextInstances: function(code, commandIndex, currentModelId) {
         return new Promise((resolve, reject) => {
             // must send model in case session has expired and must be restarted
             // if no secrets, try to extract from original
@@ -39,13 +37,7 @@ Meteor.methods({
                 if (error) reject(error)
 
                 let content = JSON.parse(result.content);
-                // if unsat, still list with single element
-                let sat
-                Object.keys(content).forEach(k => {
-                    content[k].commandType = commandType;
-                    sat = content[k].unsat;
-                });
-
+               
                 // resolve the promise
                 resolve({
                     instances: content,

@@ -12,14 +12,12 @@ Meteor.methods({
       * 
       * @param {String} code the Alloy model to execute
       * @param {Number} commandIndex the index of the command to execute
-      * @param {Boolean} commandType whether the command was a run (true) or
-      *     check (false)
       * @param {String} currentModelId the id of the current model (from which
       *     the new will derive)
       * 
       * @returns the instance data and the id of the new saved model
       */
-    getInstances: function(code, commandIndex, commandType, currentModelId) {
+    getInstances: function(code, commandIndex, currentModelId) {
         return new Promise((resolve, reject) => {
             // if no secrets, try to extract from original
             let code_with_secrets = code
@@ -58,9 +56,6 @@ Meteor.methods({
                 } else {
                     // if unsat, still list with single element
                     sat = content[0].unsat?0:1;
-                    Object.keys(content).forEach(k => {
-                        content[k].commandType = commandType;
-                    });
                 }
                 let original
                 // if the model has secrets and the previous hadn't, then it is a new root

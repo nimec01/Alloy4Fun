@@ -45,11 +45,18 @@ Model.attachSchema(new SimpleSchema({
         optional: true
     },
     /**
-     * optional field, whether the command was satisfiable, if created by
-     * execution.
+     * optional field, whether the command was satisfiable (1) or unsatisfiable 
+     * (0), if created by execution. if execution fails, then -1.
      */
     sat: { 
         type: Number,
+        optional: true
+    },
+    /**
+     * optional field, a possible error or warning message.
+     */
+    msg: { 
+        type: String,
         optional: true
     },
     /** the timestamp. */

@@ -88,7 +88,7 @@ Template.alloyEditor.events({
             });
         } else { // Execute command
             let model = textEditor.getValue();
-            Meteor.call('getInstances', model, commandIndex, isRunSelected(), Session.get("last_id"), handleExecuteModel);
+            Meteor.call('getInstances', model, commandIndex, Session.get("last_id"), handleExecuteModel);
         }
         // update button states after execution
         $("#exec > button").prop('disabled', true);
@@ -280,16 +280,16 @@ function handleExecuteModel(err, result) {
 
             if (result.unsat) {
                 $('#instancenav').hide();
-                paragraph.innerHTML = result.commandType ? "No instance found. " + command + " is inconsistent." : "No counter-examples. " + command + " solved!";
-                paragraph.className = result.commandType ? "log-wrong" : "log-complete";
+                paragraph.innerHTML = result.check ? "No counter-examples. " + command + " solved!" : "No instance found. " + command + " is inconsistent.";
+                paragraph.className = result.check ? "log-complete": "log-wrong";
 
                 $('#next > button').prop('disabled', true);
                 $('#prev > button').prop('disabled', true);
                 $("#next").css("display", 'none');
                 $("#prev").css("display", 'none');
             } else {
-                paragraph.innerHTML = result.commandType ? "Instance found. " + command + " is consistent." : "Counter-example found. " + command + " is inconsistent.";
-                paragraph.className = result.commandType ? "log-complete" : "log-wrong";
+                paragraph.innerHTML = result.check ? "Counter-example found. " + command + " is inconsistent." : "Instance found. " + command + " is consistent.";
+                paragraph.className = result.check ? "log-wrong" : "log-complete";
                 initGraphViewer('instance');
                 updateGraph(result);
 
