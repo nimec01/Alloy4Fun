@@ -113,10 +113,10 @@ public class AlloyGetInstances {
 		A4Solution ans = RestApplication.getSol(req.sessionId);
 		int cnt = 0;
 		for (int n = 0; n < req.numberOfInstances && ans.satisfiable(); n++) {
-			ans = RestApplication.getSol(req.sessionId);
 			cnt = RestApplication.getCnt(req.sessionId);
 			solsArrayJSON.add(answerToJson(req.sessionId, ans, warnings, cnt));
 			RestApplication.next(req.sessionId);
+			ans = RestApplication.getSol(req.sessionId);
 		}
 		if (!ans.satisfiable())
 			solsArrayJSON.add(answerToJson(req.sessionId, ans, warnings, cnt));

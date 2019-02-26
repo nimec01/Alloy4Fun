@@ -57,9 +57,9 @@ Meteor.methods({
                     sat = -1;
                 } else {
                     // if unsat, still list with single element
+                    sat = content[0].unsat?0:1;
                     Object.keys(content).forEach(k => {
                         content[k].commandType = commandType;
-                        sat = content[k].unsat?0:1;
                     });
                 }
                 let original
