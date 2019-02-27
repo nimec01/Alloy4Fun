@@ -34,17 +34,6 @@ Template.alloyEditor.helpers({
     getMaxIntanceNumber() {
         return process.env.MAX_INSTANCES;
     },
-
-    drawInstance() {
-        const instanceNumber = Session.get('currentInstance');
-        if (instanceNumber == 0) $('#prev > button').prop('disabled', true);
-        if (instanceNumber != undefined) {
-            const instance = getCurrentInstance(instanceNumber);
-            if (instance) {
-                updateGraph(instance);
-            }
-        }
-    },
     getCommands() {
         const commands = Session.get('commands');
         if (commands && commands.length > 1) {
@@ -244,12 +233,14 @@ function handleExecuteModel(err, result) {
         $.unblockUI();
         $('#exec > button').prop('disabled', true);
         
-        //clear projection combo box
-        let select = document.getElementsByClassName("framePickerTarget");
-        if (select) select = select[0];
-        if (select) {
-            let length = select.options.length;
-            for (i = 0; i < length; i++) select.remove(0);
+        if (instanceIndex == 0) {
+            //clear projection combo box
+            let select = document.getElementsByClassName("framePickerTarget");
+            if (select) select = select[0];
+            if (select) {
+                let length = select.options.length;
+                for (i = 0; i < length; i++) select.remove(0);
+            }
         }
 
         $('#instanceViewer').hide();
@@ -279,7 +270,6 @@ function handleExecuteModel(err, result) {
             let log = document.createElement('div');
             log.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
             let paragraph = document.createElement('p');
-
             if (result.unsat) {
                 $('#instancenav').hide();
                 paragraph.innerHTML = result.check ? "No counter-examples. " + command + " solved!" : "No instance found. " + command + " is inconsistent.";

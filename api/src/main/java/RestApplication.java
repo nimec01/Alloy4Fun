@@ -4,15 +4,18 @@ import edu.mit.csail.sdg.translator.A4Solution;
 import edu.mit.csail.sdg.ast.Command;
 
 import java.util.HashMap;
+import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 
 import javax.ws.rs.ApplicationPath;
 
 @ApplicationPath("/")
 public class RestApplication extends Application {
 	
-	private static HashMap<String, A4Solution> answers = new HashMap<String, A4Solution>();
-	private static HashMap<String, Integer> count = new HashMap<String, Integer>();
-	private static HashMap<String, Command> cmd = new HashMap<String, Command>();
+	private static Map<String, List<A4Solution>> answers = new HashMap<String, List<A4Solution>>();
+	private static Map<String, Integer> count = new HashMap<String, Integer>();
+	private static Map<String, Command> cmd = new HashMap<String, Command>();
     
 	public static void remove(String str) {
 		answers.remove(str);
@@ -21,13 +24,20 @@ public class RestApplication extends Application {
 	}
 
 	public static void add(String str, A4Solution ans, Command cm) {
-		answers.put(str,ans);
+		answers.put(str,new ArrayList<A4Solution>());
+		answers.get(str).add(ans);
 		count.put(str,0);
 		cmd.put(str,cm);
 	}
 
 	public static A4Solution getSol(String str) {
-		return answers.get(str);
+		List<A4Solution> sols = answers.get(str);
+		return sols.get(sols.size()-1);
+	}
+
+	public static A4Solution getSol(String str, int n) {
+		List<A4Solution> sols = answers.get(str);
+		return sols.get(n);
 	}
 
 	public static int getCnt(String str) {
@@ -39,7 +49,7 @@ public class RestApplication extends Application {
 	}
 
 	public static void next(String str) {
-		answers.put(str,answers.get(str).next());
+		answers.get(str).add(getSol(str).next());
 		count.put(str,count.get(str)+1);
 	}
 

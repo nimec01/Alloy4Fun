@@ -42,6 +42,5 @@ Template.frameNavigation.onRendered(() => {
 });
 
 lastFrame = function (type) {
-    console.log(allAtoms.nodes(`[type='${type}']`).length - 1);
     return allAtoms.nodes(`[type='${type}']`).length - 1;
 };

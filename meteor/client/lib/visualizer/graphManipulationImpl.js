@@ -155,7 +155,7 @@ getEdges = function (instance) {
             if (field.type.indexOf("this/") != -1) {
                 field.values.forEach(function (relation) {
                     var label = field.label;
-                    var labelExt = relation.splice(1, relation.length - 2).toString();
+                    var labelExt = relation.slice(1, relation.length - 1).toString();
                     result.push({
                         group: "edges", selectable: true, data: {
                             relation: label,
@@ -419,4 +419,9 @@ initGraphViewer = function (element) {
     cy.on('tap', function (event) {
         $("#optionsMenu").hide();
     });
+
+    cy.on('render', function (event) {
+        $("#genInstanceUrl > button").prop('disabled', false);
+    });
+
 };

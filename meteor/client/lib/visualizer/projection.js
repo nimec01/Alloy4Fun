@@ -8,7 +8,7 @@ allAtoms = [];
 atomPositions = {};
 
 project = function() {
-    Meteor.call("getProjection", getCurrentInstance().uuid, currentFramePosition, processProjection);
+    Meteor.call("getProjection", getCurrentInstance().sessionId, currentFramePosition, instanceIndex, processProjection);
 };
 
 processProjection = function(err, projection) {
@@ -25,10 +25,8 @@ updateProjection = function(frame) {
                 // da projecao (frame)
                 for (let ar = 0; ar < frame.atom_rels.length; ar++) {
                     if (frame.atom_rels[ar].atom == node.data().id) {
-                        // se o array subsetSigs nao tiver la criamos
-                        if (!node.data().subsetSigs) {
-                            node.data().subsetSigs = [];
-                        }
+                        // create the array, or replace by empty
+                        node.data().subsetSigs = [];
                         // este atom tem relations
                         // acrescentam todas aos subsetSigs para que o modulo
                         // do grafo as inclua abaixo do nome do atomo
@@ -38,7 +36,6 @@ updateProjection = function(frame) {
                         break;
                     }
                 }
-
                 cy.add(node);
             }
         }
@@ -51,22 +48,22 @@ updateProjection = function(frame) {
 };
 
 addTypeToProjection = function(newType) {
+    const atoms = lastFrame(newType);
     if (currentlyProjectedTypes.indexOf(newType) == -1) {
         currentlyProjectedTypes.push(newType);
         currentlyProjectedTypes.sort();
-        currentFramePosition[newType] = 0;
         $('.frame-navigation').show();
         $('.frame-navigation > select').append($('<option></option>')
             .attr('value', newType)
             .text(newType));
+        if (atoms >= 0) 
+            currentFramePosition[newType] = 0;
     } else throw `${newType} already being projected.`;
-    const atoms = lastFrame(newType);
-    // FIXED o lastframe devovle o index do ultimo atom por isso
-    // abaixo tem de estar >=
-    if (atoms >= 1) {
+    if (atoms >= 1)
         $('#nextFrame').addClass('enabled');
-        $('#previousFrame').removeClass('enabled');
-    }
+    else
+        $('#nextFrame').remove('enabled');
+    $('#previousFrame').removeClass('enabled');
     $('.current-frame').html(currentFramePositionToString());
     $('.framePickerTarget').val(newType);
     project();
@@ -82,11 +79,8 @@ removeTypeFromProjection = function(type) {
     }
     if (currentlyProjectedTypes.length == 0) {
         $('.frame-navigation').hide();
-        const instanceNumber = Session.get('currentInstance');
-        if (instanceNumber != undefined) {
-            const instance = getCurrentInstance(instanceNumber);
-            if (instance) updateGraph(instance);
-        }
+        const instance = getCurrentInstance();
+        if (instance) updateGraph(instance);
     } else {
         $('.current-frame').html(currentFramePositionToString());
         project();
@@ -99,6 +93,12 @@ newInstanceSetup = function() {
         $('.current-frame').html(currentFramePositionToString());
         allAtoms = cy.nodes();
         project();
+        const atoms = lastFrame($('.framePickerTarget')[0].value);
+        if (atoms >= 1) 
+            $('#nextFrame').addClass('enabled');
+        else 
+            $('#nextFrame').remove('enabled');
+        $('#previousFrame').removeClass('enabled');
     }
 };
 

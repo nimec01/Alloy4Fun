@@ -9,7 +9,7 @@ Meteor.methods({
       *
       * @return JSON object with the projection
       */
-    getProjection: function(uuid, frameInfo) {
+    getProjection: function(uuid, frameInfo, idx) {
         let type = [];
         for (var key in frameInfo) {
             type.push(key + frameInfo[key]);
@@ -17,8 +17,9 @@ Meteor.methods({
         return new Promise((resolve, reject) => {
             HTTP.call('POST', `${Meteor.settings.env.API_URL}/getProjection`, {
                 data: {
-                    uuid: uuid,
-                    type: type
+                    sessionId: uuid,
+                    type: type,
+                    index: idx
                 }
             }, (error, result) => {
                 if (error) reject(error)

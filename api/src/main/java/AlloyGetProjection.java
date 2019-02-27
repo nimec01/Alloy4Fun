@@ -35,12 +35,14 @@ public class AlloyGetProjection {
 	public Response doGet(String body) throws IOException {
 		String res = "";
 		System.out.println(body);
-		AbstractMap.SimpleEntry<String, List<Object> > req;
+		Request req;
 		try {
 			req = parseJSON(body);
-			A4Solution sol = RestApplication.getSol(req.getKey());
+			System.out.println(req);
+			A4Solution sol = RestApplication.getSol(req.uuid,req.index);
 			File tempFile = File.createTempFile("a4f", "als");
 			tempFile.deleteOnExit();
+			System.out.println(sol.toString());
 			sol.writeXML(tempFile.getAbsolutePath());
 			AlloyInstance myInstance = StaticInstanceReader.parseInstance(tempFile.getAbsoluteFile());
 			
@@ -53,7 +55,7 @@ public class AlloyGetProjection {
 			
 			Map<AlloyType, AlloyAtom> map = new LinkedHashMap<AlloyType, AlloyAtom>();
 			for (AlloyAtom alloy_atom : myState.getOriginalInstance().getAllAtoms()) {
-				for (Object projectingType : req.getValue()) {	
+				for (Object projectingType : req.type) {	
 					String pt = (String) projectingType;
 					if (alloy_atom.getVizName(theme, true).replace("$","").equals(pt))
 						map.put(alloy_atom.getType(), alloy_atom);
@@ -129,17 +131,30 @@ public class AlloyGetProjection {
 		return projectionsJSON;
 	}
 	
-	private AbstractMap.SimpleEntry<String, List<Object> > parseJSON(String body) throws Exception {
+	private Request parseJSON(String body) throws Exception {
 
 		JSONObject jo = new JSONObject(body);
 		String uuid = jo.getString("sessionId");
 		JSONArray typesArray = jo.getJSONArray("type");
 		List<Object> types = typesArray.toList();
+		int indx = jo.getInt("index");
 	
-
-		AbstractMap.SimpleEntry<String, List<Object> > req = new AbstractMap.SimpleEntry<>(uuid, types);
+		Request req = new Request(uuid,types,indx);
 
 		return req;
 	}
 
+}
+
+class Request {
+   final String uuid;
+   final List<Object> type;
+   final int index;
+   
+   Request(String u, List<Object> t, int i) {
+   		uuid = u;
+   		type = t;
+   		index = i;
+   }
+  
 }
