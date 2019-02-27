@@ -25,10 +25,8 @@ updateProjection = function(frame) {
                 // da projecao (frame)
                 for (let ar = 0; ar < frame.atom_rels.length; ar++) {
                     if (frame.atom_rels[ar].atom == node.data().id) {
-                        // se o array subsetSigs nao tiver la criamos
-                        if (!node.data().subsetSigs) {
-                            node.data().subsetSigs = [];
-                        }
+                        // create the array, or replace by empty
+                        node.data().subsetSigs = [];
                         // este atom tem relations
                         // acrescentam todas aos subsetSigs para que o modulo
                         // do grafo as inclua abaixo do nome do atomo
@@ -38,7 +36,6 @@ updateProjection = function(frame) {
                         break;
                     }
                 }
-
                 cy.add(node);
             }
         }
