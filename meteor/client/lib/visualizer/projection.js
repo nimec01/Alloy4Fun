@@ -48,20 +48,22 @@ updateProjection = function(frame) {
 };
 
 addTypeToProjection = function(newType) {
+    const atoms = lastFrame(newType);
     if (currentlyProjectedTypes.indexOf(newType) == -1) {
         currentlyProjectedTypes.push(newType);
         currentlyProjectedTypes.sort();
-        currentFramePosition[newType] = 0;
         $('.frame-navigation').show();
         $('.frame-navigation > select').append($('<option></option>')
             .attr('value', newType)
             .text(newType));
+        if (atoms >= 0) 
+            currentFramePosition[newType] = 0;
     } else throw `${newType} already being projected.`;
-    const atoms = lastFrame(newType);
-    if (atoms >= 1) {
+    if (atoms >= 1)
         $('#nextFrame').addClass('enabled');
-        $('#previousFrame').removeClass('enabled');
-    }
+    else
+        $('#nextFrame').remove('enabled');
+    $('#previousFrame').removeClass('enabled');
     $('.current-frame').html(currentFramePositionToString());
     $('.framePickerTarget').val(newType);
     project();
@@ -94,6 +96,8 @@ newInstanceSetup = function() {
         const atoms = lastFrame($('.framePickerTarget')[0].value);
         if (atoms >= 1) 
             $('#nextFrame').addClass('enabled');
+        else 
+            $('#nextFrame').remove('enabled');
         $('#previousFrame').removeClass('enabled');
     }
 };
