@@ -2,140 +2,56 @@ import {
     displayError
 } from "../editor/feedback"
 
+// the list of types currently projected
 currentlyProjectedTypes = [];
+// for each of the types, the selected frame
 currentFramePosition = {};
-allAtoms = [];
-atomPositions = {};
+// all cy nodes available in the unprojected instance
+allNodes = [];
+// stores the positions of the nodes between frames
+nodePositions = {};
 
+// will call the projection API for the current projections/frames
 project = function() {
     Meteor.call("getProjection", getCurrentInstance().sessionId, currentFramePosition, instanceIndex, processProjection);
 };
 
+// processes a frame for projected instance from API response
 processProjection = function(err, projection) {
     if (err) return displayError(err)
-    else updateProjection(projection[0]);
-};
-
-updateProjection = function(frame) {
+    frame = projection[0];
+    // process atoms and subsets
     cy.nodes().remove();
-    allAtoms.forEach((node) => {
+    allNodes.forEach((node) => {
         for (const i in frame.atoms) {
             if (node.data().id == frame.atoms[i]) {
-                // para cada atom, vemos se temos relations no vetor atom_rels
-                // da projecao (frame)
+                // for each atom, check relations on frame's atom_rels
                 for (let ar = 0; ar < frame.atom_rels.length; ar++) {
                     if (frame.atom_rels[ar].atom == node.data().id) {
+                        // the atom has relations
                         // create the array, or replace by empty
                         node.data().subsetSigs = [];
-                        // este atom tem relations
-                        // acrescentam todas aos subsetSigs para que o modulo
-                        // do grafo as inclua abaixo do nome do atomo
+                        // add relations to subset sigs
                         for (let r = 0; r < frame.atom_rels[ar].relations.length; r++) {
                             node.data().subsetSigs.push(frame.atom_rels[ar].relations[r]);
                         }
                         break;
                     }
                 }
+                // add nodes that are present in frame
                 cy.add(node);
             }
         }
     });
-    const edges = getProjectionEdges(frame.relations);
+    // process relations
     cy.edges().remove();
+    const edges = getProjectionEdges(frame.relations);
     cy.add(edges);
+    // apply the layout (being applied twice)
     applyCurrentLayout();
+    // recover node positions
     applyPositions();
 };
-
-addTypeToProjection = function(newType) {
-    const atoms = lastFrame(newType);
-    if (currentlyProjectedTypes.indexOf(newType) == -1) {
-        currentlyProjectedTypes.push(newType);
-        currentlyProjectedTypes.sort();
-        $('.frame-navigation').show();
-        $('.frame-navigation > select').append($('<option></option>')
-            .attr('value', newType)
-            .text(newType));
-        if (atoms >= 0) 
-            currentFramePosition[newType] = 0;
-    } else throw `${newType} already being projected.`;
-    if (atoms >= 1)
-        $('#nextFrame').addClass('enabled');
-    else
-        $('#nextFrame').remove('enabled');
-    $('#previousFrame').removeClass('enabled');
-    $('.current-frame').html(currentFramePositionToString());
-    $('.framePickerTarget').val(newType);
-    project();
-};
-
-removeTypeFromProjection = function(type) {
-    const index = currentlyProjectedTypes.indexOf(type);
-    if (index == -1) throw `${type} not found in types being projected.`;
-    else {
-        currentlyProjectedTypes.splice(index, 1);
-        delete currentFramePosition[type];
-        $(`.frame-navigation > select option[value = '${type}']`).remove();
-    }
-    if (currentlyProjectedTypes.length == 0) {
-        $('.frame-navigation').hide();
-        const instance = getCurrentInstance();
-        if (instance) updateGraph(instance);
-    } else {
-        $('.current-frame').html(currentFramePositionToString());
-        project();
-    }
-};
-
-newInstanceSetup = function() {
-    if (currentlyProjectedTypes.length != 0) {
-        for (const key in currentFramePosition) currentFramePosition[key] = 0;
-        $('.current-frame').html(currentFramePositionToString());
-        allAtoms = cy.nodes();
-        project();
-        const atoms = lastFrame($('.framePickerTarget')[0].value);
-        if (atoms >= 1) 
-            $('#nextFrame').addClass('enabled');
-        else 
-            $('#nextFrame').remove('enabled');
-        $('#previousFrame').removeClass('enabled');
-    }
-};
-
-savePositions = function() {
-    const atoms = cy.nodes();
-    atoms.forEach((atom) => {
-        atomPositions[atom.data().id] = jQuery.extend(true, {}, atom.position());
-    });
-};
-
-applyPositions = function() {
-    for (const id in atomPositions) {
-        const node = cy.nodes(`[id='${id}']`);
-        if (node.length > 0) {
-            node[0].position(atomPositions[id]);
-        }
-    }
-};
-
-/*
- TODO caching system
- getProjectionFromCache = function (typesToProject){
- for(var i in projectionCache)
- if(projectionCache[i].projectedTypes.equals(typesToProject))return projectionCache[i].frames;
- return undefined;
- };
-
- cacheProjectionState = function(){
-
- };
-
- isProjectionCached = function (typesToProject){
- for(var i in projectionCache)
- if(projectionCache[i].projectedTypes.equals(typesToProject))return true;
- return false;
- }; */
-
 
 getProjectionEdges = function(relations) {
     const result = [];
@@ -167,9 +83,114 @@ getProjectionEdges = function(relations) {
     return result;
 };
 
+// projects a new signature, updates elements accordingly
+addTypeToProjection = function(newType) {
+    const atoms = lastFrame(newType);
+    if (currentlyProjectedTypes.indexOf(newType) == -1) {
+        currentlyProjectedTypes.push(newType);
+        currentlyProjectedTypes.sort();
+        $('.frame-navigation').show();
+        $('.frame-navigation > select').append($('<option></option>')
+            .attr('value', newType)
+            .text(newType));
+        if (atoms >= 0) 
+            currentFramePosition[newType] = 0;
+    } else throw `${newType} already being projected.`;
+    if (atoms >= 1)
+        $('#nextFrame').addClass('enabled');
+    else
+        $('#nextFrame').removeClass('enabled');
+    $('#previousFrame').removeClass('enabled');
+    $('.current-frame').html(currentFramePositionToString());
+    $('.framePickerTarget').val(newType);
+    project();
+};
 
+// removes a projected signature, updates elements accordingly
+removeTypeFromProjection = function(type) {
+    const index = currentlyProjectedTypes.indexOf(type);
+    if (index == -1) throw `${type} not found in types being projected.`;
+    else {
+        currentlyProjectedTypes.splice(index, 1);
+        delete currentFramePosition[type];
+        $(`.frame-navigation > select option[value = '${type}']`).remove();
+    }
+    if (currentlyProjectedTypes.length == 0) {
+        $('.frame-navigation').hide();
+        const instance = getCurrentInstance();
+        if (instance) updateGraph(instance);
+    } else {
+        $('.current-frame').html(currentFramePositionToString());
+        project();
+    }
+};
+
+// applies the current projected information to a new instance, same projected
+// signatures but resets frame selection; elements updated accordingly
+newInstanceSetup = function() {
+    currentFramePosition = {};
+    if (currentlyProjectedTypes.length != 0) {
+        for (const key in currentlyProjectedTypes) 
+            currentFramePosition[currentlyProjectedTypes[key]] = 0;
+        $('.current-frame').html(currentFramePositionToString());
+        allNodes = cy.nodes();
+        project();
+        const atoms = lastFrame($('.framePickerTarget')[0].value);
+        if (atoms >= 1) 
+            $('#nextFrame').addClass('enabled');
+        else 
+            $('#nextFrame').removeClass('enabled');
+        $('#previousFrame').removeClass('enabled');
+    } else {
+        $(".frame-navigation").hide();
+    }
+};
+
+// saves current node positions
+savePositions = function() {
+    const atoms = cy.nodes();
+    atoms.forEach((atom) => {
+        nodePositions[atom.data().id] = jQuery.extend(true, {}, atom.position());
+    });
+};
+
+// applies saved node positions
+applyPositions = function() {
+    for (const id in nodePositions) {
+        const node = cy.nodes(`[id='${id}']`);
+        if (node.length > 0) {
+            node[0].position(nodePositions[id]);
+        }
+    }
+};
+
+// resets saved node positions
+resetPositions = function() {
+    nodePositions = {};
+};
+
+// calculates the label to be present as the current frame, type+index
 currentFramePositionToString = function() {
     const position = [];
     for (const key in currentFramePosition) position.push(key + currentFramePosition[key]);
     return position.toString();
 };
+
+/*
+ TODO caching system
+ getProjectionFromCache = function (typesToProject){
+ for(var i in projectionCache)
+ if(projectionCache[i].projectedTypes.equals(typesToProject))return projectionCache[i].frames;
+ return undefined;
+ };
+
+ cacheProjectionState = function(){
+
+ };
+
+ isProjectionCached = function (typesToProject){
+ for(var i in projectionCache)
+ if(projectionCache[i].projectedTypes.equals(typesToProject))return true;
+ return false;
+ }; */
+

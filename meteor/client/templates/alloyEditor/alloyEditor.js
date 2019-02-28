@@ -60,12 +60,6 @@ Template.alloyEditor.events({
     'click #exec': function () {
         if ($("#exec > button").is(":disabled")) return;
 
-        currentlyProjectedTypes = [];
-        currentFramePosition = {};
-        allAtoms = [];
-        atomPositions = {};
-        $(".frame-navigation").hide();
-
         let commandIndex = getCommandIndex();
         if (commandIndex < 0) { //no command to run
             swal({
@@ -93,6 +87,7 @@ Template.alloyEditor.events({
         if (evt.toElement.id != "prev") {
             let ni = getPreviousInstance();
             if (typeof ni !== 'undefined') {
+                resetPositions();
                 updateGraph(ni);
                 if (instanceIndex == 0) {
                     $("#prev > button").prop('disabled', true);
@@ -118,11 +113,12 @@ Template.alloyEditor.events({
                     swal("No more satisfying instances!", "", "error");
                     instanceIndex--;
                 } else {
+                    resetPositions();
                     updateGraph(ni);
+                    $("#prev > button").prop('disabled', false);
+                    $("#url-instance-permalink").empty()
+                    $("#genInstanceUrl > button").prop('disabled', false);
                 }
-                $("#prev > button").prop('disabled', false);
-                $("#url-instance-permalink").empty()
-                $("#genInstanceUrl > button").prop('disabled', false);
             }
         }
     },
@@ -229,19 +225,9 @@ function handleExecuteModel(err, result) {
             return displayError(err)
         }
         Session.set("last_id", result.newModelId) // update the last_id for next derivations
-
+    
         $.unblockUI();
         $('#exec > button').prop('disabled', true);
-        
-        if (instanceIndex == 0) {
-            //clear projection combo box
-            let select = document.getElementsByClassName("framePickerTarget");
-            if (select) select = select[0];
-            if (select) {
-                let length = select.options.length;
-                for (i = 0; i < length; i++) select.remove(0);
-            }
-        }
 
         $('#instanceViewer').hide();
         $("#log").empty();
@@ -282,6 +268,7 @@ function handleExecuteModel(err, result) {
             } else {
                 paragraph.innerHTML = result.check ? "Counter-example found. " + command + " is inconsistent." : "Instance found. " + command + " is consistent.";
                 paragraph.className = result.check ? "log-wrong" : "log-complete";
+                resetPositions();
                 initGraphViewer('instance');
                 updateGraph(result);
 

@@ -3,7 +3,8 @@ import {
     defineAlloyMode
 } from '/imports/editor/AlloyEditorMode';
 import {
-    getCommandsFromCode
+    getCommandsFromCode,
+    containsValidSecret
 } from "../../lib/editor/text"
 import 'codemirror/theme/twilight.css';
 import 'codemirror/lib/codemirror.css';
@@ -81,6 +82,13 @@ function initializeAlloyEditor(htmlElement) {
             } else {
                 $('#exec > button').prop('disabled', true);
             }
+            // public links may have hidden secrets, unless new ones introduced
+            if (!Session.get("from_private")) {
+                if (containsValidSecret(editor.getValue()))
+                    $("#hidden_icon").css("display", 'none');
+                else 
+                    $("#hidden_icon").css("display", 'initial');
+            }
         }
         Session.set("currentInstance", undefined);
         Session.set("instances", undefined);
@@ -112,6 +120,7 @@ function initializeEditor(htmlElement, mode) {
  * Secret commands will always appear last.
  */
 function getCommands() {
-    let hidden_commands = Session.get("hidden_commands") || []
+    let hidden_commands = []
+    if (!containsValidSecret(this.getValue())) hidden_commands = Session.get("hidden_commands") || []
     Session.set("commands", getCommandsFromCode(this.getValue()).concat(hidden_commands))
 }

@@ -34,15 +34,13 @@ public class AlloyGetProjection {
 	@Produces("text/json")
 	public Response doGet(String body) throws IOException {
 		String res = "";
-		System.out.println(body);
 		Request req;
 		try {
 			req = parseJSON(body);
-			System.out.println(req);
 			A4Solution sol = RestApplication.getSol(req.uuid,req.index);
 			File tempFile = File.createTempFile("a4f", "als");
 			tempFile.deleteOnExit();
-			System.out.println(sol.toString());
+			System.out.println("Projecting "+req.type+" at "+req.index);
 			sol.writeXML(tempFile.getAbsolutePath());
 			AlloyInstance myInstance = StaticInstanceReader.parseInstance(tempFile.getAbsoluteFile());
 			
@@ -64,6 +62,7 @@ public class AlloyGetProjection {
 			
 			AlloyProjection currentProjection = new AlloyProjection(map);
 			AlloyInstance projected = StaticProjector.project(myInstance, currentProjection);
+
 			jsonResponseBuilder.add(projectedInstance2JSON(projected));
 			
 			res = jsonResponseBuilder.build().toString();

@@ -16,7 +16,7 @@ export {
  * Function to handle click on "Share" button
  */
 function clickGenUrl() {
-    if ($("#genURL > button").is(":disabled")) return
+    if ($("#genUrl > button").is(":disabled")) return
 
     let modelToShare = textEditor.getValue();
     Meteor.call('genURL', modelToShare, Session.get("last_id"), handleGenURLEvent);

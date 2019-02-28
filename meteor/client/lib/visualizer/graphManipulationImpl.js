@@ -1,6 +1,6 @@
 import cytoscape from 'cytoscape';
 
-updateGraph = function (instance) {
+updateGraph = function (instance) {    
     //If not yet initialized, create new cytoscape object using the text area identified by 'instance' class.
     if (!cy) initGraphViewer("instance");
     $('#instanceViewer').show();
@@ -41,7 +41,7 @@ applyThemeSettings = function () {
     // Add types, subsets and relations to selection area on settings tab.
     updateElementSelectionContent();
     // Backup of whole instance. Helpful for projection.
-    allAtoms = cy.nodes();
+    allNodes = cy.nodes();
     // Apply same projections as on previous instances.
     newInstanceSetup();
 };
@@ -50,6 +50,7 @@ applyThemeSettings = function () {
 //Get atom information received from server ready to upload to cytoscape object.
 getAtoms = function (instance) {
     var atoms = [];
+    resetHierarchy();
     if (instance.atoms){
         instance.atoms.forEach(function (atom) {
             if (atom.type == "String") {
