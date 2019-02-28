@@ -3,7 +3,8 @@ import {
 } from "meteor/meteor";
 import {
     extractSecrets,
-    getCommandsFromCode
+    getCommandsFromCode,
+    containsValidSecret
 } from "../../lib/editor/text";
 
 Meteor.methods({
@@ -35,12 +36,14 @@ function getModelFromLink(linkId) {
     let link = Link.findOne(linkId)
     if (!link) return //undefined if link does not exist
     let model = Model.findOne(link.model_id)
-    let complete_model = model.code
+
+    // if the link is public, retrieve the secrets from the root (original)
     if (!link.private) {
-        // remove the secrets
-        model.code = extractSecrets(model.code).public
-        // still register secret commands
-        let seccms = getCommandsFromCode(extractSecrets(complete_model).secret)
+        let o = Model.findOne(model.original)
+        let secs = extractSecrets(o.code).secret    
+        model.code = extractSecrets(model.code).public                
+        // register secret commands
+        let seccms = getCommandsFromCode(secs)
         if (seccms) model.commands = seccms
     }
     model.from_private = link.private // return info about the used link type
