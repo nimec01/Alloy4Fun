@@ -50,6 +50,7 @@ applyThemeSettings = function () {
 //Get atom information received from server ready to upload to cytoscape object.
 getAtoms = function (instance) {
     var atoms = [];
+    resetHierarchy();
     if (instance.atoms){
         instance.atoms.forEach(function (atom) {
             if (atom.type == "String") {

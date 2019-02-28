@@ -1,13 +1,17 @@
 metaPrimSigs = [{ type: 'univ', parent: null }];
 metaSubsetSigs = [];
 
+resetHierarchy = function() {
+    metaPrimSigs = [{ type: 'univ', parent: null }];
+    metaSubsetSigs = [];
+}
+
 getSigParent = function (sigType) {
     for (const i in metaPrimSigs) {
         if (metaPrimSigs[i].type == sigType) return metaPrimSigs[i].parent;
     }
     throw null;
 };
-
 
 getChildSigs = function (sigType) {
     const childSigs = [];
