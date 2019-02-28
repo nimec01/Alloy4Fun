@@ -16,6 +16,11 @@ updateGraph = function (instance) {
     else {
         $('.empty-universe').hide();
     }
+        
+    currentFramePosition = {};
+    allAtoms = [];
+    atomPositions = {};
+
     cy.resize();
     // Apply same theme settings as previous instance.
     applyThemeSettings();

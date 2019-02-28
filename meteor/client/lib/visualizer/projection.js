@@ -8,6 +8,7 @@ allAtoms = [];
 atomPositions = {};
 
 project = function() {
+    console.log(currentFramePosition)
     Meteor.call("getProjection", getCurrentInstance().sessionId, currentFramePosition, instanceIndex, processProjection);
 };
 
@@ -48,6 +49,7 @@ updateProjection = function(frame) {
 };
 
 addTypeToProjection = function(newType) {
+    console.log("adding "+newType)
     const atoms = lastFrame(newType);
     if (currentlyProjectedTypes.indexOf(newType) == -1) {
         currentlyProjectedTypes.push(newType);
@@ -88,8 +90,11 @@ removeTypeFromProjection = function(type) {
 };
 
 newInstanceSetup = function() {
+    console.log(currentlyProjectedTypes)
+    console.log(currentFramePosition)
     if (currentlyProjectedTypes.length != 0) {
-        for (const key in currentFramePosition) currentFramePosition[key] = 0;
+        for (const key in currentlyProjectedTypes) 
+            currentFramePosition[currentlyProjectedTypes[key]] = 0;
         $('.current-frame').html(currentFramePositionToString());
         allAtoms = cy.nodes();
         project();
@@ -99,6 +104,8 @@ newInstanceSetup = function() {
         else 
             $('#nextFrame').removeClass('enabled');
         $('#previousFrame').removeClass('enabled');
+    } else {
+        $(".frame-navigation").hide();
     }
 };
 
