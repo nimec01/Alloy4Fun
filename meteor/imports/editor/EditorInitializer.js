@@ -3,7 +3,8 @@ import {
     defineAlloyMode
 } from '/imports/editor/AlloyEditorMode';
 import {
-    getCommandsFromCode
+    getCommandsFromCode,
+    containsValidSecret
 } from "../../lib/editor/text"
 import 'codemirror/theme/twilight.css';
 import 'codemirror/lib/codemirror.css';
@@ -112,6 +113,7 @@ function initializeEditor(htmlElement, mode) {
  * Secret commands will always appear last.
  */
 function getCommands() {
-    let hidden_commands = Session.get("hidden_commands") || []
+    let hidden_commands = []
+    if (!containsValidSecret(this.getValue())) hidden_commands = Session.get("hidden_commands") || []
     Session.set("commands", getCommandsFromCode(this.getValue()).concat(hidden_commands))
 }
