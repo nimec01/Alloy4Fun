@@ -41,7 +41,7 @@ Template.frameNavigation.onRendered(() => {
     $('.frame-navigation').hide();
 });
 
+// retrieves the last index of atoms of a given type, used for frame navigation
 lastFrame = function (type) {
-    console.log(allAtoms.nodes(`[type='${type}']`).length - 1);
-    return allAtoms.nodes(`[type='${type}']`).length - 1;
+    return allNodes.nodes(`[type='${type}']`).length - 1;
 };

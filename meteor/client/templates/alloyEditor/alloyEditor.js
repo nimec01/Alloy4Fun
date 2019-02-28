@@ -87,6 +87,7 @@ Template.alloyEditor.events({
         if (evt.toElement.id != "prev") {
             let ni = getPreviousInstance();
             if (typeof ni !== 'undefined') {
+                resetPositions();
                 updateGraph(ni);
                 if (instanceIndex == 0) {
                     $("#prev > button").prop('disabled', true);
@@ -112,6 +113,7 @@ Template.alloyEditor.events({
                     swal("No more satisfying instances!", "", "error");
                     instanceIndex--;
                 } else {
+                    resetPositions();
                     updateGraph(ni);
                     $("#prev > button").prop('disabled', false);
                     $("#url-instance-permalink").empty()
@@ -223,7 +225,7 @@ function handleExecuteModel(err, result) {
             return displayError(err)
         }
         Session.set("last_id", result.newModelId) // update the last_id for next derivations
-
+    
         $.unblockUI();
         $('#exec > button').prop('disabled', true);
 
@@ -266,6 +268,7 @@ function handleExecuteModel(err, result) {
             } else {
                 paragraph.innerHTML = result.check ? "Counter-example found. " + command + " is inconsistent." : "Instance found. " + command + " is consistent.";
                 paragraph.className = result.check ? "log-wrong" : "log-complete";
+                resetPositions();
                 initGraphViewer('instance');
                 updateGraph(result);
 
