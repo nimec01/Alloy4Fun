@@ -82,6 +82,13 @@ function initializeAlloyEditor(htmlElement) {
             } else {
                 $('#exec > button').prop('disabled', true);
             }
+            // public links may have hidden secrets, unless new ones introduced
+            if (!Session.get("from_private")) {
+                if (containsValidSecret(editor.getValue()))
+                    $("#hidden_icon").css("display", 'none');
+                else 
+                    $("#hidden_icon").css("display", 'initial');
+            }
         }
         Session.set("currentInstance", undefined);
         Session.set("instances", undefined);
