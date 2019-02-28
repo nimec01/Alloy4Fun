@@ -21,6 +21,7 @@ public class RestApplication extends Application {
 		answers.remove(str);
 		count.remove(str);
 		cmd.remove(str);
+		System.out.println("Removing session, now active: "+answers.size());
 	}
 
 	public static void add(String str, A4Solution ans, Command cm) {
@@ -28,6 +29,7 @@ public class RestApplication extends Application {
 		answers.get(str).add(ans);
 		count.put(str,0);
 		cmd.put(str,cm);
+		System.out.println("Adding session, now active: "+answers.size());
 	}
 
 	public static A4Solution getSol(String str) {
