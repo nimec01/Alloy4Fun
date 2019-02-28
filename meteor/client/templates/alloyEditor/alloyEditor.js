@@ -119,10 +119,10 @@ Template.alloyEditor.events({
                     instanceIndex--;
                 } else {
                     updateGraph(ni);
+                    $("#prev > button").prop('disabled', false);
+                    $("#url-instance-permalink").empty()
+                    $("#genInstanceUrl > button").prop('disabled', false);
                 }
-                $("#prev > button").prop('disabled', false);
-                $("#url-instance-permalink").empty()
-                $("#genInstanceUrl > button").prop('disabled', false);
             }
         }
     },
