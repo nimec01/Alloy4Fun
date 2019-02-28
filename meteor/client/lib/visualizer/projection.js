@@ -62,7 +62,7 @@ addTypeToProjection = function(newType) {
     if (atoms >= 1)
         $('#nextFrame').addClass('enabled');
     else
-        $('#nextFrame').remove('enabled');
+        $('#nextFrame').removeClass('enabled');
     $('#previousFrame').removeClass('enabled');
     $('.current-frame').html(currentFramePositionToString());
     $('.framePickerTarget').val(newType);
@@ -97,7 +97,7 @@ newInstanceSetup = function() {
         if (atoms >= 1) 
             $('#nextFrame').addClass('enabled');
         else 
-            $('#nextFrame').remove('enabled');
+            $('#nextFrame').removeClass('enabled');
         $('#previousFrame').removeClass('enabled');
     }
 };
