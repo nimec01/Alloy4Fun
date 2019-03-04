@@ -180,11 +180,11 @@ Template.alloyEditor.onRendered(() => {
         // save the loaded model id for later derivations
         Session.set("last_id", model.model_id); // this will change on execute
         Session.set("from_private", model.from_private); // this will not change
-        Session.set("hidden_commands", model.commands) // update the commands for public links that do not have them
+        Session.set("hidden_commands", model.sec_commands) // update the commands for public links that do not have them
         let cs = getCommandsFromCode(model.code)
-        if (model.commands) cs.concat(model.commands)
+        if (model.sec_commands) cs.concat(model.sec_commands)
         Session.set("commands", cs) // update the commands to start correct
-      
+
         textEditor.setValue(model.code); // update the textEditor
 
         if(model.from_private) {
