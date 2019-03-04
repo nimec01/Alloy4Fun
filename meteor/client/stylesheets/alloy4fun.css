@@ -560,10 +560,17 @@ input[disabled] {
     width: 128px;
 }
 
+.frame-navigation {
+    position: absolute;
+    bottom: 10px;
+    left: 45%;
+    z-index: 10;
+}
+
 .framePickerTarget {
     height: 28px !important;
     position: relative;
-    top: 5px;
+    top: 10px;
 }
 
 .framePickerTarget,
@@ -578,30 +585,20 @@ input[disabled] {
 
 }
 
-.frame-navigation {
-    position: absolute;
-    bottom: 10px;
-    left: 45%;
-    z-index: 10;
-}
-
-.enabled {
-    color: #009933 !important;
-}
-
 #previousFrame {
-    padding: 10px;
-    margin-right: 10px;
+    padding-bottom: 0px;
+    margin-right: 0px;
     font-size: 16px;
 }
 
 #nextFrame {
-    padding: 10px;
-    margin-left: 10px;
+    padding: 0px;
+    margin-left: 0px;
     font-size: 16px;
 }
 
 .current-frame {
+    margin-top : 4px;
     padding: 10px;
 }
 
