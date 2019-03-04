@@ -14,11 +14,12 @@ Meteor.methods({
       * @return the id of the new instance
       */
     storeInstance: function(modelId, command, instance, themeData) {
+        Model.update({ _id : modelId },{$set: {theme : themeData}})
+
         return Instance.insert({
             model_id: modelId,
             cmd_i: command,
             graph: instance,
-            theme: themeData,
             time: new Date().toLocaleString()
         });
     }

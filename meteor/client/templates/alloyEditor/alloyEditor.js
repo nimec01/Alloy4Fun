@@ -193,8 +193,8 @@ Template.alloyEditor.onRendered(() => {
             $("#hidden_icon").css("display", 'initial');
         }
 
-        if (model.instance) { // if there is an instance to show
-            let themeData = model.instance.theme;
+        let themeData = model.theme;
+        if (themeData) {    
             atomSettings = themeData.atomSettings;
             relationSettings = themeData.relationSettings;
             generalSettings = themeData.generalSettings;
@@ -202,11 +202,14 @@ Template.alloyEditor.onRendered(() => {
             currentlyProjectedTypes = themeData.currentlyProjectedTypes;
             if (themeData.metaPrimSigs) metaPrimSigs = themeData.metaPrimSigs;
             if (themeData.metaSubsetSigs) metaSubsetSigs = themeData.metaSubsetSigs;
+            staticProjection();
+        }
+
+        if (model.instance) { // if there is an instance to show
             if (cy) { //Load graph JSON data in case of instance sharing.
                 $('#instanceViewer').show();
                 cy.add(model.instance.graph.elements);
                 updateElementSelectionContent();
-                staticProjection();
             }
         }
     } else {

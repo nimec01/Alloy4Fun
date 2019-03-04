@@ -18,15 +18,17 @@ Meteor.methods({
       * 
       * @param {String} code the Alloy model to be shared
       * @param {String} currentModelId the id of the current model
+      * @param {Object} themeData the theme information for cytoscape
       * 
       * @return The 'id' of the model link, used in Share Model option
       */
-    genURL: function(code, currentModelId) {
+    genURL: function(code, currentModelId, themeData) {
         // a new model is always created, regardless of having secrets or not
         let model = {
             time: new Date().toLocaleString(),
             code: code,
-            derivationOf: currentModelId
+            derivationOf: currentModelId,
+            theme: themeData
         }
 
         // insert new model
@@ -35,7 +37,7 @@ Meteor.methods({
         // generate the public link
         let publicLinkId = Link.insert({
             model_id: modelId,
-            private: false
+            private: false,
         });
 
         // generate the private link if secrets are present

@@ -75,6 +75,12 @@ Model.attachSchema(new SimpleSchema({
         type: String,
         optional: true
     },
+    /** the theme associated with this model. */
+    theme: { 
+        type: Object,
+        blackbox: true,
+        optional: true
+    },
     /** the timestamp. */
     time: {
         type: String,
