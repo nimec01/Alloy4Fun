@@ -422,6 +422,7 @@ initGraphViewer = function (element) {
     });
 
     cy.on('render', function (event) {
+        $("#url-instance-permalink").empty()
         $("#genInstanceUrl > button").prop('disabled', false);
     });
 
