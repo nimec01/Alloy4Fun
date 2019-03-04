@@ -141,9 +141,25 @@ newInstanceSetup = function() {
         else 
             $('#nextFrame').removeClass('enabled');
         $('#previousFrame').removeClass('enabled');
+        $('.frame-navigation > select').prop('disabled',false);
     } else {
         $(".frame-navigation").hide();
     }
+};
+
+// updates the frame navigator according to a static instance (i.e., 
+// everything disabled)
+staticProjection = function() {
+    console.log(currentlyProjectedTypes)
+    console.log(currentFramePosition)
+    $('.frame-navigation > select').append($('<option></option>')
+        .attr('value', currentlyProjectedTypes[0])
+        .text(currentlyProjectedTypes[0]));
+    $('.current-frame').html(currentFramePositionToString());
+    $('#nextFrame').removeClass('enabled');
+    $('#previousFrame').removeClass('enabled');
+    $('.frame-navigation').show();
+    $('.frame-navigation > select').prop('disabled',true);
 };
 
 // saves current node positions

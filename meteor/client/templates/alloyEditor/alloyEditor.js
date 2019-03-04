@@ -206,6 +206,7 @@ Template.alloyEditor.onRendered(() => {
                 $('#instanceViewer').show();
                 cy.add(model.instance.graph.elements);
                 updateElementSelectionContent();
+                staticProjection();
             }
         }
     } else {
