@@ -4,10 +4,8 @@ Template.rightClickOptionsMenu.helpers({
     },
     updateRightClickContent() {
         const selectedType = Session.get('rightClickTarget');
-        console.log(selectedType)
         if (selectedType) {
             const atomColor = getAtomColor(selectedType);
-            console.log(atomColor)
             $('.right-click-color-picker').prop('disabled', false);
             $('.right-click-shape-picker').val(getAtomShape(selectedType));
         }

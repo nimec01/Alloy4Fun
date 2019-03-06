@@ -55,7 +55,6 @@ Template.atomSettings.helpers({
                     $('#hideNodes').prop('disabled', false);
                 }
             }
-            console.log(getAtomColor(selectedType))
             $('#atomColorSettings').val(getAtomColor(selectedType));
             $('#atomShapeSettings').val(getAtomShape(selectedType));
             $('#atomBorderSettings').val(getAtomBorder(selectedType));

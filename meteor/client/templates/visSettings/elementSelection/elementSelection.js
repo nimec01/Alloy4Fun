@@ -15,7 +15,7 @@ Template.elementSelection.onRendered(() => {
         create: false,
     })[0];
 
-    $('.wrapper-select-atom > div > div.selectize-input').append("<p class='select-label'>Types</p>");
+    $('.wrapper-select-atom > div > div.selectize-input').append("<p class='select-label'>Signatures</p>");
 
     selectAtomElement.selectize.on('item_add', (value, item) => {
         item.on('click', () => {

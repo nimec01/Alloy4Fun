@@ -70,7 +70,7 @@ updateElementSelectionContent = function () {
     });
     // Replace tag on the bottom right corner of type selection div
     $('.wrapper-select-atom > div > div.selectize-input > p').remove();
-    $('.wrapper-select-atom > div > div.selectize-input').append("<p class='select-label'>Types</p>");
+    $('.wrapper-select-atom > div > div.selectize-input').append("<p class='select-label'>Signatures</p>");
 
 
     // Add new Subsets
