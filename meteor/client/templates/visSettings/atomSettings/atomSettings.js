@@ -55,18 +55,8 @@ Template.atomSettings.helpers({
                     $('#hideNodes').prop('disabled', false);
                 }
             }
-            const atomColor = getAtomColor(selectedType);
-            if (atomColor == 'inherit') {
-                const color = isSubset ? '#68DB53' : getInheritedAtomColor(selectedType);
-                $('#atomColorSettings').prop('disabled', true);
-                $('#inheritAtomColor').prop('checked', true);
-                $('#atomColorSettings').colorpicker('setValue', color);
-            } else {
-                $('#atomColorSettings').prop('disabled', false);
-                $('#inheritAtomColor').prop('checked', false);
-                $('#atomColorSettings').colorpicker('setValue', atomColor);
-            }
-
+            console.log(getAtomColor(selectedType))
+            $('#atomColorSettings').val(getAtomColor(selectedType));
             $('#atomShapeSettings').val(getAtomShape(selectedType));
             $('#atomBorderSettings').val(getAtomBorder(selectedType));
         }
@@ -83,14 +73,11 @@ Template.atomSettings.events({
         refreshAttributes();
     },
 
-    'changeColor.colorpicker #atomColorSettings'(event) {
+    'change #atomColorSettings'(event) {
         const selectedType = Session.get('selectedType');
-        const color = getAtomColor(selectedType);
-        if (color != 'inherit') {
-            cy.nodes(`[type='${selectedType}']`).data({ color: event.target.value });
-            updateAtomColor(selectedType, event.target.value);
-            refreshGraph();
-        }
+        cy.nodes(`[type='${selectedType}']`).data({ color: event.target.value });
+        updateAtomColor(selectedType, event.target.value);
+        refreshGraph();
     },
 
     'change #atomShapeSettings'(event) {
@@ -122,23 +109,6 @@ Template.atomSettings.events({
             updateUnconnectedNodes(selectedType, hideUnconnectedNodes);
             $('#atomHideUnconnectedNodes').prop('checked', hideUnconnectedNodes == 'true');
         }
-    },
-    'change #inheritAtomColor'(event) {
-        const selectedType = Session.get('selectedType');
-        const isSubset = selectedType.indexOf(':') != '-1';
-        console.log(isSubset);
-        const color = isSubset ? getAtomColor(selectedType.split(':')[1]) : getInheritedAtomColor(selectedType);
-        if ($(event.target).is(':checked')) {
-            updateAtomColor(selectedType, 'inherit');
-            $('#atomColorSettings').prop('disabled', true);
-            $('#atomColorSettings').colorpicker('setValue', color);
-        } else {
-            $('#atomColorSettings').prop('disabled', false);
-            updateAtomColor(selectedType, color);
-            $('#atomColorSettings').colorpicker('setValue', color);
-        }
-
-        refreshGraph();
     },
     'change #inheritDisplayNodesNumber'(event) {
         const selectedType = Session.get('selectedType');
@@ -193,8 +163,5 @@ Template.atomSettings.events({
 
 
 Template.atomSettings.onRendered(() => {
-    $(() => {
-        $('#atomColorSettings').colorpicker({ format: 'hex' });
-    });
     $('.atom-settings').hide();
 });

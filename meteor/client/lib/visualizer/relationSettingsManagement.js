@@ -7,12 +7,12 @@ getRelationColor = function (relationType) {
                 return relationSettings.nodeColors[i].color;
             }
         }
-        relationSettings.nodeColors.push({ type: relationType, color: '#9988CC' });
-        return '#9988CC';
+        relationSettings.nodeColors.push({ type: relationType, color: '#0074D9' });
+        return '#0074D9';
     }
     relationSettings.nodeColors = [];
-    relationSettings.nodeColors.push({ type: relationType, color: '#9988CC' });
-    return '#9988CC';
+    relationSettings.nodeColors.push({ type: relationType, color: '#0074D9' });
+    return '#0074D9';
 };
 
 getRelationLabel = function (relationType) {

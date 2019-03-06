@@ -1,5 +1,5 @@
 atomSettings = {};
-atomSettings.nodeColors = [{ type: "univ", color: "#68DB53" }];
+atomSettings.nodeColors = [{ type: "univ", color: "#2ECC40" }];
 atomSettings.nodeShapes = [{ type: "univ", shape: "ellipse" }];
 atomSettings.nodeBorders = [{ type: "univ", border: "solid" }];
 atomSettings.unconnectedNodes = [{ type: "univ", unconnectedNodes: "false" }];

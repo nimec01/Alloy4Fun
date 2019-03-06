@@ -267,21 +267,7 @@ body {
     margin-top:50px;
 }
 
-.colorpicker-element {
-    border-color: transparent;
-    color: #333;
-    width: 100%;
-    text-align: center;
-    background: rgba(142, 140, 140, 0.88);
-}
 
-.colorpicker-element.settings {
-    background: white !important;
-    border-radius: 4px;
-    height: 24px;
-    width: 128px;
-    text-align: left;
-}
 
 .shapePickerTarget.settings {
     background: white !important;
@@ -602,18 +588,13 @@ input[disabled] {
     padding: 10px;
 }
 
-#rightClickInheritAtomColor {
-    position: relative;
-    top: 3px;
-}
-
-.right-click-inherit-color {
-    text-align: center;
-    background-color: rgba(142, 140, 140, 0.88);
-    border-top: 1px solid grey !important;
-}
-
 .right-click-shape-picker {
+    width: 100%;
+    background-color: rgba(142, 140, 140, 0.88);
+    padding-left: 16px;
+}
+
+.right-click-color-picker {
     width: 100%;
     background-color: rgba(142, 140, 140, 0.88);
     padding-left: 16px;
