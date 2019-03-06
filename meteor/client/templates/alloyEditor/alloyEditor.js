@@ -198,7 +198,7 @@ Template.alloyEditor.onRendered(() => {
             currentlyProjectedTypes = themeData.currentlyProjectedTypes;
             if (themeData.metaPrimSigs) metaPrimSigs = themeData.metaPrimSigs;
             if (themeData.metaSubsetSigs) metaSubsetSigs = themeData.metaSubsetSigs;
-            staticProjection();
+            if (currentlyProjectedTypes.length != 0) staticProjection();
         }
 
         if (model.instance) { // if there is an instance to show
@@ -206,6 +206,7 @@ Template.alloyEditor.onRendered(() => {
                 $('#instanceViewer').show();
                 cy.add(model.instance.graph.elements);
                 updateElementSelectionContent();
+                cy.resize();
                 applyCurrentLayout();
             }
         }
