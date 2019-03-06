@@ -162,11 +162,7 @@ Template.alloyEditor.events({
 
 /* Callbacks added with this method are called once when an instance of Template.alloyEditor is rendered into DOM nodes and put into the document for the first time. */
 Template.alloyEditor.onRendered(() => {
-    try {
-        cy;
-    } catch (e) {
-        initGraphViewer('instance');
-    }
+    initGraphViewer('instance');
 
     buttonsEffects(); //Adds click effects to Buttons
     hideButtons(); //Hide Next, Previous, Run... buttons on startup
@@ -210,6 +206,7 @@ Template.alloyEditor.onRendered(() => {
                 $('#instanceViewer').show();
                 cy.add(model.instance.graph.elements);
                 updateElementSelectionContent();
+                applyCurrentLayout();
             }
         }
     } else {
@@ -275,7 +272,7 @@ function handleExecuteModel(err, result) {
                 resetPositions();
                 initGraphViewer('instance');
                 updateGraph(result);
-
+              
                 $("#next").css("display", 'initial');
                 $("#prev").css("display", 'initial');
             }

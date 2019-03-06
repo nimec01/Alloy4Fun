@@ -1,8 +1,6 @@
 import cytoscape from 'cytoscape';
 
 updateGraph = function (instance) {    
-    //If not yet initialized, create new cytoscape object using the text area identified by 'instance' class.
-    if (!cy) initGraphViewer("instance");
     $('#instanceViewer').show();
     $('#genInstanceUrl').show();
     // Remove previous nodes and edges.
