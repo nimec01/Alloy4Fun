@@ -4,6 +4,8 @@ Template.relationSettings.helpers({
     },
 });
 
+// updates the content of the relations pane in the settings sidebar, including the
+// current state of each property
 updateOptionContentRelations = function () {
     const selectedRelation = Session.get('selectedRelation');
     if (selectedRelation) {

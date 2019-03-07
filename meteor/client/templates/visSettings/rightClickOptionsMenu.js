@@ -6,6 +6,8 @@ Template.rightClickOptionsMenu.helpers({
     }
 });
 
+// updates the content of the right-click menu, depending on whether edge or atom,
+// with the current state of each property
 updateRightClickContent = function() {
     selectedType = Session.get('rightClickType');
     if (selectedType) {
@@ -17,6 +19,10 @@ updateRightClickContent = function() {
             $('.right-click-color-picker').val(getRelationColor(selectedType));
         }
     }
+
+    // disable current model link since theme may change
+    $('.permalink > button').prop('disabled', false);
+    $('#url-permalink').empty()
 }
 
 Template.rightClickOptionsMenu.events({

@@ -1,4 +1,3 @@
-
 Template.atomSettings.helpers({
     getType() {
         const type = Session.get('selectedType');
@@ -11,6 +10,8 @@ Template.atomSettings.helpers({
 
 });
 
+// updates the content of the signatures pane in the settings sidebar, including the
+// current state of each property
 updateOptionContentTypes = function() {
     const selectedType = Session.get('selectedType');
     if (selectedType && selectedType == 'univ')$('.not-for-univ').hide();
@@ -160,7 +161,6 @@ Template.atomSettings.events({
         }
     },
 });
-
 
 Template.atomSettings.onRendered(() => {
     $('.atom-settings').hide();

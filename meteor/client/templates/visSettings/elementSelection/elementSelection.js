@@ -6,6 +6,10 @@ Template.elementSelection.events({
     'click'(event) {
         updateOptionContentTypes();
         updateOptionContentRelations();
+
+        // disable current model link since theme may change
+        $('.permalink > button').prop('disabled', false);
+        $('#url-permalink').empty()
     }
 });
 

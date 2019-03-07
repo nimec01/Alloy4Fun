@@ -387,7 +387,7 @@ initGraphViewer = function (element) {
         return false;
     });
 
-        //right click event on cytoscape's node
+    //right click event on cytoscape's node
     cy.on('cxttap', 'edge', {}, function (evt) {
         //Place right click options menu on mouse position and display it
         $('#optionsMenu').css({
