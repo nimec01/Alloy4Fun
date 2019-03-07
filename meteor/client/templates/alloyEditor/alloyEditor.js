@@ -206,8 +206,8 @@ Template.alloyEditor.onRendered(() => {
                 $('#instanceViewer').show();
                 cy.add(model.instance.graph.elements);
                 updateElementSelectionContent();
-                cy.resize();
-                applyCurrentLayout();
+                cy.zoom(model.instance.graph.zoom);
+                cy.pan(model.instance.graph.pan);
             }
         }
     } else {
