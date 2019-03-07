@@ -21,11 +21,6 @@ Instance.attachSchema(new SimpleSchema({
         type: Object,
         blackbox: true
     },
-    /** the theme associated with this instance. */
-    theme: { 
-        type: Object,
-        blackbox: true
-    },
     /** the timestamp. */
     time: {
         type: String

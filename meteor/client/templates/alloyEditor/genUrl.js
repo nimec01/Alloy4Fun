@@ -18,8 +18,18 @@ export {
 function clickGenUrl() {
     if ($("#genUrl > button").is(":disabled")) return
 
+    const themeData = {
+        atomSettings,
+        relationSettings,
+        generalSettings,
+        currentFramePosition,
+        currentlyProjectedTypes,
+        metaPrimSigs,
+        metaSubsetSigs,
+    };
+
     let modelToShare = textEditor.getValue();
-    Meteor.call('genURL', modelToShare, Session.get("last_id"), handleGenURLEvent);
+    Meteor.call('genURL', modelToShare, Session.get("last_id"), themeData, handleGenURLEvent);
 }
 
 /* genUrlbtn event handler after genUrl method */

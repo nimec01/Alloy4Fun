@@ -267,21 +267,7 @@ body {
     margin-top:50px;
 }
 
-.colorpicker-element {
-    border-color: transparent;
-    color: #333;
-    width: 100%;
-    text-align: center;
-    background: rgba(142, 140, 140, 0.88);
-}
 
-.colorpicker-element.settings {
-    background: white !important;
-    border-radius: 4px;
-    height: 24px;
-    width: 128px;
-    text-align: left;
-}
 
 .shapePickerTarget.settings {
     background: white !important;
@@ -560,10 +546,17 @@ input[disabled] {
     width: 128px;
 }
 
+.frame-navigation {
+    position: absolute;
+    bottom: 10px;
+    left: 45%;
+    z-index: 10;
+}
+
 .framePickerTarget {
     height: 28px !important;
     position: relative;
-    top: 5px;
+    top: 10px;
 }
 
 .framePickerTarget,
@@ -578,45 +571,30 @@ input[disabled] {
 
 }
 
-.frame-navigation {
-    position: absolute;
-    bottom: 10px;
-    left: 45%;
-    z-index: 10;
-}
-
-.enabled {
-    color: #009933 !important;
-}
-
 #previousFrame {
-    padding: 10px;
-    margin-right: 10px;
+    padding-bottom: 0px;
+    margin-right: 0px;
     font-size: 16px;
 }
 
 #nextFrame {
-    padding: 10px;
-    margin-left: 10px;
+    padding: 0px;
+    margin-left: 0px;
     font-size: 16px;
 }
 
 .current-frame {
+    margin-top : 4px;
     padding: 10px;
 }
 
-#rightClickInheritAtomColor {
-    position: relative;
-    top: 3px;
-}
-
-.right-click-inherit-color {
-    text-align: center;
-    background-color: rgba(142, 140, 140, 0.88);
-    border-top: 1px solid grey !important;
-}
-
 .right-click-shape-picker {
+    width: 100%;
+    background-color: rgba(142, 140, 140, 0.88);
+    padding-left: 16px;
+}
+
+.right-click-color-picker {
     width: 100%;
     background-color: rgba(142, 140, 140, 0.88);
     padding-left: 16px;

@@ -1,8 +1,6 @@
 import cytoscape from 'cytoscape';
 
 updateGraph = function (instance) {    
-    //If not yet initialized, create new cytoscape object using the text area identified by 'instance' class.
-    if (!cy) initGraphViewer("instance");
     $('#instanceViewer').show();
     $('#genInstanceUrl').show();
     // Remove previous nodes and edges.
@@ -381,8 +379,31 @@ initGraphViewer = function (element) {
             //if the menu's width overflows page width, place it behind the cursor.
             'left': evt.originalEvent.screenX + 1 + 300 > $(window).width() ? evt.originalEvent.offsetX + 1 - 300 : evt.originalEvent.offsetX + 1
         }).fadeIn('slow');
-        Session.set("rightClickTarget", undefined);
-        Session.set("rightClickTarget", evt.cyTarget.data().type);
+        $("#changeAtomShape").show();
+        $("#rightClickProject").show();
+        Session.set("rightClickRelation", undefined);
+        Session.set("rightClickType", evt.cyTarget.data().type);
+        updateRightClickContent();
+        return false;
+    });
+
+    //right click event on cytoscape's node
+    cy.on('cxttap', 'edge', {}, function (evt) {
+        //Place right click options menu on mouse position and display it
+        $('#optionsMenu').css({
+            // overlap cytoscape canvas
+            'z-index': 10,
+            'position': 'absolute',
+            //+1 avoids recapturing right click event and opening browser's context menu.
+            'top': evt.originalEvent.offsetY + 1,
+            //if the menu's width overflows page width, place it behind the cursor.
+            'left': evt.originalEvent.screenX + 1 + 300 > $(window).width() ? evt.originalEvent.offsetX + 1 - 300 : evt.originalEvent.offsetX + 1
+        }).fadeIn('slow');
+        $("#changeAtomShape").hide();
+        $("#rightClickProject").hide();
+        Session.set("rightClickType", undefined);
+        Session.set("rightClickRelation", evt.cyTarget.data().relation);
+        updateRightClickContent();
         return false;
     });
 
@@ -422,6 +443,7 @@ initGraphViewer = function (element) {
     });
 
     cy.on('render', function (event) {
+        $("#url-instance-permalink").empty()
         $("#genInstanceUrl > button").prop('disabled', false);
     });
 

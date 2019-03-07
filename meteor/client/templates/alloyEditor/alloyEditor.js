@@ -162,11 +162,7 @@ Template.alloyEditor.events({
 
 /* Callbacks added with this method are called once when an instance of Template.alloyEditor is rendered into DOM nodes and put into the document for the first time. */
 Template.alloyEditor.onRendered(() => {
-    try {
-        cy;
-    } catch (e) {
-        initGraphViewer('instance');
-    }
+    initGraphViewer('instance');
 
     buttonsEffects(); //Adds click effects to Buttons
     hideButtons(); //Hide Next, Previous, Run... buttons on startup
@@ -180,11 +176,11 @@ Template.alloyEditor.onRendered(() => {
         // save the loaded model id for later derivations
         Session.set("last_id", model.model_id); // this will change on execute
         Session.set("from_private", model.from_private); // this will not change
-        Session.set("hidden_commands", model.commands) // update the commands for public links that do not have them
+        Session.set("hidden_commands", model.sec_commands) // update the commands for public links that do not have them
         let cs = getCommandsFromCode(model.code)
-        if (model.commands) cs.concat(model.commands)
+        if (model.sec_commands) cs.concat(model.sec_commands)
         Session.set("commands", cs) // update the commands to start correct
-      
+
         textEditor.setValue(model.code); // update the textEditor
 
         if(model.from_private) {
@@ -193,8 +189,8 @@ Template.alloyEditor.onRendered(() => {
             $("#hidden_icon").css("display", 'initial');
         }
 
-        if (model.instance) { // if there is an instance to show
-            let themeData = model.instance.theme;
+        let themeData = model.theme;
+        if (themeData) {    
             atomSettings = themeData.atomSettings;
             relationSettings = themeData.relationSettings;
             generalSettings = themeData.generalSettings;
@@ -202,10 +198,16 @@ Template.alloyEditor.onRendered(() => {
             currentlyProjectedTypes = themeData.currentlyProjectedTypes;
             if (themeData.metaPrimSigs) metaPrimSigs = themeData.metaPrimSigs;
             if (themeData.metaSubsetSigs) metaSubsetSigs = themeData.metaSubsetSigs;
+            if (currentlyProjectedTypes.length != 0) staticProjection();
+        }
+
+        if (model.instance) { // if there is an instance to show
             if (cy) { //Load graph JSON data in case of instance sharing.
                 $('#instanceViewer').show();
                 cy.add(model.instance.graph.elements);
                 updateElementSelectionContent();
+                cy.resize();
+                applyCurrentLayout();
             }
         }
     } else {
@@ -271,7 +273,7 @@ function handleExecuteModel(err, result) {
                 resetPositions();
                 initGraphViewer('instance');
                 updateGraph(result);
-
+              
                 $("#next").css("display", 'initial');
                 $("#prev").css("display", 'initial');
             }

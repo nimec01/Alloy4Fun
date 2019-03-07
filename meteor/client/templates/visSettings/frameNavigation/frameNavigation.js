@@ -3,37 +3,39 @@ Template.frameNavigation.helpers({
 });
 
 Template.frameNavigation.events({
-    'click #nextFrame.enabled'() {
+    'click #nextFrame'() {
+        if ($("#nextFrame > button").is(":disabled")) return
+
         const type = $('.framePickerTarget')[0].value;
         currentFramePosition[type]++;
         if (currentFramePosition[type] == lastFrame(type)) {
-            $('#nextFrame.enabled').removeClass('enabled');
+            $('#nextFrame').prop('disabled',true);
         }
-        $('#previousFrame').addClass('enabled');
+        $('#previousFrame').prop('disabled',false);
         $('.current-frame').html(currentFramePositionToString());
         savePositions();
         project();
     },
-    'click #previousFrame.enabled'() {
+    'click #previousFrame'() {
+        if ($("#previousFrame > button").is(":disabled")) return
+
         const type = $('.framePickerTarget')[0].value;
         currentFramePosition[type]--;
         if (currentFramePosition[type] == 0) {
-            $('#previousFrame.enabled').removeClass('enabled');
+            $('#previousFrame').prop('disabled',true);
         }
-        $('#nextFrame').addClass('enabled');
+        $('#nextFrame').prop('disabled',false);
         $('.current-frame').html(currentFramePositionToString());
         savePositions();
         project();
     },
     'change .framePickerTarget'(event) {
         const selectedType = event.target.value;
-        console.log(`currentFramePosition: ${currentFramePosition}`);
         const currentAtom = currentFramePosition[selectedType];
-        console.log(`currentAtom: ${currentAtom}`);
-        $('#nextFrame').addClass('enabled');
-        $('#previousFrame').addClass('enabled');
-        if (currentAtom == lastFrame(selectedType))$('#nextFrame').removeClass('enabled');
-        if (currentAtom == 0)$('#previousFrame').removeClass('enabled');
+        $('#nextFrame').prop('disabled',false);
+        $('#previousFrame').prop('disabled',false);
+        if (currentAtom == lastFrame(selectedType))$('#nextFrame').prop('disabled',true);
+        if (currentAtom == 0)$('#previousFrame').prop('disabled',true);
     },
 });
 

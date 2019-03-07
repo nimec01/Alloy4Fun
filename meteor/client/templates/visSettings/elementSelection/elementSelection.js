@@ -3,9 +3,14 @@ Template.elementSelection.helpers({
 });
 
 Template.elementSelection.events({
-    'div.wrapper-select-relation > div > div.selectize-input > div.item click'(event) {
-        console.log(event.target.value);
-    },
+    'click'(event) {
+        updateOptionContentTypes();
+        updateOptionContentRelations();
+
+        // disable current model link since theme may change
+        $('.permalink > button').prop('disabled', false);
+        $('#url-permalink').empty()
+    }
 });
 
 Template.elementSelection.onRendered(() => {
@@ -15,7 +20,7 @@ Template.elementSelection.onRendered(() => {
         create: false,
     })[0];
 
-    $('.wrapper-select-atom > div > div.selectize-input').append("<p class='select-label'>Types</p>");
+    $('.wrapper-select-atom > div > div.selectize-input').append("<p class='select-label'>Signatures</p>");
 
     selectAtomElement.selectize.on('item_add', (value, item) => {
         item.on('click', () => {

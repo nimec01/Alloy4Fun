@@ -32,7 +32,7 @@ Meteor.methods({
                 // original code, without secrets
                 code: code,
                 cmd_i: commandIndex,
-                derivationOf: currentModelId,
+                derivationOf: currentModelId
             }
 
             // insert the new model

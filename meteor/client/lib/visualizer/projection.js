@@ -97,10 +97,10 @@ addTypeToProjection = function(newType) {
             currentFramePosition[newType] = 0;
     } else throw `${newType} already being projected.`;
     if (atoms >= 1)
-        $('#nextFrame').addClass('enabled');
+        $('#nextFrame').prop('disabled',false);
     else
-        $('#nextFrame').removeClass('enabled');
-    $('#previousFrame').removeClass('enabled');
+        $('#nextFrame').prop('disabled',true);
+    $('#previousFrame').prop('disabled',true);
     $('.current-frame').html(currentFramePositionToString());
     $('.framePickerTarget').val(newType);
     project();
@@ -137,13 +137,27 @@ newInstanceSetup = function() {
         project();
         const atoms = lastFrame($('.framePickerTarget')[0].value);
         if (atoms >= 1) 
-            $('#nextFrame').addClass('enabled');
+            $('#nextFrame').prop('disabled',false);
         else 
-            $('#nextFrame').removeClass('enabled');
-        $('#previousFrame').removeClass('enabled');
+            $('#nextFrame').prop('disabled',true);
+        $('#previousFrame').prop('disabled',true);
+        $('.frame-navigation > select').prop('disabled',false);
     } else {
         $(".frame-navigation").hide();
     }
+};
+
+// updates the frame navigator according to a static instance (i.e., 
+// everything disabled)
+staticProjection = function() {
+    $('.frame-navigation > select').append($('<option></option>')
+        .attr('value', currentlyProjectedTypes[0])
+        .text(currentlyProjectedTypes[0]));
+    $('.current-frame').html(currentFramePositionToString());
+    $('#nextFrame').prop('disabled',true);
+    $('#previousFrame').prop('disabled',true);
+    $('.frame-navigation').show();
+    $('.frame-navigation > select').prop('disabled',true);
 };
 
 // saves current node positions

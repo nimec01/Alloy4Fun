@@ -1,60 +1,51 @@
 Template.rightClickOptionsMenu.helpers({
     getRightClickTargetType() {
-        return Session.get('rightClickTarget');
-    },
-    updateRightClickContent() {
-        const selectedType = Session.get('rightClickTarget');
-        if (selectedType) {
-            const atomColor = getAtomColor(selectedType);
-            if (atomColor == 'inherit') {
-                const color = getInheritedAtomColor(selectedType);
-                $('.right-click-color-picker').prop('disabled', true);
-                $('#rightClickInheritAtomColor').prop('checked', true);
-                $('.right-click-color-picker').colorpicker('setValue', color);
-            } else {
-                $('.right-click-color-picker').prop('disabled', false);
-                $('#rightClickInheritAtomColor').prop('checked', false);
-                $('.right-click-color-picker').colorpicker('setValue', atomColor);
-            }
-
-            $('.right-click-shape-picker').val(getAtomShape(selectedType));
-        }
-    },
+        target = Session.get('rightClickType');
+        if (!target) target = Session.get('rightClickRelation');
+        return target;
+    }
 });
 
-Template.rightClickOptionsMenu.events({
-    'changeColor.colorpicker .right-click-color-picker'(event) {
-        const selectedType = Session.get('rightClickTarget');
-        const color = getAtomColor(selectedType);
-        if (color != 'inherit') {
-            cy.nodes(`[type='${selectedType}']`).data({ color: event.target.value });
-            updateAtomColor(selectedType, event.target.value);
-            refreshGraph();
+// updates the content of the right-click menu, depending on whether edge or atom,
+// with the current state of each property
+updateRightClickContent = function() {
+    selectedType = Session.get('rightClickType');
+    if (selectedType) {
+        $('.right-click-color-picker').val(getAtomColor(selectedType));
+        $('.right-click-shape-picker').val(getAtomShape(selectedType));
+    } else {
+        selectedType = Session.get('rightClickRelation');
+        if (selectedType) {
+            $('.right-click-color-picker').val(getRelationColor(selectedType));
         }
+    }
+
+    // disable current model link since theme may change
+    $('.permalink > button').prop('disabled', false);
+    $('#url-permalink').empty()
+}
+
+Template.rightClickOptionsMenu.events({
+    'change .right-click-color-picker'(event) {
+        selectedType = Session.get('rightClickType');
+        if (selectedType) {
+            cy.nodes(`[type='${selectedType}']`).data({ color: event.target.value });
+            updateAtomColor(selectedType, event.target.value);            
+        } else {
+            selectedType = Session.get('rightClickRelation');
+            cy.edges(`[relation='${selectedType}']`).data({ color: event.target.value });
+            updateRelationColor(selectedType, event.target.value);
+        }
+        refreshGraph();
     },
     'change .right-click-shape-picker'(event) {
-        const selectedType = Session.get('rightClickTarget');
+        const selectedType = Session.get('rightClickType');
         cy.nodes(`[type='${selectedType}']`).data({ shape: event.target.value });
         updateAtomShape(selectedType, event.target.value);
         refreshGraph();
     },
-    'change #rightClickInheritAtomColor'(event) {
-        const selectedType = Session.get('rightClickTarget');
-        const color = getInheritedAtomColor(selectedType);
-        if ($(event.target).is(':checked')) {
-            updateAtomColor(selectedType, 'inherit');
-            $('.right-click-color-picker').prop('disabled', true);
-            $('.right-click-color-picker').colorpicker('setValue', color);
-        } else {
-            $('.right-click-color-picker').prop('disabled', false);
-            updateAtomColor(selectedType, color);
-            $('.right-click-color-picker').colorpicker('setValue', color);
-        }
-
-        refreshGraph();
-    },
     'click #rightClickProject'() {
-        const selectedType = Session.get('rightClickTarget');
+        const selectedType = Session.get('rightClickType');
         try {
             if (currentlyProjectedTypes.indexOf(selectedType) == -1)addTypeToProjection(selectedType);
             else removeTypeFromProjection(selectedType);
@@ -70,8 +61,4 @@ Template.rightClickOptionsMenu.events({
 
 Template.rightClickOptionsMenu.onRendered(() => {
     $('#optionsMenu').hide();
-    // Initialize color picker plugin
-    $(() => {
-        $('.right-click-color-picker').colorpicker({ format: 'hex' });
-    });
 });
