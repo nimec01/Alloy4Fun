@@ -839,18 +839,22 @@ check Quizz{
     initialModels.forEach(n => {
         // insert the model
         let id = Model.insert(n.model)
+
+        Model.update({ _id : id },{$set: {original : id}})
+
+        // insert the public link
+        Link.insert({
+            _id: n.publicLink,
+            private: false,
+            model_id: id
+        })
         // insert the private link
         Link.insert({
             _id: n.privateLink,
             private: true,
             model_id: id
         })
-        // insert the private link
-        Link.insert({
-            _id: n.publicLink,
-            private: false,
-            model_id: id
-        })
+
     })
     return initialModels.length
 }
