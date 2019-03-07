@@ -206,8 +206,8 @@ Template.alloyEditor.onRendered(() => {
                 $('#instanceViewer').show();
                 cy.add(model.instance.graph.elements);
                 updateElementSelectionContent();
-                cy.resize();
-                applyCurrentLayout();
+                cy.zoom(model.instance.graph.zoom);
+                cy.pan(model.instance.graph.pan);
             }
         }
     } else {
@@ -260,7 +260,7 @@ function handleExecuteModel(err, result) {
             let paragraph = document.createElement('p');
             if (result.unsat) {
                 $('#instancenav').hide();
-                paragraph.innerHTML = result.check ? "No counter-examples. " + command + " solved!" : "No instance found. " + command + " is inconsistent.";
+                paragraph.innerHTML = result.check ? "No counter-examples. " + command + " may be valid." : "No instance found. " + command + " may be inconsistent.";
                 paragraph.className = result.check ? "log-complete": "log-wrong";
 
                 $('#next > button').prop('disabled', true);
@@ -268,7 +268,7 @@ function handleExecuteModel(err, result) {
                 $("#next").css("display", 'none');
                 $("#prev").css("display", 'none');
             } else {
-                paragraph.innerHTML = result.check ? "Counter-example found. " + command + " is inconsistent." : "Instance found. " + command + " is consistent.";
+                paragraph.innerHTML = result.check ? "Counter-example found. " + command + " is invalid." : "Instance found. " + command + " is consistent.";
                 paragraph.className = result.check ? "log-wrong" : "log-complete";
                 resetPositions();
                 initGraphViewer('instance');
