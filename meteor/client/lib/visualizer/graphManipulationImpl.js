@@ -381,6 +381,7 @@ initGraphViewer = function (element) {
         }).fadeIn('slow');
         $("#changeAtomShape").show();
         $("#rightClickProject").show();
+        $('.right-click-shape-picker').show();
         Session.set("rightClickRelation", undefined);
         Session.set("rightClickType", evt.cyTarget.data().type);
         updateRightClickContent();
@@ -401,6 +402,7 @@ initGraphViewer = function (element) {
         }).fadeIn('slow');
         $("#changeAtomShape").hide();
         $("#rightClickProject").hide();
+        $('.right-click-shape-picker').hide();
         Session.set("rightClickType", undefined);
         Session.set("rightClickRelation", evt.cyTarget.data().relation);
         updateRightClickContent();
