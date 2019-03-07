@@ -11,8 +11,6 @@ import 'codemirror/lib/codemirror.css';
 import 'qtip2';
 
 export {
-    initializeAlloyCreateChallengeEditor,
-    initializeAlloySolveChallengeEditor,
     initializeAlloyEditor
 };
 
