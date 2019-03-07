@@ -3,9 +3,10 @@ Template.elementSelection.helpers({
 });
 
 Template.elementSelection.events({
-    'div.wrapper-select-relation > div > div.selectize-input > div.item click'(event) {
-        console.log(event.target.value);
-    },
+    'click'(event) {
+        updateOptionContentTypes();
+        updateOptionContentRelations();
+    }
 });
 
 Template.elementSelection.onRendered(() => {

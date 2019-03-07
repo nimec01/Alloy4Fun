@@ -7,61 +7,62 @@ Template.atomSettings.helpers({
     notUniv() {
         const type = Session.get('selectedType');
         return (type && type != 'univ');
-    },
-    updateContent() {
-        const selectedType = Session.get('selectedType');
-        if (selectedType && selectedType == 'univ')$('.not-for-univ').hide();
-        else $('.not-for-univ').show();
-        const isSubset = selectedType ? selectedType.indexOf(':') != -1 : false;
-        if (selectedType) {
-            $('#atomLabelSettings').val(getAtomLabel(selectedType));
+    }
 
-            if (!isSubset) {
-                $('#projectOverSig').prop('checked', $.inArray(selectedType, currentlyProjectedTypes) > -1);
-                const unconnectedNodes = getUnconnectedNodesValue(selectedType);
-
-                if (unconnectedNodes == 'inherit') {
-                    $('#atomHideUnconnectedNodes').prop('disabled', true);
-                    $('#inheritHideUnconnectedNodes').prop('checked', true);
-                    $('#atomHideUnconnectedNodes').prop('checked', getInheritedHideUnconnectedNodesValue(selectedType) == 'true');
-                } else {
-                    $('#atomHideUnconnectedNodes').prop('disabled', false);
-                    $('#inheritHideUnconnectedNodes').prop('checked', false);
-                    $('#atomHideUnconnectedNodes').prop('checked', unconnectedNodes == 'true');
-                }
-
-                const displayNodesNumber = getDisplayNodesNumberValue(selectedType);
-
-                if (displayNodesNumber == 'inherit') {
-                    $('#displayNodesNumber').prop('disabled', true);
-                    $('#inheritDisplayNodesNumber').prop('checked', true);
-                    $('#displayNodesNumber').prop('checked', getInheritedDisplayNodesNumberValue(selectedType) == 'true');
-                } else {
-                    $('#displayNodesNumber').prop('disabled', false);
-                    $('#inheritDisplayNodesNumber').prop('checked', false);
-                    $('#displayNodesNumber').prop('checked', displayNodesNumber == 'true');
-                }
-
-                const visibility = getAtomVisibility(selectedType);
-
-                if (visibility == 'inherit') {
-                    const inheritedVisibility = getInheritedAtomVisibility(selectedType);
-                    $('#inheritHideNodes').prop('checked', true);
-                    $('#hideNodes').prop('checked', inheritedVisibility == 'visible');
-                    $('#hideNodes').prop('disabled', true);
-                } else {
-                    $('#inheritHideNodes').prop('checked', false);
-                    $('#hideNodes').prop('checked', visibility == 'invisible');
-                    $('#hideNodes').prop('disabled', false);
-                }
-            }
-            $('#atomColorSettings').val(getAtomColor(selectedType));
-            $('#atomShapeSettings').val(getAtomShape(selectedType));
-            $('#atomBorderSettings').val(getAtomBorder(selectedType));
-        }
-    },
 });
 
+updateOptionContentTypes = function() {
+    const selectedType = Session.get('selectedType');
+    if (selectedType && selectedType == 'univ')$('.not-for-univ').hide();
+    else $('.not-for-univ').show();
+    const isSubset = selectedType ? selectedType.indexOf(':') != -1 : false;
+    if (selectedType) {
+        $('#atomLabelSettings').val(getAtomLabel(selectedType));
+
+        if (!isSubset) {
+            $('#projectOverSig').prop('checked', $.inArray(selectedType, currentlyProjectedTypes) > -1);
+            const unconnectedNodes = getUnconnectedNodesValue(selectedType);
+
+            if (unconnectedNodes == 'inherit') {
+                $('#atomHideUnconnectedNodes').prop('disabled', true);
+                $('#inheritHideUnconnectedNodes').prop('checked', true);
+                $('#atomHideUnconnectedNodes').prop('checked', getInheritedHideUnconnectedNodesValue(selectedType) == 'true');
+            } else {
+                $('#atomHideUnconnectedNodes').prop('disabled', false);
+                $('#inheritHideUnconnectedNodes').prop('checked', false);
+                $('#atomHideUnconnectedNodes').prop('checked', unconnectedNodes == 'true');
+            }
+
+            const displayNodesNumber = getDisplayNodesNumberValue(selectedType);
+
+            if (displayNodesNumber == 'inherit') {
+                $('#displayNodesNumber').prop('disabled', true);
+                $('#inheritDisplayNodesNumber').prop('checked', true);
+                $('#displayNodesNumber').prop('checked', getInheritedDisplayNodesNumberValue(selectedType) == 'true');
+            } else {
+                $('#displayNodesNumber').prop('disabled', false);
+                $('#inheritDisplayNodesNumber').prop('checked', false);
+                $('#displayNodesNumber').prop('checked', displayNodesNumber == 'true');
+            }
+
+            const visibility = getAtomVisibility(selectedType);
+
+            if (visibility == 'inherit') {
+                const inheritedVisibility = getInheritedAtomVisibility(selectedType);
+                $('#inheritHideNodes').prop('checked', true);
+                $('#hideNodes').prop('checked', inheritedVisibility == 'visible');
+                $('#hideNodes').prop('disabled', true);
+            } else {
+                $('#inheritHideNodes').prop('checked', false);
+                $('#hideNodes').prop('checked', visibility == 'invisible');
+                $('#hideNodes').prop('disabled', false);
+            }
+        }
+        $('#atomColorSettings').val(getAtomColor(selectedType));
+        $('#atomShapeSettings').val(getAtomShape(selectedType));
+        $('#atomBorderSettings').val(getAtomBorder(selectedType));
+    }
+}
 
 Template.atomSettings.events({
     'change #atomLabelSettings'(event) {

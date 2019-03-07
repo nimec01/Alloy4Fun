@@ -1,32 +1,45 @@
 Template.rightClickOptionsMenu.helpers({
     getRightClickTargetType() {
-        return Session.get('rightClickTarget');
-    },
-    updateRightClickContent() {
-        const selectedType = Session.get('rightClickTarget');
-        if (selectedType) {
-            const atomColor = getAtomColor(selectedType);
-            $('.right-click-color-picker').prop('disabled', false);
-            $('.right-click-shape-picker').val(getAtomShape(selectedType));
-        }
-    },
+        target = Session.get('rightClickType');
+        if (!target) target = Session.get('rightClickRelation');
+        return target;
+    }
 });
+
+updateRightClickContent = function() {
+    selectedType = Session.get('rightClickType');
+    if (selectedType) {
+        $('.right-click-color-picker').val(getAtomColor(selectedType));
+        $('.right-click-shape-picker').val(getAtomShape(selectedType));
+    } else {
+        selectedType = Session.get('rightClickRelation');
+        if (selectedType) {
+            $('.right-click-color-picker').val(getRelationColor(selectedType));
+        }
+    }
+}
 
 Template.rightClickOptionsMenu.events({
     'change .right-click-color-picker'(event) {
-        const selectedType = Session.get('rightClickTarget');
-        cy.nodes(`[type='${selectedType}']`).data({ color: event.target.value });
-        updateAtomColor(selectedType, event.target.value);
+        selectedType = Session.get('rightClickType');
+        if (selectedType) {
+            cy.nodes(`[type='${selectedType}']`).data({ color: event.target.value });
+            updateAtomColor(selectedType, event.target.value);            
+        } else {
+            selectedType = Session.get('rightClickRelation');
+            cy.edges(`[relation='${selectedType}']`).data({ color: event.target.value });
+            updateRelationColor(selectedType, event.target.value);
+        }
         refreshGraph();
     },
     'change .right-click-shape-picker'(event) {
-        const selectedType = Session.get('rightClickTarget');
+        const selectedType = Session.get('rightClickType');
         cy.nodes(`[type='${selectedType}']`).data({ shape: event.target.value });
         updateAtomShape(selectedType, event.target.value);
         refreshGraph();
     },
     'click #rightClickProject'() {
-        const selectedType = Session.get('rightClickTarget');
+        const selectedType = Session.get('rightClickType');
         try {
             if (currentlyProjectedTypes.indexOf(selectedType) == -1)addTypeToProjection(selectedType);
             else removeTypeFromProjection(selectedType);

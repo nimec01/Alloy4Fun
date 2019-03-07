@@ -2,17 +2,18 @@ Template.relationSettings.helpers({
     getRelation() {
         return Session.get('selectedRelation');
     },
-    updateContent() {
-        const selectedRelation = Session.get('selectedRelation');
-        if (selectedRelation) {
-            $('#relationColorSettings').val(getRelationColor(selectedRelation));
-            $('#relationLabelSettings').val(getRelationLabel(selectedRelation));
-            $('#showAsArcs').prop('checked', isShowAsArcsOn(selectedRelation));
-            $('#showAsAttributes').prop('checked', isShowAsAttributesOn(selectedRelation));
-            $('#relationEdgeStyleSettings').val(getRelationEdgeStyle(selectedRelation));
-        }
-    },
 });
+
+updateOptionContentRelations = function () {
+    const selectedRelation = Session.get('selectedRelation');
+    if (selectedRelation) {
+        $('#relationColorSettings').val(getRelationColor(selectedRelation));
+        $('#relationLabelSettings').val(getRelationLabel(selectedRelation));
+        $('#showAsArcs').prop('checked', isShowAsArcsOn(selectedRelation));
+        $('#showAsAttributes').prop('checked', isShowAsAttributesOn(selectedRelation));
+        $('#relationEdgeStyleSettings').val(getRelationEdgeStyle(selectedRelation));
+    }
+}
 
 Template.relationSettings.events({
     'change #relationLabelSettings'(event) {
