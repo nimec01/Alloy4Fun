@@ -6,6 +6,8 @@ Web application for editing, sharing and interpreting [Alloy](http://alloytools.
 
 **LIVE AT:** http://alloy4fun.inesctec.pt.
 
+You can get started with these [examples](https://github.com/haslab/Alloy4Fun/wiki/Examples).
+
 **ABOUT:** Alloy4Fun is being developed using:
  * [Meteor](https://www.meteor.com/) framework which is a full-stack JavaScript platform for developing modern web and mobile applications.
  * [Docker](https://www.docker.com/) is used to ensure a simple and ubiquitous development environment.
@@ -63,7 +65,7 @@ Linter is also installed and configured but not included in the CI pipeline, to 
 
 To include the linter in the CI pipeline (first make sure all linter errors are fixed) and then add the following to the [package.json](meteor/package.json) `scripts`: `"pretest": "npm run lint --silent"`
 
-## Team
+# Team
 Alloy4fun has been developed by [INESC TEC](http://inesctec.pt) with members from:
  * [HASLab](https://haslab.uminho.pt)
  * [Universidade do Minho](https://www.uminho.pt/)
