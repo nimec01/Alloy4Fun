@@ -206,7 +206,8 @@ Template.alloyEditor.events({
     },
 });
 
-/* Callbacks added with this method are called once when an instance of
+/* 
+ * Callbacks added with this method are called once when an instance of
  * Template.alloyEditor is rendered into DOM nodes and put into the document
  * for the first time.
  */
@@ -221,21 +222,25 @@ Template.alloyEditor.onRendered(() => {
     Session.set('model-shared',false);
     Session.set('from-instance',false);
 
-    // add click effects to buttons
-    buttonsEffects();
-
-    if (Router.current().data && textEditor) { // if there's subscribed data, process it.
-        let model = Router.current().data(); // load the model from controller
+    // if there's subscribed data, process it
+    if (Router.current().data && textEditor) { 
+        // load the model from controller
+        let model = Router.current().data(); 
         // save the loaded model id for later derivations
-        Session.set('last_id', model.model_id); // this will change on execute
-        Session.set('from_private', model.from_private); // this will not change
-        Session.set('hidden_commands', model.sec_commands); // update the commands for public links that do not have them
+        Session.set('last_id', model.model_id); 
+        // whether the followed link was private
+        Session.set('from_private', model.from_private);
+        // retrieved the inherited secret commands
+        Session.set('hidden_commands', model.sec_commands); 
         let cs = getCommandsFromCode(model.code)
         if (model.sec_commands) cs.concat(model.sec_commands)
-        Session.set('commands', cs) // update the commands to start correct
+        // register all available commands
+        Session.set('commands', cs) 
 
-        textEditor.setValue(model.code); // update the textEditor
+        // update the textEditor
+        textEditor.setValue(model.code); 
 
+        // retrieve the shared theme
         let themeData = model.theme;
         if (themeData) {    
             atomSettings = themeData.atomSettings;
@@ -248,25 +253,32 @@ Template.alloyEditor.onRendered(() => {
             if (currentlyProjectedTypes.length != 0) staticProjection();
         }
 
-        if (model.instance) { // if there is an instance to show
+        // if a shared instance, process it
+        if (model.instance) { 
             Session.set('from-instance',true);
             Session.set('log-message','Static shared instance. Execute model to iterate.')
             Session.set('log-class','log-info')
             initGraphViewer('instance');
-            if (cy) { //Load graph JSON data in case of instance sharing.
+            // load graph JSON data 
+            if (cy) {
                 cy.add(model.instance.graph.elements);
                 updateElementSelectionContent();
                 cy.zoom(model.instance.graph.zoom);
                 cy.pan(model.instance.graph.pan);
             }
         }
-    } else {
+    } 
+    // else, a new model
+    else {
         Session.set('from_private', undefined);
     }
+    // add click effects to buttons
+    buttonsEffects();
+    // and right click menu
     styleRightClickMenu();
-    $('#optionsMenu').hide();
 });
 
+// button click effects
 function buttonsEffects() {
     function mobilecheck() {
         let check = false;
@@ -318,7 +330,7 @@ function buttonsEffects() {
     });
 }
 
-// Right click menu styling
+// right click menu styling
 function styleRightClickMenu() {
     (function ($) {
         $(document).ready(function () {

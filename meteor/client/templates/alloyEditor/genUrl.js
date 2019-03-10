@@ -1,6 +1,5 @@
 import {
     zeroclipboard,
-    getAnchorWithLink
 } from "../../lib/editor/clipboard"
 import {
     displayError,

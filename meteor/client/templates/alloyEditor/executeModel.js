@@ -19,8 +19,8 @@ export {
 
 function executeModel () {
     let commandIndex = getCommandIndex();
+    //no command to run
     if (commandIndex < 0) {
-        //no command to run
         swal({
             title: "",
             text: "There are no commands to execute",
@@ -28,8 +28,9 @@ function executeModel () {
             buttons: true,
             dangerMode: true,
         });
-    } else { 
-        // Execute command
+    } 
+    // execute command
+    else { 
         let model = textEditor.getValue();
         Session.set('maxInstance',0); // this is needed so that the visualizer is shown by the helper before the handler is executed
         Meteor.call('getInstances', model, commandIndex, Session.get("from_private"), Session.get("last_id"), handleExecuteModel);
@@ -39,8 +40,8 @@ function executeModel () {
 function nextModel() {
     const instanceIndex = Session.get('currentInstance');
     const maxInstanceNumber = Session.get('maxInstance');
+    // no more local instances but still not unsat
     if (instanceIndex == maxInstanceNumber-1 && !isUnsatInstance(instanceIndex)) {
-        // no more local instances but still not unsat
         let model = textEditor.getValue();
         Meteor.call('nextInstances', model, getCommandIndex(), Session.get("last_id"), handleExecuteModel);
     }
@@ -73,25 +74,26 @@ function handleExecuteModel(err, result) {
     }
     Session.set('last_id', result.newModelId) // update the last_id for next derivations
 
-    $.unblockUI();
-    let command;
-    if (Session.get('commands').length <= 1)
-        command = Session.get('commands')[0]
-    else
-        command = $('.command-selection > select option:selected').text();
-    
     result = result.instances;
     storeInstances(result);
     if (Array.isArray(result))
         result = result[0];
        
+    // if there error returned by alloy
     if (result.alloy_error) {
         let resmsg = result.msg
         if (result.line)
             resmsg = resmsg + " (" + result.line + ":" + result.column + ")"
         resmsg = resmsg + "\n"
         swal("There was a problem running the model!", resmsg + "Please validate your model.", "error");
-    } else {
+    } 
+    // else, show instance or unsat
+    else {
+        let command;
+        if (Session.get('commands').length <= 1)
+            command = Session.get('commands')[0]
+        else
+            command = $('.command-selection > select option:selected').text();
 
         if (result.warning_error) {
             let resmsg = result.msg
