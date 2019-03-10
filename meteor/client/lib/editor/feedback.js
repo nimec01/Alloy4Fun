@@ -1,3 +1,7 @@
+export {
+    displayError
+}
+
 function displayError(err) {
     console.error(err);
     swal({
@@ -6,8 +10,4 @@ function displayError(err) {
         text: err.reason
     })
     return err
-}
-
-export {
-    displayError
 }

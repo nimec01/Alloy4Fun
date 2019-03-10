@@ -15,7 +15,6 @@ div.instanceViewer {
     position: relative;
     border-style: solid;
     border-width: 1px;
-    display: none;
 }
 
 
@@ -288,10 +287,6 @@ body {
 
 }
 
-#genInstanceUrl {
-    display: none;
-}
-
 .margins-10px {
     margin-bottom: 10px;
     margin-top: 10px;
@@ -354,15 +349,23 @@ body {
 
 .log-complete {
     background-color: #009933;
-    font-weight: 900;
+    font-weight: 700;
     color: white;
     width: auto;
     padding: 5px;
 }
 
 .log-wrong {
-    background-color: #99291b;
-    font-weight: 900;
+    background-color: #990033;
+    font-weight: 700;
+    color: white;
+    width: auto;
+    padding: 5px;
+}
+
+.log-info {
+    background-color: #009933;
+    font-weight: 700;
     color: white;
     width: auto;
     padding: 5px;

@@ -1,10 +1,12 @@
 import {
     displayError
 } from "../../lib/editor/feedback"
+export {
+    downloadTree,
+    descendantsToTree
+}
 
-function processTree() {
-    if ($("#downloadTree > button").is(":disabled")) return
-
+function downloadTree() {
     let linkId = Router.current().params._id
     Meteor.call("downloadTree", linkId, (err, res) => {
         if (err) return displayError(err)
@@ -69,8 +71,4 @@ function download(filename, text) {
  */
 function lz(s) {
     return ('0' + s).slice(-2)
-}
-export {
-    processTree,
-    descendantsToTree
 }

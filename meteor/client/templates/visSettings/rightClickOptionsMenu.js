@@ -1,3 +1,11 @@
+import {
+    themeChanged,
+} from "../../lib/editor/state"
+
+export {
+    updateRightClickContent
+}
+
 Template.rightClickOptionsMenu.helpers({
     getRightClickTargetType() {
         target = Session.get('rightClickType');
@@ -8,7 +16,7 @@ Template.rightClickOptionsMenu.helpers({
 
 // updates the content of the right-click menu, depending on whether edge or atom,
 // with the current state of each property
-updateRightClickContent = function() {
+function updateRightClickContent() {
     selectedType = Session.get('rightClickType');
     if (selectedType) {
         $('.right-click-color-picker').val(getAtomColor(selectedType));
@@ -20,9 +28,8 @@ updateRightClickContent = function() {
         }
     }
 
-    // disable current model link since theme may change
-    $('.permalink > button').prop('disabled', false);
-    $('#url-permalink').empty()
+    themeChanged();
+    return
 }
 
 Template.rightClickOptionsMenu.events({

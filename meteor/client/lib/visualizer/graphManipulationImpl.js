@@ -1,8 +1,13 @@
-import cytoscape from 'cytoscape';
+import cytoscape from "cytoscape";
+import {
+    updateRightClickContent
+} from "../../templates/visSettings/rightClickOptionsMenu";
+import {
+    instChanged,
+} from "../editor/state"
+
 
 updateGraph = function (instance) {    
-    $('#instanceViewer').show();
-    $('#genInstanceUrl').show();
     // Remove previous nodes and edges.
     cy.remove(cy.elements());
     // Add new ones.
@@ -445,8 +450,7 @@ initGraphViewer = function (element) {
     });
 
     cy.on('render', function (event) {
-        $("#url-instance-permalink").empty()
-        $("#genInstanceUrl > button").prop('disabled', false);
+        instChanged()
     });
 
 };

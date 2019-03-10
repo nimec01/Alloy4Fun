@@ -3,19 +3,25 @@ import {
     getAnchorWithLink
 } from "../../lib/editor/clipboard"
 import {
-    displayError
+    displayError,
 } from "../../lib/editor/feedback"
 import {
-    secretTag } 
-from "../../../lib/editor/text"
+    secretTag 
+} from "../../../lib/editor/text"
+import {
+    modelShared,
+    getCommandIndex,
+    instShared,
+} from "../../lib/editor/state"
 export {
-    clickGenUrl
+    generateModelURL,
+    generateInstURL,
 }
 
 /**
  * Function to handle click on "Share" button
  */
-function clickGenUrl() {
+function generateModelURL() {
     if ($("#genUrl > button").is(":disabled")) return
 
     const themeData = {
@@ -32,24 +38,36 @@ function clickGenUrl() {
     Meteor.call('genURL', modelToShare, Session.get("last_id"), themeData, handleGenURLEvent);
 }
 
+function generateInstURL() {
+    const themeData = {
+        atomSettings,
+        relationSettings,
+        generalSettings,
+        currentFramePosition,
+        currentlyProjectedTypes,
+        metaPrimSigs,
+        metaSubsetSigs,
+    };
+    Meteor.call("storeInstance", Session.get("last_id"), getCommandIndex(), cy.json(), themeData, handleGenInstanceURLEvent)
+}
+
 /* genUrlbtn event handler after genUrl method */
 function handleGenURLEvent(err, result) {
     if (err) return displayError(err)
     // if the URL was generated successfully, create and append a new element to the HTML containing it.
-    let url = getAnchorWithLink(result['public'], "public link");
-    let urlPrivate = getAnchorWithLink(result['private'], "private link");
-
-    let textcenter = document.createElement('div');
-    textcenter.className = "text-center";
-    textcenter.id = "permalink";
-    textcenter.appendChild(url);
-    if (urlPrivate) textcenter.appendChild(urlPrivate);
-
-    $('#url-permalink').empty() //remove previous links
-    document.getElementById('url-permalink').appendChild(textcenter);
-    $("#genUrl > button").prop('disabled', true);
-    zeroclipboard();
+    Session.set('public-model-url',`${window.location.origin}/`+result['public']);
+    Session.set('private-model-url',`${window.location.origin}/`+result['private']);
+    modelShared();
 
     //update the value of the last model id
     Session.set("last_id", result.last_id); // this will change on every derivation
+}
+
+// geninstanceurlbtn event handler after storeInstance method
+function handleGenInstanceURLEvent(err, result) {
+    if (err) return displayError(err)
+
+    Session.set('inst-url',`${window.location.origin}/`+result);
+
+    instShared();
 }

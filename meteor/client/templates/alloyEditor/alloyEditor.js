@@ -5,189 +5,236 @@ import {
     getCommandsFromCode
 } from "../../../lib/editor/text"
 import {
-    clickGenUrl
+    generateModelURL,
+    generateInstURL
 } from "./genUrl"
 import {
-    processTree
+    executeModel,
+    nextModel,
+    prevModel
+} from "./executeModel"
+import {
+    downloadTree
 } from "./downloadTree"
 import {
-    zeroclipboard,
-    getAnchorWithLink
+    copyToClipboard
 } from "../../lib/editor/clipboard"
 import {
-    displayError
-} from "../../lib/editor/feedback"
+    cmdChanged,
+    isUnsatInstance
+} from "../../lib/editor/state"
 
-// Globals
-/** @var instances The received instances */
-instances = [];
-
-/** @var instanceIndex The current instance index */
-instanceIndex = 0;
-
-/** @var maxInstanceNumber The number of instances in the variable instances */
-maxInstanceNumber = -1;
-
-/*Each template has a local dictionary of helpers that are made available to it, and this call specifies helpers to add to the template’s dictionary.*/
+/* Each template has a local dictionary of helpers that are made available to
+it, and this call specifies helpers to add to the template’s dictionary.*/
 Template.alloyEditor.helpers({
 
-    getMaxIntanceNumber() {
-        return process.env.MAX_INSTANCES;
+    /** 
+     * Whether the execute command button is enabled, if the model has not
+     * been updated and the selected command has not been changed. 
+     */
+    execEnabled() {
+        const commands = Session.get('commands');
+        const enab = Session.get('model-updated') && commands.length > 0;
+        return enab ? "" : "disabled";
     },
+
+    /** 
+     * Whether the next instance button should be enabled, if the current
+     * instance is not the last and the model has not been updated.
+     */
+    nextInstEnabled() {
+        const instanceIndex = Session.get('currentInstance');
+        const maxInstanceNumber = Session.get('maxInstance');
+        const enab = !Session.get('model-updated') && instanceIndex!=maxInstanceNumber;
+        return enab ? "" : "disabled";
+    },
+
+    /** 
+     * Whether the previous instance button should be enabled, if the current
+     * instance is not the first and the model has not been updated.
+     */
+    prevInstEnabled() {
+        const instanceIndex = Session.get('currentInstance');
+        const enab = !Session.get('model-updated') && instanceIndex!=0;
+        return enab ? "" : "disabled";
+    },
+
+    /** 
+     * Whether to enable the sharing of models, when the model has not been
+     * already shared and the model is not empty.
+     */
+    shareModelEnabled() {
+        const enab = !Session.get('model-shared') && !Session.get('empty-model');
+        return enab ? "" : "disabled";
+    },
+
+    /**
+     * Whether to show model links, when the model has been shared and the
+     * model is not empty.
+     */
+    showModelLinks() {
+        const enab = Session.get('model-shared') && !Session.get('empty-model');
+        return enab;
+    },
+
+    /** 
+     * Whether to enable the downloading of the derivation tree, if currently
+     * on a shared private link.
+     */
+    downloadTreeEnabled() {
+        const enab = Session.get('from_private');
+        return enab ? "" : "disabled";        
+    },
+
+    /** 
+     * Whether to enable the sharing of instances, when the instance has not
+     * been already shared and is not showing a static shared instance.
+     */
+    shareInstEnabled() {
+        const enab = !Session.get('inst-shared') && !Session.get('from-instance');
+        return enab ? "" : "disabled";
+    },
+
+    /**
+     * Whether to show instance links, when the instance has been shared.
+     */
+    showInstanceLinks() {
+        const enab = Session.get('inst-shared');
+        return enab;
+    },
+
+    /** 
+     * Whether instance elements should be shown. They will be shown when
+     * there are instances stored, unless there is a single instance that is
+     * unsat, or when coming from a shared instance. If maxInstance == 0 also
+     * shows, used to initialize the process.
+     */
+    showInstance() {
+        const m = Session.get('maxInstance');
+        const i = Session.get('currentInstance');
+        const s = Session.get('from-instance');
+        return (s || m==0 || (m>0 && (m!=1 || !isUnsatInstance(0))))?"":"hidden";
+    },
+
+    /** 
+     * The list of commands, including those hidden inherited. 
+     */
     getCommands() {
         const commands = Session.get('commands');
-        if (commands && commands.length > 1) {
-            $('.command-selection').show();
-        } else $('.command-selection').hide();
-        return commands;
+        return commands?commands:[];
     },
-    getTargetNode() {
-        const target = Session.get('targetNode');
-        if (target) return target.label;
+
+    /** 
+     * Whether to show the command combobox, if there is more than one defined.
+     */
+    showCommands() {
+        const commands = Session.get('commands');
+        return commands?commands.length > 1:false;
     },
-    getType() {
-        const target = Session.get('targetNode');
-        if (target) return target.label.split('$')[0];
+
+    /**
+     * Whether the model inherits secrets from the root of the derivation,
+     * and has not override them with local secrets.
+     */
+    inheritsSecrets() {
+        const cmds = Session.get('hidden_commands');
+        const inherits = cmds?cmds.length > 0:false;
+        const hasLocal = Session.get('local-secrets');
+        return inherits && !hasLocal;
+    },
+
+    /**
+     * Whether the model has local secrets defined.
+     */
+    hasLocalSecrets() {
+        return Session.get('local-secrets');
+    },
+
+    /**
+     * The logging message to be presented.
+     */
+    logMessage() {
+        return Session.get('log-message');
+    },
+
+    /**
+     * The logging class to be presented.
+     */
+    logClass() {
+        return Session.get('log-class');
+    },
+
+    /**
+     * The current private model sharing URL.
+     */
+    privateModelURL() {
+        return Session.get('private-model-url');
+    },
+
+    /**
+     * The current public model sharing URL.
+     */
+    publicModelURL() {
+        return Session.get('public-model-url');
+    },
+
+    /**
+     * The current instance sharing URL.
+     */
+    instanceURL() {
+        return Session.get('inst-url');
     },
 
 });
+
 Template.alloyEditor.events({
     'keydown': function(e) { 
         if (e.ctrlKey && e.key == 'e')
-            $('#exec').trigger("click");
+            $('#exec > button').trigger("click");
     },
-
-    'click #exec': function () {
-        if ($("#exec > button").is(":disabled")) return;
-
-        let commandIndex = getCommandIndex();
-        if (commandIndex < 0) { //no command to run
-            swal({
-                title: "",
-                text: "There are no commands to execute",
-                icon: "warning",
-                buttons: true,
-                dangerMode: true,
-            });
-        } else { // Execute command
-            let model = textEditor.getValue();
-            Meteor.call('getInstances', model, commandIndex, Session.get("from_private"), Session.get("last_id"), handleExecuteModel);
-        }
-        // update button states after execution
-        $("#exec > button").prop('disabled', true);
-        $("#next > button").prop('disabled', false);
-        $("#url-instance-permalink").empty()
-    },
+    'click #exec > button': executeModel,
     'change .command-selection > select'() {
-        $('#exec > button').prop('disabled', false);
+        cmdChanged();
     },
-    'click #genUrl': clickGenUrl,
-    'click #prev': function (evt) {
-        if ($("#prev > button").is(":disabled")) return
-        if (evt.toElement.id != "prev") {
-            let ni = getPreviousInstance();
-            if (typeof ni !== 'undefined') {
-                resetPositions();
-                updateGraph(ni);
-                if (instanceIndex == 0) {
-                    $("#prev > button").prop('disabled', true);
-                }
-                $("#next > button").prop('disabled', false);
-            }
-            $("#url-instance-permalink").empty()
-            $("#genInstanceUrl > button").prop('disabled', false);
-        }
+    'click #genUrl > button': generateModelURL,
+    'click #prev > button': prevModel,
+    'click #next > button': nextModel,
+    'click #genInstanceUrl > button': generateInstURL,
+    'click #downloadTree > button': downloadTree,
+    'click .clipboardbutton': function (evt) {
+        copyToClipboard(evt)
     },
-    'click #next': function (evt) {
-        if ($("#next > button").is(":disabled")) return
-        if (evt.toElement.id != "next") {
-            if (instanceIndex == maxInstanceNumber-1) {
-                let model = textEditor.getValue();
-                Meteor.call('nextInstances', model, getCommandIndex(), Session.get("last_id"), handleExecuteModel);
-                //$("#next > button").prop('disabled', true);
-            }
-            let ni = getNextInstance();
-            if (typeof ni !== 'undefined') {
-                if (ni.unsat) {
-                    $('#next > button').prop('disabled', true);
-                    swal("No more satisfying instances!", "", "error");
-                    instanceIndex--;
-                } else {
-                    resetPositions();
-                    updateGraph(ni);
-                    $("#prev > button").prop('disabled', false);
-                    $("#url-instance-permalink").empty()
-                    $("#genInstanceUrl > button").prop('disabled', false);
-                }
-            }
-        }
-    },
-    'click #genInstanceUrl'() {
-        const themeData = {
-            atomSettings,
-            relationSettings,
-            generalSettings,
-            currentFramePosition,
-            currentlyProjectedTypes,
-            metaPrimSigs,
-            metaSubsetSigs,
-        };
-
-        Meteor.call("storeInstance", Session.get("last_id"), getCommandIndex(), cy.json(), themeData, handleGenInstanceURLEvent)
-    },
-    /*'click #validateModel'() { // click on the validate button
-        Meteor.call('validate', textEditor.getValue(), (err, res) => {
-            if (err) return displayError(err)
-            else {
-                res = JSON.parse(res);
-                if (!res.success) {
-                    addErrorMarkerToGutter(res.errorMessage, res.errorLocation.line);
-                    swal({
-                        title: "There is at least an error on line " + res.errorLocation.line + "!",
-                        text: "The corresponding line has been highlighted in the text area!",
-                        type: "error"
-                    });
-                } else { // success
-                    swal({
-                        title: 'The Model is Valid!',
-                        text: "You're doing great!",
-                        type: "success"
-                    });
-                }
-            }
-        });
-    },*/
-    'click #downloadTree': processTree
 });
 
-/* Callbacks added with this method are called once when an instance of Template.alloyEditor is rendered into DOM nodes and put into the document for the first time. */
+/* Callbacks added with this method are called once when an instance of
+ * Template.alloyEditor is rendered into DOM nodes and put into the document
+ * for the first time.
+ */
 Template.alloyEditor.onRendered(() => {
-    initGraphViewer('instance');
+    Session.set('empty-model',true);
+    Session.set('model-updated',false);
+    Session.set('inst-shared',false)
+    Session.set('currentInstance',0);
+    Session.set('maxInstance',-1);
+    Session.set('commands',[]);
+    Session.set('local-secrets',false);
+    Session.set('model-shared',false);
+    Session.set('from-instance',false);
 
-    buttonsEffects(); //Adds click effects to Buttons
-    hideButtons(); //Hide Next, Previous, Run... buttons on startup
-
-    $("#next").css("display", 'none');
-    $("#prev").css("display", 'none');
-    $("#hidden_icon").css("display", 'none');
+    // add click effects to buttons
+    buttonsEffects();
 
     if (Router.current().data && textEditor) { // if there's subscribed data, process it.
         let model = Router.current().data(); // load the model from controller
         // save the loaded model id for later derivations
-        Session.set("last_id", model.model_id); // this will change on execute
-        Session.set("from_private", model.from_private); // this will not change
-        Session.set("hidden_commands", model.sec_commands) // update the commands for public links that do not have them
+        Session.set('last_id', model.model_id); // this will change on execute
+        Session.set('from_private', model.from_private); // this will not change
+        Session.set('hidden_commands', model.sec_commands); // update the commands for public links that do not have them
         let cs = getCommandsFromCode(model.code)
         if (model.sec_commands) cs.concat(model.sec_commands)
-        Session.set("commands", cs) // update the commands to start correct
+        Session.set('commands', cs) // update the commands to start correct
 
         textEditor.setValue(model.code); // update the textEditor
-
-        if(model.from_private) {
-            $("#downloadTree > button").prop('disabled', false);
-        } else {
-            $("#hidden_icon").css("display", 'initial');
-        }
 
         let themeData = model.theme;
         if (themeData) {    
@@ -202,8 +249,11 @@ Template.alloyEditor.onRendered(() => {
         }
 
         if (model.instance) { // if there is an instance to show
+            Session.set('from-instance',true);
+            Session.set('log-message','Static shared instance. Execute model to iterate.')
+            Session.set('log-class','log-info')
+            initGraphViewer('instance');
             if (cy) { //Load graph JSON data in case of instance sharing.
-                $('#instanceViewer').show();
                 cy.add(model.instance.graph.elements);
                 updateElementSelectionContent();
                 cy.zoom(model.instance.graph.zoom);
@@ -211,135 +261,12 @@ Template.alloyEditor.onRendered(() => {
             }
         }
     } else {
-        Session.set("from_private", true);
+        Session.set('from_private', undefined);
     }
     styleRightClickMenu();
     $('#optionsMenu').hide();
 });
 
-/* ------------- Server HANDLERS methods && Aux Functions ----------- */
-
-
-function handleExecuteModel(err, result) {
-        if (err) {
-            $('#next > button').prop('disabled', true);
-            $('#prev > button').prop('disabled', true);
-            return displayError(err)
-        }
-        Session.set("last_id", result.newModelId) // update the last_id for next derivations
-    
-        $.unblockUI();
-        $('#exec > button').prop('disabled', true);
-
-        $('#instanceViewer').hide();
-        $("#log").empty();
-        let command = $('.command-selection > select option:selected').text();
-
-        result = result.instances;
-        storeInstances(result);
-        if (Array.isArray(result))
-            result = result[0];
-           
-        if (result.alloy_error) {
-            let resmsg = result.msg
-            if (result.line)
-                resmsg = resmsg + " (" + result.line + ":" + result.column + ")"
-            resmsg = resmsg + "\n"
-            swal("There was a problem running the model!", resmsg + "Please validate your model.", "error");
-        } else {
-
-            if (result.warning_error) {
-                let resmsg = result.msg
-                if (result.line)
-                    resmsg = resmsg + " (" + result.line + ":" + result.column + ")"
-                resmsg = resmsg + "\n"
-                swal("There is a possible problem with the model!", resmsg, "warning");
-            }
-            let log = document.createElement('div');
-            log.className = "col-lg-12 col-md-12 col-sm-12 col-xs-12";
-            let paragraph = document.createElement('p');
-            if (result.unsat) {
-                $('#instancenav').hide();
-                paragraph.innerHTML = result.check ? "No counter-examples. " + command + " may be valid." : "No instance found. " + command + " may be inconsistent.";
-                paragraph.className = result.check ? "log-complete": "log-wrong";
-
-                $('#next > button').prop('disabled', true);
-                $('#prev > button').prop('disabled', true);
-                $("#next").css("display", 'none');
-                $("#prev").css("display", 'none');
-            } else {
-                paragraph.innerHTML = result.check ? "Counter-example found. " + command + " is invalid." : "Instance found. " + command + " is consistent.";
-                paragraph.className = result.check ? "log-wrong" : "log-complete";
-                resetPositions();
-                initGraphViewer('instance');
-                updateGraph(result);
-              
-                $("#next").css("display", 'initial');
-                $("#prev").css("display", 'initial');
-            }
-
-            log.appendChild(paragraph);
-            $("#log")[0].appendChild(log);
-
-            if (result.unsat) { // no counter examples found
-                $('.empty-univ').fadeIn();
-                $('#instanceViewer').hide();
-                $("#genInstanceUrl").hide();
-            }
-        }
-}
-
-function storeInstances(allInstances) {
-    if (allInstances.alloy_error || allInstances[0].cnt == 0) {
-        instances = allInstances;
-        instanceIndex = 0;
-        maxInstanceNumber = allInstances.length;
-    } else {
-        instances = instances.concat(allInstances)
-        maxInstanceNumber += allInstances.length;
-    }
-}
-
-function getNextInstance() {
-    return instances[++instanceIndex];
-}
-
-function getPreviousInstance() {
-    return instances[--instanceIndex];
-}
-
-function isRunSelected() {
-    if (Session.get("commands").length <= 0) return false;
-    return $('.command-selection > select option:selected').text().startsWith("run");
-}
-
-function getCommandIndex() {
-    return Session.get("commands").length > 0 ? $('.command-selection > select option:selected').index() : -1;
-}
-
-// geninstanceurlbtn event handler after storeInstance method
-function handleGenInstanceURLEvent(err, result) {
-    if (err) return displayError(err)
-
-    // if the URL was generated successfully, create and append a new element to the HTML containing it.
-    let url = getAnchorWithLink(result, "instance link");
-
-    let textcenter = document.createElement('div');
-    textcenter.className = "text-center";
-    textcenter.id = "instance_permalink";
-    textcenter.appendChild(url);
-
-    $("#url-instance-permalink").empty()
-    document.getElementById('url-instance-permalink').appendChild(textcenter);
-    $("#genInstanceUrl > button").prop('disabled', true);
-    zeroclipboard();
-}
-
-getCurrentInstance = function () {
-    return instances[instanceIndex]
-};
-
-/* onRendered aux functions */
 function buttonsEffects() {
     function mobilecheck() {
         let check = false;
@@ -353,7 +280,6 @@ function buttonsEffects() {
         animations: Modernizr.cssanimations,
     };
 
-
     const animEndEventNames = {
         WebkitAnimation: 'webkitAnimationEnd',
         OAnimation: 'oAnimationEnd',
@@ -361,9 +287,7 @@ function buttonsEffects() {
         animation: 'animationend',
     };
 
-
     const animEndEventName = animEndEventNames[Modernizr.prefixed('animation')];
-
 
     const onEndAnimation = function (el, callback) {
         var onEndCallbackFn = function (ev) {
@@ -382,7 +306,6 @@ function buttonsEffects() {
         }
     };
 
-
     const eventtype = mobilecheck() ? 'touchstart' : 'click';
 
     [].slice.call(document.querySelectorAll('.cbutton')).forEach((el) => {
@@ -395,18 +318,8 @@ function buttonsEffects() {
     });
 }
 
-function hideButtons() {
-    $('#exec > button').prop('disabled', true);
-    $('#next > button').prop('disabled', true);
-    $('#prev > button').prop('disabled', true);
-//    $('#validateModel > button').prop('disabled', true);
-    $('#downloadTree > button').prop('disabled', true);
-    $('.permalink > button').prop('disabled', true);
-}
-
+// Right click menu styling
 function styleRightClickMenu() {
-    //Right click menu styling
-    $(".command-selection").hide();
     (function ($) {
         $(document).ready(function () {
             $('#cssmenu li.active').addClass('open').children('ul').show();

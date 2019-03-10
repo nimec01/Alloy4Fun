@@ -1,6 +1,9 @@
 import {
     displayError
 } from "../editor/feedback"
+import {
+    getCurrentInstance
+} from "../editor/state"
 
 // the list of types currently projected
 currentlyProjectedTypes = [];
@@ -13,7 +16,7 @@ nodePositions = {};
 
 // will call the projection API for the current projections/frames
 project = function() {
-    Meteor.call("getProjection", getCurrentInstance().sessionId, currentFramePosition, instanceIndex, processProjection);
+    Meteor.call("getProjection", getCurrentInstance().sessionId, currentFramePosition, Session.get('currentInstance'), processProjection);
 };
 
 // processes a frame for projected instance from API response

@@ -134,7 +134,8 @@ layouts = {
 };
 
 applyCurrentLayout = function () {
-    if (cy.elements().size() > 0)cy.layout(layouts[currentLayout]);
+    if (cy.elements().size() > 0) cy.layout(layouts[currentLayout]);
+    cy.layout(layouts[currentLayout])
 };
 
 updateNodeSpacing = function (newValue) {

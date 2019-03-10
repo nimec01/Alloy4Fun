@@ -2,14 +2,10 @@
  * Functions that handle clipboard operations
  */
 export {
-    zeroclipboard,
     getAnchorWithLink,
-    getUrlAndClipboard
+    getUrlAndClipboard,
+    copyToClipboard
 }
-
-function zeroclipboard() {
-	$(".clipboardbutton").click(copyToClipboard)
-};
 
 /**
  * Generate html to show nad handle clipboard actions for Links
@@ -50,7 +46,7 @@ function createElementFromHTML(htmlString) {
  * @param {DOMElement} element 
  */
 function copyToClipboard(element) {
-	let el = $(element.target)
+    let el = $(element.target)
 	el = el.is("button")?el:el.parent("button")
 	let text = el.attr("data-clipboard-text")
 
