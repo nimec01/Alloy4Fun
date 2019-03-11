@@ -1,10 +1,18 @@
+/**
+ * Module that handles the downloading of the derivation tree.
+ *
+ * @module client/lib/editor/genUrl
+ */
+
 import {
     displayError
-} from "../../lib/editor/feedback"
+} from "./feedback"
 
-function processTree() {
-    if ($("#downloadTree > button").is(":disabled")) return
-
+/**
+ * Creates the descendants tree for the current model and triggers its
+ * download as a text file.
+ */
+export function downloadTree() {
     let linkId = Router.current().params._id
     Meteor.call("downloadTree", linkId, (err, res) => {
         if (err) return displayError(err)
@@ -14,11 +22,13 @@ function processTree() {
 }
 
 /**
- * converts a list of flat descendants into a tree object 
- * using Hashmap and DFS
+ * Converts a list of flat descendants into a tree object using Hashmap and
+ * DFS.
+ *
  * @param {Object} res with descendants and root as properties
+ * @returns the root of the tree
  */
-function descendantsToTree(res) {
+export function descendantsToTree(res) {
     let descendants = res.descendants
     let root = res.root
     // get all the ids
@@ -46,9 +56,10 @@ function descendantsToTree(res) {
 }
 
 /**
- * 
- * @param {String} filename filename
- * @param {String} text content
+ * Triggers the download of a file with a given content.
+ *
+ * @param {String} filename the name of the file to be downloaded
+ * @param {String} text the content of the file
  */
 function download(filename, text) {
     let anchor = document.createElement('a');
@@ -64,13 +75,11 @@ function download(filename, text) {
 }
 
 /**
- * Adds leading zeros to string: 9->09, 19->19
+ * Adds leading zeros to string: 9->09, 19->19.
+ *
  * @param {String} s 
+ * @returns s with leading zeros
  */
 function lz(s) {
     return ('0' + s).slice(-2)
-}
-export {
-    processTree,
-    descendantsToTree
 }

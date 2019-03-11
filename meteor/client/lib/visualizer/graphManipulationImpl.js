@@ -1,19 +1,22 @@
-import cytoscape from 'cytoscape';
+import cytoscape from "cytoscape";
+import {
+    updateRightClickContent
+} from "../../templates/visSettings/rightClickMenu";
+import {
+    instChanged,
+} from "../editor/state"
+import {
+    newInstanceSetup
+} from "./projection"
 
 updateGraph = function (instance) {    
-    $('#instanceViewer').show();
-    $('#genInstanceUrl').show();
     // Remove previous nodes and edges.
     cy.remove(cy.elements());
     // Add new ones.
     const atomElements = getAtoms(instance);
     cy.add(atomElements);
     cy.add(getEdges(instance));
-    if (atomElements.length == 0)
-        $(".empty-universe").show();
-    else {
-        $('.empty-universe').hide();
-    }
+    Session.set('empty-instance',atomElements.length == 0);
     cy.resize();
     // Apply same theme settings as previous instance.
     applyThemeSettings();
@@ -369,6 +372,8 @@ initGraphViewer = function (element) {
 
     //right click event on cytoscape's node
     cy.on('cxttap', 'node', {}, function (evt) {
+        // close side panel
+        $(".settings-panel").removeClass("open");
         //Place right click options menu on mouse position and display it
         $('#optionsMenu').css({
             // overlap cytoscape canvas
@@ -379,17 +384,16 @@ initGraphViewer = function (element) {
             //if the menu's width overflows page width, place it behind the cursor.
             'left': evt.originalEvent.screenX + 1 + 300 > $(window).width() ? evt.originalEvent.offsetX + 1 - 300 : evt.originalEvent.offsetX + 1
         }).fadeIn('slow');
-        $("#changeAtomShape").show();
-        $("#rightClickProject").show();
-        $('.right-click-shape-picker').show();
-        Session.set("rightClickRelation", undefined);
-        Session.set("rightClickType", evt.cyTarget.data().type);
+        Session.set("rightClickRel", undefined);
+        Session.set("rightClickSig", evt.cyTarget.data().type);
         updateRightClickContent();
         return false;
     });
 
     //right click event on cytoscape's node
     cy.on('cxttap', 'edge', {}, function (evt) {
+        // close side panel
+        $(".settings-panel").removeClass("open");
         //Place right click options menu on mouse position and display it
         $('#optionsMenu').css({
             // overlap cytoscape canvas
@@ -400,11 +404,8 @@ initGraphViewer = function (element) {
             //if the menu's width overflows page width, place it behind the cursor.
             'left': evt.originalEvent.screenX + 1 + 300 > $(window).width() ? evt.originalEvent.offsetX + 1 - 300 : evt.originalEvent.offsetX + 1
         }).fadeIn('slow');
-        $("#changeAtomShape").hide();
-        $("#rightClickProject").hide();
-        $('.right-click-shape-picker').hide();
-        Session.set("rightClickType", undefined);
-        Session.set("rightClickRelation", evt.cyTarget.data().relation);
+        Session.set("rightClickSig", undefined);
+        Session.set("rightClickRel", evt.cyTarget.data().relation);
         updateRightClickContent();
         return false;
     });
@@ -421,7 +422,7 @@ initGraphViewer = function (element) {
         } else {
             //Clicked a node
             if (evtTarget.isNode()) {
-                Session.set("selectedType", evtTarget.data().type);
+                Session.set("selectedSig", evtTarget.data().type);
                 $(".general-settings").slideUp();
                 $(".relation-settings").slideUp();
                 $(".atom-settings").slideDown();
@@ -441,12 +442,14 @@ initGraphViewer = function (element) {
     });
 
     cy.on('tap', function (event) {
+        // hide right click menu
         $("#optionsMenu").hide();
+        // close side panel
+        $(".settings-panel").removeClass("open");
     });
 
     cy.on('render', function (event) {
-        $("#url-instance-permalink").empty()
-        $("#genInstanceUrl > button").prop('disabled', false);
+        instChanged()
     });
 
 };

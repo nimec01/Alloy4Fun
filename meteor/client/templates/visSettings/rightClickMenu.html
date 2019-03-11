@@ -1,11 +1,11 @@
-<template name="rightClickOptionsMenu">
+<template name="rightClickMenu">
     <div id="optionsMenu">
         <div id='cssmenu'>
             <ul>
-                <li class="has-sub"><a id ="changeAtomColor" href='#'>Change color of {{getRightClickTargetType}}</a>
+                <li class="has-sub"><a id ="changeAtomColor" href='#'>Change color of {{getRightClickLabel}}</a>
                     <ul>
                         <li>
-                            <select class="right-click-color-picker" >
+                            <select class="changeAtomColorPicker" >
                                 <option value="inherit">Inherit</option>
                                 <option value="#001f3f">Navy</option>
                                 <option value="#0074D9">Blue</option>
@@ -28,11 +28,11 @@
                         </li>                        
                     </ul>
                 </li>
-                <li class="has-sub">
-                    <a id ="changeAtomShape" href='#'>Change shape of {{getRightClickTargetType}}</a>
+                <li class="has-sub {{showSigProps}}">
+                    <a id="changeAtomShape" href='#'>Change shape of {{getRightClickLabel}}</a>
                     <ul>
                         <li>
-                            <select class="right-click-shape-picker" >
+                            <select class="changeAtomShapePicker" >
                                 <option value="inherit">Inherit</option>
                                 <option value="rectangle">Rectangle</option>
                                 <option value="roundrectangle">Round Rectangle</option>
@@ -40,7 +40,7 @@
                                 <option value="triangle">Triangle</option>
                                 <option value="pentagon">Pentagon</option>
                                 <option value="hexagon">Hexagon</option>
-                                <option value="heptaton">Heptagon</option>
+                                <option value="heptagon">Heptagon</option>
                                 <option value="octagon">Octagon</option>
                                 <option value="star">Star, diamond</option>
                                 <option value="vee">Vee</option>
@@ -49,7 +49,7 @@
                         </li>
                     </ul>
                 </li>
-                <li class="has-sub"><a id ="rightClickProject" href='#'>Project over {{getRightClickTargetType}}</a></li>
+                <li class="has-sub {{showSigProps}} {{showProjectionProp}}"><a id ="rightClickProject" href='#'>Project over {{getRightClickLabel}}</a></li>
             </ul>
         </div>
     </div>

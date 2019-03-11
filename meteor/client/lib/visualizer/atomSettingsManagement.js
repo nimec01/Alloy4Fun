@@ -292,10 +292,10 @@ setDisplayNodesNumberValue = function (atomType, value) {
     }
 };
 
-isDisplayNodesNumberOn = function (selectedType) {
+isDisplayNodesNumberOn = function (selectedSig) {
     if (atomSettings.displayNodesNumber) {
         for (var i = 0; i < atomSettings.displayNodesNumber.length; i++) {
-            if (atomSettings.displayNodesNumber[i].type == selectedType) {
+            if (atomSettings.displayNodesNumber[i].type == selectedSig) {
                 return atomSettings.displayNodesNumber[i].displayNodesNumber == "true";
             }
         }
@@ -306,41 +306,41 @@ isDisplayNodesNumberOn = function (selectedType) {
     return false;
 };
 
-getUnconnectedNodesValue = function (selectedType) {
+getUnconnectedNodesValue = function (selectedSig) {
     if (atomSettings && atomSettings.unconnectedNodes) {
         for (var i = 0; i < atomSettings.unconnectedNodes.length; i++) {
-            if (atomSettings.unconnectedNodes[i].type == selectedType) {
+            if (atomSettings.unconnectedNodes[i].type == selectedSig) {
                 return atomSettings.unconnectedNodes[i].unconnectedNodes;
             }
         }
-        atomSettings.unconnectedNodes.push({ type: selectedType, unconnectedNodes: 'inherit' });
+        atomSettings.unconnectedNodes.push({ type: selectedSig, unconnectedNodes: 'inherit' });
         return 'inherit';
     } else {
         atomSettings.unconnectedNodes = [];
-        atomSettings.unconnectedNodes.push({ type: selectedType, unconnectedNodes: 'inherit' });
+        atomSettings.unconnectedNodes.push({ type: selectedSig, unconnectedNodes: 'inherit' });
         return 'inherit';
     }
     atomSettings.unconnectedNodes = [];
-    atomSettings.unconnectedNodes.push({ type: selectedType, unconnectedNodes: 'inherit' });
+    atomSettings.unconnectedNodes.push({ type: selectedSig, unconnectedNodes: 'inherit' });
     return 'inherit';
 };
 
-getDisplayNodesNumberValue = function (selectedType) {
+getDisplayNodesNumberValue = function (selectedSig) {
     if (atomSettings && atomSettings.displayNodesNumber) {
         for (var i = 0; i < atomSettings.displayNodesNumber.length; i++) {
-            if (atomSettings.displayNodesNumber[i].type == selectedType) {
+            if (atomSettings.displayNodesNumber[i].type == selectedSig) {
                 return atomSettings.displayNodesNumber[i].displayNodesNumber;
             }
         }
-        atomSettings.displayNodesNumber.push({ type: selectedType, displayNodesNumber: 'inherit' });
+        atomSettings.displayNodesNumber.push({ type: selectedSig, displayNodesNumber: 'inherit' });
         return 'inherit';
     } else {
         atomSettings.displayNodesNumber = [];
-        atomSettings.displayNodesNumber.push({ type: selectedType, displayNodesNumber: 'inherit' });
+        atomSettings.displayNodesNumber.push({ type: selectedSig, displayNodesNumber: 'inherit' });
         return 'inherit';
     }
     atomSettings.displayNodesNumber = [];
-    atomSettings.displayNodesNumber.push({ type: selectedType, displayNodesNumber: 'inherit' });
+    atomSettings.displayNodesNumber.push({ type: selectedSig, displayNodesNumber: 'inherit' });
     return 'inherit';
 };
 

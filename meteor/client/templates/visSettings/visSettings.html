@@ -1,6 +1,8 @@
 <template name="visSettings">
     <div class="settings">
-        <div class="empty-universe">EMPTY UNIVERSE</div>
+        {{#if emptyInstance}}
+        <div class="empty-instance">EMPTY INSTANCE</div>
+        {{/if}}
         <div class="settings-panel">
             <div class="settings-content">
                 <div class="scroll-settings">
@@ -18,5 +20,5 @@
             </button>
         </div>
     </div>
-    {{> rightClickOptionsMenu}}
+    {{> rightClickMenu}}
 </template>

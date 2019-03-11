@@ -1,15 +1,16 @@
+import {
+    themeChanged,
+} from "../../../lib/editor/state"
+
 Template.elementSelection.helpers({
 
 });
 
 Template.elementSelection.events({
     'click'(event) {
-        updateOptionContentTypes();
+        updateOptionContentSigs();
         updateOptionContentRelations();
-
-        // disable current model link since theme may change
-        $('.permalink > button').prop('disabled', false);
-        $('#url-permalink').empty()
+        themeChanged();
     }
 });
 
@@ -24,7 +25,7 @@ Template.elementSelection.onRendered(() => {
 
     selectAtomElement.selectize.on('item_add', (value, item) => {
         item.on('click', () => {
-            Session.set('selectedType', value);
+            Session.set('selectedSig', value);
             $('.general-settings').slideUp();
             $('.relation-settings').slideUp();
             $('.atom-settings').slideDown();
@@ -64,7 +65,7 @@ Template.elementSelection.onRendered(() => {
 
     selectSubset.selectize.on('item_add', (value, item) => {
         item.on('click', () => {
-            Session.set('selectedType', value);
+            Session.set('selectedSig', value);
             $('.general-settings').slideUp();
             $('.relation-settings').slideUp();
             $('.atom-settings').slideDown();

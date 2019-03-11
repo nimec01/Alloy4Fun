@@ -1,9 +1,12 @@
 import {
     displayError
 } from "../editor/feedback"
+import {
+    getCurrentInstance
+} from "../editor/state"
 
 // the list of types currently projected
-currentlyProjectedTypes = [];
+currentlyProjectedSigs = [];
 // for each of the types, the selected frame
 currentFramePosition = {};
 // all cy nodes available in the unprojected instance
@@ -12,12 +15,12 @@ allNodes = [];
 nodePositions = {};
 
 // will call the projection API for the current projections/frames
-project = function() {
-    Meteor.call("getProjection", getCurrentInstance().sessionId, currentFramePosition, instanceIndex, processProjection);
+export function project() {
+    Meteor.call("getProjection", getCurrentInstance().sessionId, currentFramePosition, Session.get('currentInstance'), processProjection);
 };
 
 // processes a frame for projected instance from API response
-processProjection = function(err, projection) {
+function processProjection(err, projection) {
     if (err) return displayError(err)
     frame = projection[0];
     // process atoms and subsets
@@ -53,7 +56,7 @@ processProjection = function(err, projection) {
     applyPositions();
 };
 
-getProjectionEdges = function(relations) {
+function getProjectionEdges(relations) {
     const result = [];
     relations.forEach((relation) => {
         if (relation.relation != 'Next' && relation.relation != 'First') {
@@ -84,11 +87,11 @@ getProjectionEdges = function(relations) {
 };
 
 // projects a new signature, updates elements accordingly
-addTypeToProjection = function(newType) {
+export function addSigToProjection(newType) {
     const atoms = lastFrame(newType);
-    if (currentlyProjectedTypes.indexOf(newType) == -1) {
-        currentlyProjectedTypes.push(newType);
-        currentlyProjectedTypes.sort();
+    if (currentlyProjectedSigs.indexOf(newType) == -1) {
+        currentlyProjectedSigs.push(newType);
+        currentlyProjectedSigs.sort();
         $('.frame-navigation').show();
         $('.frame-navigation > select').append($('<option></option>')
             .attr('value', newType)
@@ -107,15 +110,15 @@ addTypeToProjection = function(newType) {
 };
 
 // removes a projected signature, updates elements accordingly
-removeTypeFromProjection = function(type) {
-    const index = currentlyProjectedTypes.indexOf(type);
+export function removeSigFromProjection(type) {
+    const index = currentlyProjectedSigs.indexOf(type);
     if (index == -1) throw `${type} not found in types being projected.`;
     else {
-        currentlyProjectedTypes.splice(index, 1);
+        currentlyProjectedSigs.splice(index, 1);
         delete currentFramePosition[type];
         $(`.frame-navigation > select option[value = '${type}']`).remove();
     }
-    if (currentlyProjectedTypes.length == 0) {
+    if (currentlyProjectedSigs.length == 0) {
         $('.frame-navigation').hide();
         const instance = getCurrentInstance();
         if (instance) updateGraph(instance);
@@ -127,11 +130,11 @@ removeTypeFromProjection = function(type) {
 
 // applies the current projected information to a new instance, same projected
 // signatures but resets frame selection; elements updated accordingly
-newInstanceSetup = function() {
+export function newInstanceSetup() {
     currentFramePosition = {};
-    if (currentlyProjectedTypes.length != 0) {
-        for (const key in currentlyProjectedTypes) 
-            currentFramePosition[currentlyProjectedTypes[key]] = 0;
+    if (currentlyProjectedSigs.length != 0) {
+        for (const key in currentlyProjectedSigs) 
+            currentFramePosition[currentlyProjectedSigs[key]] = 0;
         $('.current-frame').html(currentFramePositionToString());
         allNodes = cy.nodes();
         project();
@@ -149,10 +152,10 @@ newInstanceSetup = function() {
 
 // updates the frame navigator according to a static instance (i.e., 
 // everything disabled)
-staticProjection = function() {
+export function staticProjection() {
     $('.frame-navigation > select').append($('<option></option>')
-        .attr('value', currentlyProjectedTypes[0])
-        .text(currentlyProjectedTypes[0]));
+        .attr('value', currentlyProjectedSigs[0])
+        .text(currentlyProjectedSigs[0]));
     $('.current-frame').html(currentFramePositionToString());
     $('#nextFrame').prop('disabled',true);
     $('#previousFrame').prop('disabled',true);
@@ -161,7 +164,7 @@ staticProjection = function() {
 };
 
 // saves current node positions
-savePositions = function() {
+export function savePositions() {
     const atoms = cy.nodes();
     atoms.forEach((atom) => {
         nodePositions[atom.data().id] = jQuery.extend(true, {}, atom.position());
@@ -169,7 +172,7 @@ savePositions = function() {
 };
 
 // applies saved node positions
-applyPositions = function() {
+function applyPositions() {
     for (const id in nodePositions) {
         const node = cy.nodes(`[id='${id}']`);
         if (node.length > 0) {
@@ -179,32 +182,13 @@ applyPositions = function() {
 };
 
 // resets saved node positions
-resetPositions = function() {
+export function resetPositions() {
     nodePositions = {};
 };
 
 // calculates the label to be present as the current frame, type+index
-currentFramePositionToString = function() {
+export function currentFramePositionToString() {
     const position = [];
     for (const key in currentFramePosition) position.push(key + currentFramePosition[key]);
     return position.toString();
 };
-
-/*
- TODO caching system
- getProjectionFromCache = function (typesToProject){
- for(var i in projectionCache)
- if(projectionCache[i].projectedTypes.equals(typesToProject))return projectionCache[i].frames;
- return undefined;
- };
-
- cacheProjectionState = function(){
-
- };
-
- isProjectionCached = function (typesToProject){
- for(var i in projectionCache)
- if(projectionCache[i].projectedTypes.equals(typesToProject))return true;
- return false;
- }; */
-
