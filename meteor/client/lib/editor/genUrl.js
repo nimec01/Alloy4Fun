@@ -61,7 +61,6 @@ export function shareInstance() {
  * @param {Object} result the result to the genURL meteor call
  */
 function handleShareModel(err, result) {
-    console.log(typeof result)
     if (err) return displayError(err)
 
     Session.set('public-model-url',`${window.location.origin}/`+result['public']);

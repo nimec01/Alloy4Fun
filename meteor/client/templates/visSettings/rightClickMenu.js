@@ -23,6 +23,13 @@ Template.rightClickMenu.helpers({
     showSigProps() {
         return Session.get('rightClickSig')?"":"hidden";
     },
+
+    /**
+     * Whether to show projection theme options.
+     */
+    showProjectionProp() {
+        return Session.get('from-instance')?"hidden":"";
+    }
 });
 
 /**

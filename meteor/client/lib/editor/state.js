@@ -120,7 +120,6 @@ export function getPreviousInstance() {
  * @returns whether the instance is unsat
  */
 export function isUnsatInstance(i) {
-    console.log(typeof i);
 	return instances[i].unsat;
 }
 
