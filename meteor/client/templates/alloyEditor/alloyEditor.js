@@ -258,9 +258,10 @@ Template.alloyEditor.onRendered(() => {
             Session.set('from-instance',true);
             Session.set('log-message','Static shared instance. Execute model to iterate.')
             Session.set('log-class','log-info')
+            Session.set('empty-universe', typeof model.instance.graph.elements.nodes == 'undefined')
             initGraphViewer('instance');
             // load graph JSON data 
-            if (cy) {
+            if (cy && model.instance.graph.elements.nodes) {
                 cy.add(model.instance.graph.elements);
                 updateElementSelectionContent();
                 cy.zoom(model.instance.graph.zoom);
