@@ -20,6 +20,9 @@ import {
     isUnsatInstance,
     getCommandLabel
 } from "./state"
+import {
+    resetPositions
+} from "../visualizer/projection"
 
 /** 
  * Execute the model through the selected command. Will call the Alloy API.

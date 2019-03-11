@@ -28,7 +28,7 @@ export function shareModel() {
         relationSettings,
         generalSettings,
         currentFramePosition,
-        currentlyProjectedTypes,
+        currentlyProjectedSigs,
         metaPrimSigs,
         metaSubsetSigs,
     };
@@ -47,7 +47,7 @@ export function shareInstance() {
         relationSettings,
         generalSettings,
         currentFramePosition,
-        currentlyProjectedTypes,
+        currentlyProjectedSigs,
         metaPrimSigs,
         metaSubsetSigs,
     };

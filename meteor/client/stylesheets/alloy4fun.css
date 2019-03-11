@@ -544,13 +544,13 @@ input[disabled] {
     padding: 10px;
 }
 
-.right-click-shape-picker {
+.changeAtomShapePicker {
     width: 100%;
     background-color: rgba(142, 140, 140, 0.88);
     padding-left: 16px;
 }
 
-.right-click-color-picker {
+.changeAtomColorPicker {
     width: 100%;
     background-color: rgba(142, 140, 140, 0.88);
     padding-left: 16px;

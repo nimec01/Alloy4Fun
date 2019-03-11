@@ -1,10 +1,13 @@
 import cytoscape from "cytoscape";
 import {
     updateRightClickContent
-} from "../../templates/visSettings/rightClickOptionsMenu";
+} from "../../templates/visSettings/rightClickMenu";
 import {
     instChanged,
 } from "../editor/state"
+import {
+    newInstanceSetup
+} from "./projection"
 
 updateGraph = function (instance) {    
     // Remove previous nodes and edges.
@@ -379,11 +382,8 @@ initGraphViewer = function (element) {
             //if the menu's width overflows page width, place it behind the cursor.
             'left': evt.originalEvent.screenX + 1 + 300 > $(window).width() ? evt.originalEvent.offsetX + 1 - 300 : evt.originalEvent.offsetX + 1
         }).fadeIn('slow');
-        $("#changeAtomShape").show();
-        $("#rightClickProject").show();
-        $('.right-click-shape-picker').show();
-        Session.set("rightClickRelation", undefined);
-        Session.set("rightClickType", evt.cyTarget.data().type);
+        Session.set("rightClickRel", undefined);
+        Session.set("rightClickSig", evt.cyTarget.data().type);
         updateRightClickContent();
         return false;
     });
@@ -400,11 +400,8 @@ initGraphViewer = function (element) {
             //if the menu's width overflows page width, place it behind the cursor.
             'left': evt.originalEvent.screenX + 1 + 300 > $(window).width() ? evt.originalEvent.offsetX + 1 - 300 : evt.originalEvent.offsetX + 1
         }).fadeIn('slow');
-        $("#changeAtomShape").hide();
-        $("#rightClickProject").hide();
-        $('.right-click-shape-picker').hide();
-        Session.set("rightClickType", undefined);
-        Session.set("rightClickRelation", evt.cyTarget.data().relation);
+        Session.set("rightClickSig", undefined);
+        Session.set("rightClickRel", evt.cyTarget.data().relation);
         updateRightClickContent();
         return false;
     });

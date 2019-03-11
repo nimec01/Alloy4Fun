@@ -1,3 +1,9 @@
+import {
+    currentFramePositionToString,
+    savePositions,
+    project
+} from "../../../lib/visualizer/projection"
+
 Template.frameNavigation.helpers({
 
 });

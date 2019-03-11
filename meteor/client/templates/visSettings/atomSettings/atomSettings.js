@@ -1,3 +1,8 @@
+import {
+    removeSigFromProjection,
+    addSigToProjection
+} from "../../../lib/visualizer/projection"
+
 Template.atomSettings.helpers({
     getType() {
         const type = Session.get('selectedType');
@@ -21,7 +26,7 @@ updateOptionContentTypes = function() {
         $('#atomLabelSettings').val(getAtomLabel(selectedType));
 
         if (!isSubset) {
-            $('#projectOverSig').prop('checked', $.inArray(selectedType, currentlyProjectedTypes) > -1);
+            $('#projectOverSig').prop('checked', $.inArray(selectedType, currentlyProjectedSigs) > -1);
             const unconnectedNodes = getUnconnectedNodesValue(selectedType);
 
             if (unconnectedNodes == 'inherit') {
@@ -154,8 +159,8 @@ Template.atomSettings.events({
     'change #projectOverSig'(event) {
         const selectedType = Session.get('selectedType');
         try {
-            if (event.currentTarget.checked)addTypeToProjection(selectedType);
-            else removeTypeFromProjection(selectedType);
+            if (event.currentTarget.checked)addSigToProjection(selectedType);
+            else removeSigFromProjection(selectedType);
         } catch (err) {
             console.log(err);
         }
