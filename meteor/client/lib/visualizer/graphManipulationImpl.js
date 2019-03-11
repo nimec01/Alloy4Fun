@@ -372,6 +372,8 @@ initGraphViewer = function (element) {
 
     //right click event on cytoscape's node
     cy.on('cxttap', 'node', {}, function (evt) {
+        // close side panel
+        $(".settings-panel").removeClass("open");
         //Place right click options menu on mouse position and display it
         $('#optionsMenu').css({
             // overlap cytoscape canvas
@@ -390,6 +392,8 @@ initGraphViewer = function (element) {
 
     //right click event on cytoscape's node
     cy.on('cxttap', 'edge', {}, function (evt) {
+        // close side panel
+        $(".settings-panel").removeClass("open");
         //Place right click options menu on mouse position and display it
         $('#optionsMenu').css({
             // overlap cytoscape canvas
@@ -438,7 +442,10 @@ initGraphViewer = function (element) {
     });
 
     cy.on('tap', function (event) {
+        // hide right click menu
         $("#optionsMenu").hide();
+        // close side panel
+        $(".settings-panel").removeClass("open");
     });
 
     cy.on('render', function (event) {
