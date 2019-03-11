@@ -18,7 +18,6 @@ export function modelChanged() {
     Session.set("currentInstance", 0);
     Session.set("maxInstance", -1);
     Session.set("instances", []);
-    Session.set("projectableTypes", undefined);
 }
 
 /** 

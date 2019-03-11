@@ -1,12 +1,10 @@
 Template.visSettings.helpers({
-
 	/** 
      * Whether the instance is empty.
      */
-    emptyUniverse() {
+    emptyInstance() {
         return Session.get('empty-instance');
     },
-
 });
 
 Template.visSettings.events({

@@ -36,11 +36,11 @@ Template.frameNavigation.events({
         project();
     },
     'change .framePickerTarget'(event) {
-        const selectedType = event.target.value;
-        const currentAtom = currentFramePosition[selectedType];
+        const selectedSig = event.target.value;
+        const currentAtom = currentFramePosition[selectedSig];
         $('#nextFrame').prop('disabled',false);
         $('#previousFrame').prop('disabled',false);
-        if (currentAtom == lastFrame(selectedType))$('#nextFrame').prop('disabled',true);
+        if (currentAtom == lastFrame(selectedSig))$('#nextFrame').prop('disabled',true);
         if (currentAtom == 0)$('#previousFrame').prop('disabled',true);
     },
 });

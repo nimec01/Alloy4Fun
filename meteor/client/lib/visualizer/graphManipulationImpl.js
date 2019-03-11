@@ -418,7 +418,7 @@ initGraphViewer = function (element) {
         } else {
             //Clicked a node
             if (evtTarget.isNode()) {
-                Session.set("selectedType", evtTarget.data().type);
+                Session.set("selectedSig", evtTarget.data().type);
                 $(".general-settings").slideUp();
                 $(".relation-settings").slideUp();
                 $(".atom-settings").slideDown();
