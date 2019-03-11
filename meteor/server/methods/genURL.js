@@ -43,7 +43,7 @@ Meteor.methods({
         // generate the private link if secrets are present
         let privateLinkId
         let original
-        if (containsValidSecret(code)) {
+        if (containsValidSecret(code) || !currentModelId) {
             original = modelId
             privateLinkId = Link.insert({
                 model_id: modelId,
