@@ -5,13 +5,13 @@ import {
     getCommandsFromCode
 } from "../../../lib/editor/text"
 import {
-    generateModelURL,
-    generateInstURL
+    shareModel,
+    shareInstance
 } from "./genUrl"
 import {
     executeModel,
-    nextModel,
-    prevModel
+    nextInstance,
+    prevInstance
 } from "./executeModel"
 import {
     downloadTree
@@ -196,10 +196,10 @@ Template.alloyEditor.events({
     'change .command-selection > select'() {
         cmdChanged();
     },
-    'click #genUrl > button': generateModelURL,
-    'click #prev > button': prevModel,
-    'click #next > button': nextModel,
-    'click #genInstanceUrl > button': generateInstURL,
+    'click #genUrl > button': shareModel,
+    'click #prev > button': prevInstance,
+    'click #next > button': nextInstance,
+    'click #genInstanceUrl > button': shareInstance,
     'click #downloadTree > button': downloadTree,
     'click .clipboardbutton': function (evt) {
         copyToClipboard(evt)

@@ -6,7 +6,6 @@ import {
     instChanged,
 } from "../editor/state"
 
-
 updateGraph = function (instance) {    
     // Remove previous nodes and edges.
     cy.remove(cy.elements());
@@ -14,11 +13,7 @@ updateGraph = function (instance) {
     const atomElements = getAtoms(instance);
     cy.add(atomElements);
     cy.add(getEdges(instance));
-    if (atomElements.length == 0)
-        $(".empty-universe").show();
-    else {
-        $('.empty-universe').hide();
-    }
+    Session.set('empty-universe',atomElements.length == 0);
     cy.resize();
     // Apply same theme settings as previous instance.
     applyThemeSettings();

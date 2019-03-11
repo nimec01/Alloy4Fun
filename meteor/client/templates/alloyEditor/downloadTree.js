@@ -16,8 +16,8 @@ function downloadTree() {
 }
 
 /**
- * converts a list of flat descendants into a tree object 
- * using Hashmap and DFS
+ * Converts a list of flat descendants into a tree object using Hashmap and
+ * DFS.
  * @param {Object} res with descendants and root as properties
  */
 function descendantsToTree(res) {

@@ -13,10 +13,13 @@ import {
 
 export {
     executeModel,
-    nextModel,
-    prevModel
+    nextInstance,
+    prevInstance
 }
 
+/** 
+ * Execute the model through the selected command. Will call the Alloy API.
+ */
 function executeModel () {
     let commandIndex = getCommandIndex();
     //no command to run
@@ -37,7 +40,11 @@ function executeModel () {
     }
 }
 
-function nextModel() {
+/** 
+ * Show the next instance for the executed command or requests additional
+ * instances if no more cached, unless already unsat. May call the Alloy API.
+ */
+function nextInstance() {
     const instanceIndex = Session.get('currentInstance');
     const maxInstanceNumber = Session.get('maxInstance');
     // no more local instances but still not unsat
@@ -58,7 +65,10 @@ function nextModel() {
     }
 }
 
-function prevModel() {
+/** 
+ * Show the previous instance for the executed command, always cached if any.
+ */
+function prevInstance() {
     let ni = getPreviousInstance();
     if (typeof ni !== 'undefined') {
         resetPositions();
@@ -67,6 +77,10 @@ function prevModel() {
     instChanged();
 }
 
+/**
+ * Handles the response of the Alloy API for the execution of a command,
+ * either a fresh execution or a new batch of instances when iterating.
+ */
 function handleExecuteModel(err, result) {
     if (err) {
         maxInstanceNumber = -1;
@@ -79,7 +93,7 @@ function handleExecuteModel(err, result) {
     if (Array.isArray(result))
         result = result[0];
        
-    // if there error returned by alloy
+    // if there error returned by Alloy
     if (result.alloy_error) {
         let resmsg = result.msg
         if (result.line)

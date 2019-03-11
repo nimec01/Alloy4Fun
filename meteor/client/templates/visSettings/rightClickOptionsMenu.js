@@ -54,7 +54,7 @@ Template.rightClickOptionsMenu.events({
     'click #rightClickProject'() {
         const selectedType = Session.get('rightClickType');
         try {
-            if (currentlyProjectedTypes.indexOf(selectedType) == -1)addTypeToProjection(selectedType);
+            if (currentlyProjectedTypes.indexOf(selectedType) == -1) addTypeToProjection(selectedType);
             else removeTypeFromProjection(selectedType);
             $('#optionsMenu').hide();
             // TODO simular click na parte branca para limpar o checkBox
