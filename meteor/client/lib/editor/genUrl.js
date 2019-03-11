@@ -1,9 +1,15 @@
-import {
+/**
+ * Module that handles model and instance sharing.
+ *
+ * @module client/lib/editor/genUrl
+ */
+
+ import {
     zeroclipboard,
-} from "../../lib/editor/clipboard"
+} from "./clipboard"
 import {
     displayError,
-} from "../../lib/editor/feedback"
+} from "./feedback"
 import {
     secretTag 
 } from "../../../lib/editor/text"
@@ -11,16 +17,12 @@ import {
     modelShared,
     getCommandIndex,
     instShared,
-} from "../../lib/editor/state"
-export {
-    shareModel,
-    shareInstance,
-}
+} from "./state"
 
 /**
  * Store and share the current model and generate the sharing URLs.
  */
-function shareModel() {
+export function shareModel() {
     const themeData = {
         atomSettings,
         relationSettings,
@@ -39,7 +41,7 @@ function shareModel() {
  * Store and share the current instance and generate the sharing URL. The
  * respective model is already stored due to the execution.
  */
-function shareInstance() {
+export function shareInstance() {
     const themeData = {
         atomSettings,
         relationSettings,
@@ -52,8 +54,14 @@ function shareInstance() {
     Meteor.call("storeInstance", Session.get("last_id"), getCommandIndex(), cy.json(), themeData, handleShareInstance)
 }
 
-/* Handles the response to the model sharing request. */
+/** 
+ * Handles the response to the model sharing request. 
+ *
+ * @param {Error} err the possible meteor error
+ * @param {Object} result the result to the genURL meteor call
+ */
 function handleShareModel(err, result) {
+    console.log(typeof result)
     if (err) return displayError(err)
 
     Session.set('public-model-url',`${window.location.origin}/`+result['public']);
@@ -62,7 +70,12 @@ function handleShareModel(err, result) {
     modelShared();
 }
 
-/* Handles the response to the instance sharing request. */
+/** 
+ * Handles the response to the instance sharing request.
+ *
+ * @param {Error} err the possible meteor error
+ * @param {Object} result the result to the storeInstance meteor call
+ */
 function handleShareInstance(err, result) {
     if (err) return displayError(err)
 

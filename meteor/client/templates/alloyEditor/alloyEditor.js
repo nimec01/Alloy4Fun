@@ -7,15 +7,15 @@ import {
 import {
     shareModel,
     shareInstance
-} from "./genUrl"
+} from "../../lib/editor/genUrl"
 import {
     executeModel,
     nextInstance,
     prevInstance
-} from "./executeModel"
+} from "../../lib/editor/executeModel"
 import {
     downloadTree
-} from "./downloadTree"
+} from "../../lib/editor/downloadTree"
 import {
     copyToClipboard
 } from "../../lib/editor/clipboard"
@@ -258,7 +258,7 @@ Template.alloyEditor.onRendered(() => {
             Session.set('from-instance',true);
             Session.set('log-message','Static shared instance. Execute model to iterate.')
             Session.set('log-class','log-info')
-            Session.set('empty-universe', typeof model.instance.graph.elements.nodes == 'undefined')
+            Session.set('empty-instance', typeof model.instance.graph.elements.nodes == 'undefined')
             initGraphViewer('instance');
             // load graph JSON data 
             if (cy && model.instance.graph.elements.nodes) {

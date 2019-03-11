@@ -1,6 +1,15 @@
+/**
+ * Module that handles model execution and navigation.
+ *
+ * @module client/lib/editor/genUrl
+ */
+
 import {
-    displayError
-} from "../../lib/editor/feedback"
+    displayError,
+    displayWarningMsg,
+    displayInfoMsg,
+    displayErrorMsg
+} from "./feedback"
 import {
     getCommandIndex,
     storeInstances,
@@ -8,30 +17,19 @@ import {
     getNextInstance,
     getPreviousInstance,
     instChanged,
-    isUnsatInstance
-} from "../../lib/editor/state"
-
-export {
-    executeModel,
-    nextInstance,
-    prevInstance
-}
+    isUnsatInstance,
+    getCommandLabel
+} from "./state"
 
 /** 
  * Execute the model through the selected command. Will call the Alloy API.
  */
-function executeModel () {
+export function executeModel () {
     let commandIndex = getCommandIndex();
     //no command to run
-    if (commandIndex < 0) {
-        swal({
-            title: "",
-            text: "There are no commands to execute",
-            icon: "warning",
-            buttons: true,
-            dangerMode: true,
-        });
-    } 
+    if (commandIndex < 0)
+        displayError("There are no commands to execute","");
+    
     // execute command
     else { 
         let model = textEditor.getValue();
@@ -44,7 +42,7 @@ function executeModel () {
  * Show the next instance for the executed command or requests additional
  * instances if no more cached, unless already unsat. May call the Alloy API.
  */
-function nextInstance() {
+export function nextInstance() {
     const instanceIndex = Session.get('currentInstance');
     const maxInstanceNumber = Session.get('maxInstance');
     // no more local instances but still not unsat
@@ -56,7 +54,7 @@ function nextInstance() {
     if (typeof ni !== 'undefined') {
         if (ni.unsat) {
             Session.set('currentInstance',instanceIndex);
-            swal("No more satisfying instances!", "", "error");
+            displayInfoMsg("No more satisfying instances!", "");
         } else {
             resetPositions();
             updateGraph(ni);
@@ -68,7 +66,7 @@ function nextInstance() {
 /** 
  * Show the previous instance for the executed command, always cached if any.
  */
-function prevInstance() {
+export function prevInstance() {
     let ni = getPreviousInstance();
     if (typeof ni !== 'undefined') {
         resetPositions();
@@ -80,6 +78,10 @@ function prevInstance() {
 /**
  * Handles the response of the Alloy API for the execution of a command,
  * either a fresh execution or a new batch of instances when iterating.
+ *
+ * @param {Error} err the possible meteor error
+ * @param {Object} result the result to the getInstances or nextInstance
+ *     meteor calls
  */
 function handleExecuteModel(err, result) {
     if (err) {
@@ -99,22 +101,18 @@ function handleExecuteModel(err, result) {
         if (result.line)
             resmsg = resmsg + " (" + result.line + ":" + result.column + ")"
         resmsg = resmsg + "\n"
-        swal("There was a problem running the model!", resmsg + "Please validate your model.", "error");
+        displayErrorMsg("There was a problem running the model!", resmsg + "Please validate your model.");
     } 
     // else, show instance or unsat
     else {
-        let command;
-        if (Session.get('commands').length <= 1)
-            command = Session.get('commands')[0]
-        else
-            command = $('.command-selection > select option:selected').text();
+        let command = getCommandLabel();
 
         if (result.warning_error) {
             let resmsg = result.msg
             if (result.line)
                 resmsg = resmsg + " (" + result.line + ":" + result.column + ")"
             resmsg = resmsg + "\n"
-            swal("There is a possible problem with the model!", resmsg, "warning");
+            displayWarningMsg("There is a possible problem with the model!", resmsg);
         }
         if (result.unsat) {
             Session.set('log-message',result.check ? "No counter-examples. " + command + " may be valid." : "No instance found. " + command + " may be inconsistent.");
