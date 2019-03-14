@@ -7,7 +7,7 @@ atomSettings.displayNodesNumber = [{ type: 'univ', displayNodesNumber: true }]
 atomSettings.nodeVisibility = [{ type: 'univ', visibility: false }]
 
 /**
- * Retrieve the atom label property of a sig, initializing to the sig label if
+ * Retrieves the atom label property of a sig, initializing to the sig label if
  * undefined.
  *
  * @param {String} sig the sig for which to get the property
@@ -41,7 +41,7 @@ updateAtomLabel = function (sig, newVal) {
 }
 
 /**
- * Retrieve the atom colour property of a sig, initializing it to inherit if
+ * Retrieves the atom colour property of a sig, initializing it to inherit if
  * undefined.
  *
  * @param {String} sig the sig for which to get the property
@@ -91,7 +91,7 @@ updateAtomColor = function (sig, newVal) {
 }
 
 /**
- * Retrieve the atom shape property of a sig, initializing it to inherit if
+ * Retrieves the atom shape property of a sig, initializing it to inherit if
  * undefined.
  *
  * @param {String} sig the sig for which to get the property
@@ -141,7 +141,7 @@ updateAtomShape = function (sig, newVal) {
 }
 
 /**
- * Retrieve the atom border property of a sig, initializing it to inherit if
+ * Retrieves the atom border property of a sig, initializing it to inherit if
  * undefined.
  *
  * @param {String} sig the sig for which to get the property
@@ -191,7 +191,7 @@ updateAtomBorder = function (sig, newVal) {
 }
 
 /**
- * Retrieve the atom visibility property of a sig, initializing it to inherit if
+ * Retrieves the atom visibility property of a sig, initializing it to inherit if
  * undefined.
  *
  * @param {String} sig the sig for which to get the property
@@ -241,7 +241,7 @@ updateAtomVisibility = function (sig, newVal) {
 }
 
 /**
- * Retrieve the hide unconnected nodes property of a sig, initializing it to
+ * Retrieves the hide unconnected nodes property of a sig, initializing it to
  * inherit if undefined.
  *
  * @param {String} sig the sig for which to get the property
@@ -293,7 +293,7 @@ updateHideUnconnectedNodes = function (sig, newVal) {
 }
 
 /**
- * Retrieve the display node number property of a sig, initializing it to
+ * Retrieves the display node number property of a sig, initializing it to
  * inherit if undefined.
  *
  * @param {String} sig the sig for which to get the property

@@ -72,7 +72,6 @@ Template.atomSettings.events({
         cy.nodes(`[type='${selectedSig}']`).data({ label: event.target.value })
         updateAtomLabel(selectedSig, event.target.value)
         refreshGraph()
-        refreshAttributes()
     },
 
     'change #atomColorSettings'(event) {

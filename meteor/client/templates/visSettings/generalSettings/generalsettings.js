@@ -5,8 +5,7 @@ Template.generalSettings.events({
     'change #originalAtomNames'(event) {
         setOriginalAtomNamesValue($(event.target).is(':checked'))
         updateOriginalAtomNames($(event.target).is(':checked'))
-        refreshAttributes()
-        // refreshGraph();
+        refreshGraph()
     },
     'change #layoutPicker'(event) {
         currentLayout = event.target.value

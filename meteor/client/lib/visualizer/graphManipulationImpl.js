@@ -21,13 +21,9 @@ updateGraph = function (instance) {
 applyThemeSettings = function () {
     // Apply show as attributes option set on previous instances.
     setOriginalAtomNamesValue(!!generalSettings.useOriginalAtomNames)
-    if (relationSettings.showAsArcs) {
-        relationSettings.showAsArcs.forEach((item) => {
-            if (item.showAsArcs) setShowAsArcsValue(item.relation, true)
-        })
-    }
+
     // In case of label change.
-    refreshAttributes()
+    refreshGraph()
     // Add types, subsets and relations to selection area on settings tab.
     updateElementSelectionContent()
     // Backup of whole instance. Helpful for projection.
@@ -177,16 +173,6 @@ refreshGraph = function () {
     selected.select()
 }
 
-// Called on atom label modification.
-refreshAttributes = function () {
-    if (relationSettings.showAsAttributes) {
-        relationSettings.showAsAttributes.forEach((item) => {
-            if (item.showAsAttributes) setShowAsAttributesValue(item.relation, true)
-        })
-    }
-    refreshGraph()
-}
-
 initGraphViewer = function (element) {
     cy = cytoscape({
         container: document.getElementById(element), // container to render in
@@ -227,6 +213,10 @@ initGraphViewer = function (element) {
                         const subsigs = ele.data().subsetSigs.length > 0 ? `\n(${ele.data().subsetSigs.map(getAtomLabel)})` : ''
 
                         // relations as attributes labels
+                        relationSettings.showAsAttributes.forEach((item) => {
+                            propagateAttributes(item.relation, item.showAsAttributes)
+                        })
+
                         let attributes = ''
                         for (const i in ele.data().attributes) attributes += `\n${cy.edges(`[relation='${i}']`)[0].data().label} : ${ele.data().attributes[i].toString()}`
 
@@ -300,7 +290,11 @@ initGraphViewer = function (element) {
                     'text-valign': 'center',
                     'text-outline-color': '#ff3300',
                     'edge-text-rotation': 'autorotate',
-                    'line-style': 'data(edgeStyle)'
+                    'line-style': 'data(edgeStyle)',
+                    visibility(ele) {
+                        const val = isShowAsArcsOn(ele.data().relation)
+                        return val ? 'visible' : 'hidden'
+                    }
                 }
             },
             {

@@ -1,144 +1,175 @@
 relationSettings = {}
 relationSettings.edgeLabels = []
-relationSettings.nodeColors = []
+relationSettings.edgeColors = []
 relationSettings.edgeStyles = []
 relationSettings.showAsArcs = []
 relationSettings.showAsAttributes = []
 
-getRelationLabel = function (relationType) {
+/**
+ * Retrieves the edge label property of a relation, initializing to the
+ * relation label if undefined.
+ *
+ * @param {String} rel the relation for which to get the property
+ * @returns {String} the value assigned to the property
+ */
+getRelationLabel = function (rel) {
     if (relationSettings && relationSettings.edgeLabels) {
         for (let i = 0; i < relationSettings.edgeLabels.length; i++) {
-            if (relationSettings.edgeLabels[i].type == relationType) {
-                return relationSettings.edgeLabels[i].label
-            }
+            if (relationSettings.edgeLabels[i].type == rel) return relationSettings.edgeLabels[i].label
         }
-        relationSettings.edgeLabels.push({ type: relationType, label: relationType })
-        return relationType
+    } else {
+        relationSettings.edgeLabels = []
     }
-    relationSettings.edgeLabels = []
-    relationSettings.edgeLabels.push({ type: relationType, label: relationType })
-    return relationType
+    relationSettings.edgeLabels.push({ type: rel, label: rel })
+    return rel
 }
 
-updateRelationLabel = function (relationType, newLabel) {
+updateRelationLabel = function (rel, newVal) {
     for (let i = 0; i < relationSettings.edgeLabels.length; i++) {
-        if (relationSettings.edgeLabels[i].type == relationType) {
-            relationSettings.edgeLabels[i].label = newLabel
+        if (relationSettings.edgeLabels[i].type == rel) {
+            relationSettings.edgeLabels[i].label = newVal
             return
         }
     }
 }
 
-getRelationColor = function (relationType) {
-    if (relationSettings && relationSettings.nodeColors) {
-        for (let i = 0; i < relationSettings.nodeColors.length; i++) {
-            if (relationSettings.nodeColors[i].type == relationType) {
-                return relationSettings.nodeColors[i].color
-            }
+/**
+ * Retrieves the edge color property of a relation, initializing to a default
+ * color if undefined.
+ *
+ * @param {String} rel the relation for which to get the property
+ * @returns {String} the value assigned to the property
+ */
+getRelationColor = function (rel) {
+    if (relationSettings && relationSettings.edgeColors) {
+        for (let i = 0; i < relationSettings.edgeColors.length; i++) {
+            if (relationSettings.edgeColors[i].type == rel) return relationSettings.edgeColors[i].color
         }
-        relationSettings.nodeColors.push({ type: relationType, color: '#0074D9' })
-        return '#0074D9'
+    } else {
+        relationSettings.edgeColors = []
     }
-    relationSettings.nodeColors = []
-    relationSettings.nodeColors.push({ type: relationType, color: '#0074D9' })
+    relationSettings.edgeColors.push({ type: rel, color: '#0074D9' })
     return '#0074D9'
 }
 
-updateRelationColor = function (relationType, newColor) {
-    for (let i = 0; i < relationSettings.nodeColors.length; i++) {
-        if (relationSettings.nodeColors[i].type == relationType) {
-            relationSettings.nodeColors[i].color = newColor
+updateRelationColor = function (rel, newVal) {
+    for (let i = 0; i < relationSettings.edgeColors.length; i++) {
+        if (relationSettings.edgeColors[i].type == rel) {
+            relationSettings.edgeColors[i].color = newVal
             return
         }
     }
 }
 
-getRelationEdgeStyle = function (relationType) {
+/**
+ * Retrieves the edge style property of a relation, initializing to solid if
+ * undefined.
+ *
+ * @param {String} rel the relation for which to get the property
+ * @returns {String} the value assigned to the property
+ */
+getRelationEdgeStyle = function (rel) {
+    console.log('called style')
     if (relationSettings && relationSettings.edgeStyles) {
         for (let i = 0; i < relationSettings.edgeStyles.length; i++) {
-            if (relationSettings.edgeStyles[i].type == relationType) {
-                return relationSettings.edgeStyles[i].edgeStyle
-            }
+            if (relationSettings.edgeStyles[i].type == rel) return relationSettings.edgeStyles[i].edgeStyle
         }
-        relationSettings.edgeStyles.push({ type: relationType, edgeStyle: 'solid' })
-        return 'solid'
+    } else {
+        relationSettings.edgeStyles = []
     }
-    relationSettings.edgeStyles = []
-    relationSettings.edgeStyles.push({ type: relationType, edgeStyle: 'solid' })
+    relationSettings.edgeStyles.push({ type: rel, edgeStyle: 'solid' })
     return 'solid'
 }
 
-updateEdgeStyle = function (relationType, newEdgeStyleValue) {
+updateEdgeStyle = function (rel, newVal) {
     for (let i = 0; i < relationSettings.edgeStyles.length; i++) {
-        if (relationSettings.edgeStyles[i].type == relationType) {
-            relationSettings.edgeStyles[i].edgeStyle = newEdgeStyleValue
+        if (relationSettings.edgeStyles[i].type == rel) {
+            relationSettings.edgeStyles[i].edgeStyle = newVal
             return
         }
     }
 }
 
-isShowAsArcsOn = function (relation) {
-    if (relationSettings.showAsArcs) {
+/**
+ * Retrieves the show as arcs property of a relation, initializing to
+ * true if undefined.
+ *
+ * @param {String} rel the relation for which to get the property
+ * @returns {String} the value assigned to the property
+ */
+isShowAsArcsOn = function (rel) {
+    console.log('called arcs')
+
+    if (relationSettings && relationSettings.showAsArcs) {
         for (let i = 0; i < relationSettings.showAsArcs.length; i++) {
-            if (relationSettings.showAsArcs[i].relation == relation) {
+            if (relationSettings.showAsArcs[i].relation == rel) {
                 return relationSettings.showAsArcs[i].showAsArcs
             }
         }
-        return false
-    } return false
-}
-
-setShowAsArcsValue = function (relationType, value) {
-    try {
-        if (cy) {
-            // TODO : Display fields as edges alternative to attributes
-            const edges = cy.edges(`[relation='${relationType}']`)
-            if (value) {
-                edges.forEach((edge) => {
-                    edge.hide()
-                })
-            } else {
-                edges.forEach((edge) => {
-                    edge.show()
-                })
-            }
-        }
-    } catch (e) {
+    } else {
+        relationSettings.showAsArcs = []
     }
+    relationSettings.showAsArcs.push({ type: rel, showAsArcs: true })
+    return true
 }
 
-updateShowAsArcs = function (relationType, newShowAsArcsValue) {
+updateShowAsArcs = function (rel, newVal) {
     if (relationSettings.showAsArcs) {
         for (let i = 0; i < relationSettings.showAsArcs.length; i++) {
-            if (relationSettings.showAsArcs[i].relation == relationType) {
-                relationSettings.showAsArcs[i].showAsArcs = newShowAsArcsValue
+            if (relationSettings.showAsArcs[i].relation == rel) {
+                relationSettings.showAsArcs[i].showAsArcs = newVal
                 return
             }
         }
-        relationSettings.showAsArcs.push({ relation: relationType, showAsArcs: newShowAsArcsValue })
+        relationSettings.showAsArcs.push({ relation: rel, showAsArcs: newVal })
         return
     }
     relationSettings.showAsArcs = []
-    relationSettings.showAsArcs.push({ relation: relationType, showAsArcs: newShowAsArcsValue })
+    relationSettings.showAsArcs.push({ relation: rel, showAsArcs: newVal })
 }
 
-isShowAsAttributesOn = function (relation) {
+/**
+ * Retrieves the show as attributes property of a relation, initializing to
+ * false if undefined.
+ *
+ * @param {String} rel the relation for which to get the property
+ * @returns {String} the value assigned to the property
+ */
+isShowAsAttributesOn = function (rel) {
     if (relationSettings.showAsAttributes) {
         for (let i = 0; i < relationSettings.showAsAttributes.length; i++) {
-            if (relationSettings.showAsAttributes[i].relation == relation) {
+            if (relationSettings.showAsAttributes[i].relation == rel) {
                 return relationSettings.showAsAttributes[i].showAsAttributes
             }
         }
-        return false
-    } return false
+    } else {
+        relationSettings.showAsAttributes = []
+    }
+    relationSettings.showAsAttributes.push({ type: rel, showAsAttributes: false })
+    return false
 }
 
-setShowAsAttributesValue = function (relationType, value) {
+updateShowAsAttributes = function (rel, newVal) {
+    if (relationSettings.showAsAttributes) {
+        for (let i = 0; i < relationSettings.showAsAttributes.length; i++) {
+            if (relationSettings.showAsAttributes[i].relation == rel) {
+                relationSettings.showAsAttributes[i].showAsAttributes = newVal
+                return
+            }
+        }
+        relationSettings.showAsAttributes.push({ relation: rel, showAsAttributes: newVal })
+        return
+    }
+    relationSettings.showAsAttributes = []
+    relationSettings.showAsAttributes.push({ relation: rel, showAsAttributes: newVal })
+}
+
+propagateAttributes = function (rel, newVal) {
     if (cy) {
-        const edges = cy.edges(`[relation='${relationType}']`)
-        if (value) {
+        const edges = cy.edges(`[relation='${rel}']`)
+        if (newVal) {
             const aux = {}
-            for (var i = 0; i < edges.length; i++) {
+            for (let i = 0; i < edges.length; i++) {
                 if (!aux[edges[i].source().data().id])aux[edges[i].source().data().id] = []
                 aux[edges[i].source().data().id].push(edges[i].data().labelExt == ''
                     ? edges[i].target().data().label
@@ -146,25 +177,8 @@ setShowAsAttributesValue = function (relationType, value) {
             }
             for (const key in aux) {
                 if (!cy.nodes(`[id='${key}']`)[0].data().attributes)cy.nodes(`[id='${key}']`)[0].data().attributes = []
-                cy.nodes(`[id='${key}']`)[0].data().attributes[relationType] = aux[key]
-            }
-        } else {
-            for (var i = 0; i < edges.length; i++) delete cy.nodes(`[id='${edges[i].source().data().id}']`)[0].data().attributes[relationType]
-        }
-    }
-}
-
-updateShowAsAttributes = function (relationType, newShowAsAttributesValue) {
-    if (relationSettings.showAsAttributes) {
-        for (let i = 0; i < relationSettings.showAsAttributes.length; i++) {
-            if (relationSettings.showAsAttributes[i].relation == relationType) {
-                relationSettings.showAsAttributes[i].showAsAttributes = newShowAsAttributesValue
-                return
+                cy.nodes(`[id='${key}']`)[0].data().attributes[rel] = aux[key]
             }
         }
-        relationSettings.showAsAttributes.push({ relation: relationType, showAsAttributes: newShowAsAttributesValue })
-        return
     }
-    relationSettings.showAsAttributes = []
-    relationSettings.showAsAttributes.push({ relation: relationType, showAsAttributes: newShowAsAttributesValue })
 }
