@@ -1,21 +1,21 @@
 Template.visSettings.helpers({
-	/** 
+    /**
      * Whether the instance is empty.
      */
     emptyInstance() {
-        return Session.get('empty-instance');
-    },
-});
+        return Session.get('empty-instance')
+    }
+})
 
 Template.visSettings.events({
     'click #settings-button'() {
-        $('.settings-panel').toggleClass('open');
-    },
-});
+        $('.settings-panel').toggleClass('open')
+    }
+})
 
 Template.visSettings.onRendered(() => {
     // Add styling to scroll bar on theme settings
     $('.scroll-settings').slimScroll({
-        height: '380px',
-    });
-});
+        height: '380px'
+    })
+})

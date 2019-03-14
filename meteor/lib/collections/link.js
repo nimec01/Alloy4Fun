@@ -8,21 +8,21 @@
  * the public link is created.
  */
 
-Link = new Meteor.Collection('Link');
+Link = new Meteor.Collection('Link')
 
 Link.attachSchema(new SimpleSchema({
     _id: {
         type: String
     },
-    /** 
+    /**
       * whether this is a private or public link (will show secrets for
       * private).
       */
-    private: { 
+    private: {
         type: Boolean
     },
     /** the id of the model to be shared. */
-    model_id: { 
+    model_id: {
         type: String
     }
 }))
@@ -32,6 +32,4 @@ Link.publicFields = {
     model_id: 1
 }
 
-export {
-    Link
-};
+export { Link }

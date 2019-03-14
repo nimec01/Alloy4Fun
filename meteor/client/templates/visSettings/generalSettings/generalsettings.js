@@ -1,24 +1,24 @@
 Template.generalSettings.helpers({
-});
+})
 
 Template.generalSettings.events({
     'change #originalAtomNames'(event) {
-        setOriginalAtomNamesValue($(event.target).is(':checked'));
-        updateOriginalAtomNames($(event.target).is(':checked'));
-        refreshAttributes();
+        setOriginalAtomNamesValue($(event.target).is(':checked'))
+        updateOriginalAtomNames($(event.target).is(':checked'))
+        refreshAttributes()
         // refreshGraph();
     },
     'change #layoutPicker'(event) {
-        currentLayout = event.target.value;
+        currentLayout = event.target.value
         if (currentLayout == 'breadthfirst') {
-            $('.node-spacing').show();
+            $('.node-spacing').show()
         } else {
-            $('.node-spacing').hide();
+            $('.node-spacing').hide()
         }
-        applyCurrentLayout();
+        applyCurrentLayout()
     },
     'change #nodeSpacing'(event) {
-        updateNodeSpacing(event.target.value);
-        applyCurrentLayout();
-    },
-});
+        updateNodeSpacing(event.target.value)
+        applyCurrentLayout()
+    }
+})

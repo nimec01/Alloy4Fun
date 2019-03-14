@@ -1,27 +1,27 @@
-generalSettings = {};
+generalSettings = {}
 
 setOriginalAtomNamesValue = function (value) {
     if (value) {
-        $('#atomLabelSettings').prop('disabled', true);
-        var nodes = cy.nodes();
+        $('#atomLabelSettings').prop('disabled', true)
+        var nodes = cy.nodes()
         nodes.forEach((node) => {
-            const originalName = node.data().id.split('$')[0];
-            node.data().label = originalName;
-            node.data().dollar = '$';
-        });
+            const originalName = node.data().id.split('$')[0]
+            node.data().label = originalName
+            node.data().dollar = '$'
+        })
     } else {
-        $('#atomLabelSettings').prop('disabled', false);
-        var nodes = cy.nodes();
+        $('#atomLabelSettings').prop('disabled', false)
+        var nodes = cy.nodes()
         nodes.forEach((node) => {
-            node.data().label = getAtomLabel(node.data().type);
-            node.data().dollar = '';
-        });
+            node.data().label = getAtomLabel(node.data().type)
+            node.data().dollar = ''
+        })
     }
-};
+}
 
 updateOriginalAtomNames = function (value) {
-    generalSettings.useOriginalAtomNames = value;
-};
+    generalSettings.useOriginalAtomNames = value
+}
 
 /* elements = [{
     "data":{"id":"n0"},

@@ -4,20 +4,12 @@
  * @module client/lib/editor/genUrl
  */
 
- import {
-    zeroclipboard,
-} from "./clipboard"
-import {
-    displayError,
-} from "./feedback"
-import {
-    secretTag 
-} from "../../../lib/editor/text"
-import {
-    modelShared,
+import { zeroclipboard } from './clipboard'
+import { displayError } from './feedback'
+import { secretTag } from '../../../lib/editor/text'
+import { modelShared,
     getCommandIndex,
-    instShared,
-} from "./state"
+    instShared } from './state'
 
 /**
  * Store and share the current model and generate the sharing URLs.
@@ -30,11 +22,11 @@ export function shareModel() {
         currentFramePosition,
         currentlyProjectedSigs,
         metaPrimSigs,
-        metaSubsetSigs,
-    };
+        metaSubsetSigs
+    }
 
-    let modelToShare = textEditor.getValue();
-    Meteor.call('genURL', modelToShare, Session.get("last_id"), themeData, handleShareModel);
+    const modelToShare = textEditor.getValue()
+    Meteor.call('genURL', modelToShare, Session.get('last_id'), themeData, handleShareModel)
 }
 
 /**
@@ -49,13 +41,13 @@ export function shareInstance() {
         currentFramePosition,
         currentlyProjectedSigs,
         metaPrimSigs,
-        metaSubsetSigs,
-    };
-    Meteor.call("storeInstance", Session.get("last_id"), getCommandIndex(), cy.json(), themeData, handleShareInstance)
+        metaSubsetSigs
+    }
+    Meteor.call('storeInstance', Session.get('last_id'), getCommandIndex(), cy.json(), themeData, handleShareInstance)
 }
 
-/** 
- * Handles the response to the model sharing request. 
+/**
+ * Handles the response to the model sharing request.
  *
  * @param {Error} err the possible meteor error
  * @param {Object} result the result to the genURL meteor call
@@ -63,13 +55,13 @@ export function shareInstance() {
 function handleShareModel(err, result) {
     if (err) return displayError(err)
 
-    Session.set('public-model-url',`${window.location.origin}/`+result['public']);
-    Session.set('private-model-url',`${window.location.origin}/`+result['private']);
+    Session.set('public-model-url', `${window.location.origin}/${result.public}`)
+    Session.set('private-model-url', `${window.location.origin}/${result.private}`)
 
-    modelShared();
+    modelShared()
 }
 
-/** 
+/**
  * Handles the response to the instance sharing request.
  *
  * @param {Error} err the possible meteor error
@@ -78,7 +70,7 @@ function handleShareModel(err, result) {
 function handleShareInstance(err, result) {
     if (err) return displayError(err)
 
-    Session.set('inst-url',`${window.location.origin}/`+result);
+    Session.set('inst-url', `${window.location.origin}/${result}`)
 
-    instShared();
+    instShared()
 }

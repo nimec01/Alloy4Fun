@@ -10,7 +10,7 @@
  * stores additional information.
  */
 
-Model = new Meteor.Collection('Model');
+Model = new Meteor.Collection('Model')
 
 Model.attachSchema(new SimpleSchema({
     _id: {
@@ -20,8 +20,8 @@ Model.attachSchema(new SimpleSchema({
     code: {
         type: String
     },
-    /** which model does it derive from (null if original).*/
-    derivationOf: { 
+    /** which model does it derive from (null if original). */
+    derivationOf: {
         type: String,
         optional: true
     },
@@ -61,36 +61,34 @@ Model.attachSchema(new SimpleSchema({
         optional: true
     },
     /**
-     * optional field, whether the command was satisfiable (1) or unsatisfiable 
+     * optional field, whether the command was satisfiable (1) or unsatisfiable
      * (0), if created by execution. if execution fails, then -1.
      */
-    sat: { 
+    sat: {
         type: Number,
         optional: true
     },
     /**
      * optional field, a possible error or warning message.
      */
-    msg: { 
+    msg: {
         type: String,
         optional: true
     },
     /** the theme associated with this model. */
-    theme: { 
+    theme: {
         type: Object,
         blackbox: true,
         optional: true
     },
     /** the timestamp. */
     time: {
-        type: String,
-    },
-}));
+        type: String
+    }
+}))
 
 Model.publicFields = {
     code: 1,
     derivationOf: 1
 }
-export {
-    Model
-};
+export { Model }

@@ -1,18 +1,14 @@
-import {
-    Meteor
-} from 'meteor/meteor';
-import {
-    seedWithModels
-} from "./seed"
+import { Meteor } from 'meteor/meteor'
+import { seedWithModels } from './seed'
 
-import '../server/methods/validate'
-import '../server/methods/genURL'
-import '../server/methods/getInstances'
-import '../server/methods/nextInstances'
-import '../server/methods/getProjection'
-import '../server/methods/shareInstance'
-import '../server/methods/getModel'
-import '../server/methods/downloadTree'
+import './methods/validate'
+import './methods/genURL'
+import './methods/getInstances'
+import './methods/nextInstances'
+import './methods/getProjection'
+import './methods/shareInstance'
+import './methods/getModel'
+import './methods/downloadTree'
 
 import './publications/modelFromLink'
 
@@ -22,7 +18,7 @@ import './publications/modelFromLink'
 Meteor.startup(() => {
     if (!Model.find().count()) {
         // if there are no models, insert default ones
-        let res = seedWithModels()
-        console.log(`Seeded Database with ${res} models`);
+        const res = seedWithModels()
+        console.log(`Seeded Database with ${res} models`)
     }
-});
+})

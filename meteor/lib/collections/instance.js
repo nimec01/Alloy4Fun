@@ -1,8 +1,8 @@
 /**
  * An instance created by executing a command of an Alloy model.
  */
- 
-Instance = new Meteor.Collection('Instance');
+
+Instance = new Meteor.Collection('Instance')
 
 Instance.attachSchema(new SimpleSchema({
     _id: {
@@ -27,4 +27,4 @@ Instance.attachSchema(new SimpleSchema({
     }
 }))
 
-export { Instance };
+export { Instance }
