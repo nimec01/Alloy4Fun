@@ -69,11 +69,11 @@ function getProjectionEdges(relations) {
                         relation: relation.relation,
                         source: tuple[0],
                         target: tuple[tuple.length - 1],
-                        label: getRelationLabel(relation.relation),
-                        color: getRelationColor(relation.relation),
+                        label: getEdgeLabel(relation.relation),
+                        color: getEdgeColor(relation.relation),
                         labelExt,
                         updatedLabelExt: labelExt,
-                        edgeStyle: getRelationEdgeStyle(relation.relation)
+                        edgeStyle: getEdgeStyle(relation.relation)
                     }
                 })
             }

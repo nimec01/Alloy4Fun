@@ -1,4 +1,5 @@
 atomSettings = {}
+atomSettings.nodeLabels = []
 atomSettings.nodeColors = [{ type: 'univ', color: '#2ECC40' }]
 atomSettings.nodeShapes = [{ type: 'univ', shape: 'ellipse' }]
 atomSettings.nodeBorders = [{ type: 'univ', border: 'solid' }]
@@ -14,12 +15,8 @@ atomSettings.nodeVisibility = [{ type: 'univ', visibility: false }]
  * @returns {String} the value assigned to the property
  */
 getAtomLabel = function (sig) {
-    if (atomSettings && atomSettings.nodeLabels) {
-        for (let i = 0; i < atomSettings.nodeLabels.length; i++) {
-            if (atomSettings.nodeLabels[i].type == sig) return atomSettings.nodeLabels[i].label
-        }
-    } else {
-        atomSettings.nodeLabels = []
+    for (let i = 0; i < atomSettings.nodeLabels.length; i++) {
+        if (atomSettings.nodeLabels[i].type == sig) return atomSettings.nodeLabels[i].label
     }
     atomSettings.nodeLabels.push({ type: sig, label: sig })
     return sig
@@ -48,12 +45,8 @@ updateAtomLabel = function (sig, newVal) {
  * @returns {String} the value assigned to the property
  */
 getAtomColor = function (sig) {
-    if (atomSettings && atomSettings.nodeColors) {
-        for (let i = 0; i < atomSettings.nodeColors.length; i++) {
-            if (atomSettings.nodeColors[i].type == sig) return atomSettings.nodeColors[i].color
-        }
-    } else {
-        atomSettings.nodeColors = []
+    for (let i = 0; i < atomSettings.nodeColors.length; i++) {
+        if (atomSettings.nodeColors[i].type == sig) return atomSettings.nodeColors[i].color
     }
     atomSettings.nodeColors.push({ type: sig, color: 'inherit' })
     return 'inherit'
@@ -98,12 +91,8 @@ updateAtomColor = function (sig, newVal) {
  * @returns {String} the value assigned to the property
  */
 getAtomShape = function (sig) {
-    if (atomSettings && atomSettings.nodeShapes) {
-        for (let i = 0; i < atomSettings.nodeShapes.length; i++) {
-            if (atomSettings.nodeShapes[i].type == sig) return atomSettings.nodeShapes[i].shape
-        }
-    } else {
-        atomSettings.nodeShapes = []
+    for (let i = 0; i < atomSettings.nodeShapes.length; i++) {
+        if (atomSettings.nodeShapes[i].type == sig) return atomSettings.nodeShapes[i].shape
     }
     atomSettings.nodeShapes.push({ type: sig, shape: 'inherit' })
     return 'inherit'
@@ -148,12 +137,8 @@ updateAtomShape = function (sig, newVal) {
  * @returns {String} the value assigned to the property
  */
 getAtomBorder = function (sig) {
-    if (atomSettings && atomSettings.nodeBorders) {
-        for (let i = 0; i < atomSettings.nodeBorders.length; i++) {
-            if (atomSettings.nodeBorders[i].type == sig) return atomSettings.nodeBorders[i].border
-        }
-    } else {
-        atomSettings.nodeBorders = []
+    for (let i = 0; i < atomSettings.nodeBorders.length; i++) {
+        if (atomSettings.nodeBorders[i].type == sig) return atomSettings.nodeBorders[i].border
     }
     atomSettings.nodeBorders.push({ type: sig, border: 'inherit' })
     return 'inherit'
@@ -198,12 +183,8 @@ updateAtomBorder = function (sig, newVal) {
  * @returns {String} the value assigned to the property
  */
 getAtomVisibility = function (sig) {
-    if (atomSettings && atomSettings.nodeVisibility) {
-        for (let i = 0; i < atomSettings.nodeVisibility.length; i++) {
-            if (atomSettings.nodeVisibility[i].type == sig) return atomSettings.nodeVisibility[i].visibility
-        }
-    } else {
-        atomSettings.nodeVisibility = []
+    for (let i = 0; i < atomSettings.nodeVisibility.length; i++) {
+        if (atomSettings.nodeVisibility[i].type == sig) return atomSettings.nodeVisibility[i].visibility
     }
     atomSettings.nodeVisibility.push({ type: sig, visibility: 'inherit' })
     return 'inherit'
@@ -248,12 +229,8 @@ updateAtomVisibility = function (sig, newVal) {
  * @returns {String} the value assigned to the property
  */
 getHideUnconnectedNodes = function (sig) {
-    if (atomSettings && atomSettings.unconnectedNodes) {
-        for (let i = 0; i < atomSettings.unconnectedNodes.length; i++) {
-            if (atomSettings.unconnectedNodes[i].type == sig) return atomSettings.unconnectedNodes[i].unconnectedNodes
-        }
-    } else {
-        atomSettings.unconnectedNodes = []
+    for (let i = 0; i < atomSettings.unconnectedNodes.length; i++) {
+        if (atomSettings.unconnectedNodes[i].type == sig) return atomSettings.unconnectedNodes[i].unconnectedNodes
     }
     atomSettings.unconnectedNodes.push({ type: sig, unconnectedNodes: 'inherit' })
     return 'inherit'
@@ -300,12 +277,8 @@ updateHideUnconnectedNodes = function (sig, newVal) {
  * @returns {String} the value assigned to the property
  */
 getDisplayNodesNumber = function (sig) {
-    if (atomSettings && atomSettings.displayNodesNumber) {
-        for (let i = 0; i < atomSettings.displayNodesNumber.length; i++) {
-            if (atomSettings.displayNodesNumber[i].type == sig) return atomSettings.displayNodesNumber[i].displayNodesNumber
-        }
-    } else {
-        atomSettings.displayNodesNumber = []
+    for (let i = 0; i < atomSettings.displayNodesNumber.length; i++) {
+        if (atomSettings.displayNodesNumber[i].type == sig) return atomSettings.displayNodesNumber[i].displayNodesNumber
     }
     atomSettings.displayNodesNumber.push({ type: sig, displayNodesNumber: 'inherit' })
     return 'inherit'

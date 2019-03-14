@@ -150,13 +150,13 @@ getEdges = function (instance) {
                             relation: label,
                             source: relation[0],
                             target: relation[relation.length - 1],
-                            label: getRelationLabel(label),
-                            color: getRelationColor(label),
+                            label: getEdgeLabel(label),
+                            color: getEdgeColor(label),
                             // when relation's arity > 2, add remaining involved types to its label
                             labelExt: field.arity > 2 ? labelExt : '',
                             // useful when these types have their labels edited. "labelExt" is a backup of the original while "updatedLabelExt" reflects the current state of the world
                             updatedLabelExt: field.arity > 2 ? labelExt : '',
-                            edgeStyle: getRelationEdgeStyle(label)
+                            edgeStyle: getEdgeStyle(label)
                         }
                     })
                 })
@@ -213,10 +213,8 @@ initGraphViewer = function (element) {
                         const subsigs = ele.data().subsetSigs.length > 0 ? `\n(${ele.data().subsetSigs.map(getAtomLabel)})` : ''
 
                         // relations as attributes labels
-                        relationSettings.showAsAttributes.forEach((item) => {
-                            propagateAttributes(item.relation, item.showAsAttributes)
-                        })
-
+                        propagateAttributes();
+                        
                         let attributes = ''
                         for (const i in ele.data().attributes) attributes += `\n${cy.edges(`[relation='${i}']`)[0].data().label} : ${ele.data().attributes[i].toString()}`
 

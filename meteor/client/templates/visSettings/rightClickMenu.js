@@ -40,7 +40,7 @@ export function updateRightClickContent() {
     } else {
         selected = Session.get('rightClickRel')
         if (selected) {
-            $('.changeAtomColorPicker').val(getRelationColor(selected))
+            $('.changeAtomColorPicker').val(getEdgeColor(selected))
         }
     }
     themeChanged()
@@ -55,7 +55,7 @@ Template.rightClickMenu.events({
         } else {
             selected = Session.get('rightClickRel')
             cy.edges(`[relation='${selected}']`).data({ color: event.target.value })
-            updateRelationColor(selected, event.target.value)
+            updateEdgeColor(selected, event.target.value)
         }
         refreshGraph()
     },
