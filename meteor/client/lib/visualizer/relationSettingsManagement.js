@@ -1,4 +1,4 @@
-relationSettings = {}
+var relationSettings = {}
 relationSettings.edgeLabels = []
 relationSettings.edgeColors = []
 relationSettings.edgeStyles = []

@@ -171,6 +171,7 @@ refreshGraph = function () {
     const selected = cy.$(':selected')
     cy.elements().select().unselect()
     selected.select()
+    applyCurrentLayout()
 }
 
 initGraphViewer = function (element) {

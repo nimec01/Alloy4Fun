@@ -1,4 +1,4 @@
-atomSettings = {}
+var atomSettings = {}
 atomSettings.nodeLabels = []
 atomSettings.nodeColors = [{ type: 'univ', color: '#2ECC40' }]
 atomSettings.nodeShapes = [{ type: 'univ', shape: 'ellipse' }]
