@@ -4,9 +4,7 @@
  * @module client/lib/editor/genUrl
  */
 
-import { zeroclipboard } from './clipboard'
 import { displayError } from './feedback'
-import { secretTag } from '../../../lib/editor/text'
 import { modelShared,
     getCommandIndex,
     instShared } from './state'

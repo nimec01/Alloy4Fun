@@ -1,4 +1,4 @@
-var atomSettings = {}
+atomSettings = {}
 atomSettings.nodeLabels = []
 atomSettings.nodeColors = [{ type: 'univ', color: '#2ECC40' }]
 atomSettings.nodeShapes = [{ type: 'univ', shape: 'ellipse' }]
@@ -16,7 +16,9 @@ atomSettings.nodeVisibility = [{ type: 'univ', visibility: false }]
  */
 getAtomLabel = function (sig) {
     for (let i = 0; i < atomSettings.nodeLabels.length; i++) {
-        if (atomSettings.nodeLabels[i].type == sig) return atomSettings.nodeLabels[i].label
+        if (atomSettings.nodeLabels[i].type === sig) {
+            return atomSettings.nodeLabels[i].label
+        }
     }
     atomSettings.nodeLabels.push({ type: sig, label: sig })
     return sig
@@ -30,7 +32,7 @@ getAtomLabel = function (sig) {
  */
 updateAtomLabel = function (sig, newVal) {
     for (let i = 0; i < atomSettings.nodeLabels.length; i++) {
-        if (atomSettings.nodeLabels[i].type == sig) {
+        if (atomSettings.nodeLabels[i].type === sig) {
             atomSettings.nodeLabels[i].label = newVal
             return
         }
@@ -46,7 +48,9 @@ updateAtomLabel = function (sig, newVal) {
  */
 getAtomColor = function (sig) {
     for (let i = 0; i < atomSettings.nodeColors.length; i++) {
-        if (atomSettings.nodeColors[i].type == sig) return atomSettings.nodeColors[i].color
+        if (atomSettings.nodeColors[i].type === sig) {
+            return atomSettings.nodeColors[i].color
+        }
     }
     atomSettings.nodeColors.push({ type: sig, color: 'inherit' })
     return 'inherit'
@@ -60,7 +64,7 @@ getAtomColor = function (sig) {
  */
 getInheritedAtomColor = function (sig) {
     let color = getAtomColor(sig)
-    while (color == 'inherit') {
+    while (color === 'inherit') {
         const parent = getSigParent(sig)
         color = getAtomColor(parent)
         sig = parent
@@ -76,7 +80,7 @@ getInheritedAtomColor = function (sig) {
  */
 updateAtomColor = function (sig, newVal) {
     for (let i = 0; i < atomSettings.nodeColors.length; i++) {
-        if (atomSettings.nodeColors[i].type == sig) {
+        if (atomSettings.nodeColors[i].type === sig) {
             atomSettings.nodeColors[i].color = newVal
             return
         }
@@ -92,7 +96,9 @@ updateAtomColor = function (sig, newVal) {
  */
 getAtomShape = function (sig) {
     for (let i = 0; i < atomSettings.nodeShapes.length; i++) {
-        if (atomSettings.nodeShapes[i].type == sig) return atomSettings.nodeShapes[i].shape
+        if (atomSettings.nodeShapes[i].type === sig) {
+            return atomSettings.nodeShapes[i].shape
+        }
     }
     atomSettings.nodeShapes.push({ type: sig, shape: 'inherit' })
     return 'inherit'
@@ -106,7 +112,7 @@ getAtomShape = function (sig) {
  */
 getInheritedAtomShape = function (sig) {
     let shape = getAtomShape(sig)
-    while (shape == 'inherit') {
+    while (shape === 'inherit') {
         const parent = getSigParent(sig)
         shape = getAtomShape(parent)
         sig = parent
@@ -122,7 +128,7 @@ getInheritedAtomShape = function (sig) {
  */
 updateAtomShape = function (sig, newVal) {
     for (let i = 0; i < atomSettings.nodeShapes.length; i++) {
-        if (atomSettings.nodeShapes[i].type == sig) {
+        if (atomSettings.nodeShapes[i].type === sig) {
             atomSettings.nodeShapes[i].shape = newVal
             return
         }
@@ -138,7 +144,9 @@ updateAtomShape = function (sig, newVal) {
  */
 getAtomBorder = function (sig) {
     for (let i = 0; i < atomSettings.nodeBorders.length; i++) {
-        if (atomSettings.nodeBorders[i].type == sig) return atomSettings.nodeBorders[i].border
+        if (atomSettings.nodeBorders[i].type === sig) {
+            return atomSettings.nodeBorders[i].border
+        }
     }
     atomSettings.nodeBorders.push({ type: sig, border: 'inherit' })
     return 'inherit'
@@ -152,7 +160,7 @@ getAtomBorder = function (sig) {
  */
 getInheritedAtomBorder = function (sig) {
     let border = getAtomBorder(sig)
-    while (border == 'inherit') {
+    while (border === 'inherit') {
         const parent = getSigParent(sig)
         border = getAtomBorder(parent)
         sig = parent
@@ -168,7 +176,7 @@ getInheritedAtomBorder = function (sig) {
  */
 updateAtomBorder = function (sig, newVal) {
     for (let i = 0; i < atomSettings.nodeBorders.length; i++) {
-        if (atomSettings.nodeBorders[i].type == sig) {
+        if (atomSettings.nodeBorders[i].type === sig) {
             atomSettings.nodeBorders[i].border = newVal
             return
         }
@@ -184,7 +192,9 @@ updateAtomBorder = function (sig, newVal) {
  */
 getAtomVisibility = function (sig) {
     for (let i = 0; i < atomSettings.nodeVisibility.length; i++) {
-        if (atomSettings.nodeVisibility[i].type == sig) return atomSettings.nodeVisibility[i].visibility
+        if (atomSettings.nodeVisibility[i].type === sig) {
+            return atomSettings.nodeVisibility[i].visibility
+        }
     }
     atomSettings.nodeVisibility.push({ type: sig, visibility: 'inherit' })
     return 'inherit'
@@ -198,7 +208,7 @@ getAtomVisibility = function (sig) {
  */
 getInheritedAtomVisibility = function (sig) {
     let visibility = getAtomVisibility(sig)
-    while (visibility == 'inherit') {
+    while (visibility === 'inherit') {
         const parent = getSigParent(sig)
         visibility = getAtomVisibility(sig)
         sig = parent
@@ -214,7 +224,7 @@ getInheritedAtomVisibility = function (sig) {
  */
 updateAtomVisibility = function (sig, newVal) {
     for (let i = 0; i < atomSettings.nodeVisibility.length; i++) {
-        if (atomSettings.nodeVisibility[i].type == sig) {
+        if (atomSettings.nodeVisibility[i].type === sig) {
             atomSettings.nodeVisibility[i].visibility = newVal
             return
         }
@@ -230,7 +240,9 @@ updateAtomVisibility = function (sig, newVal) {
  */
 getHideUnconnectedNodes = function (sig) {
     for (let i = 0; i < atomSettings.unconnectedNodes.length; i++) {
-        if (atomSettings.unconnectedNodes[i].type == sig) return atomSettings.unconnectedNodes[i].unconnectedNodes
+        if (atomSettings.unconnectedNodes[i].type === sig) {
+            return atomSettings.unconnectedNodes[i].unconnectedNodes
+        }
     }
     atomSettings.unconnectedNodes.push({ type: sig, unconnectedNodes: 'inherit' })
     return 'inherit'
@@ -244,7 +256,7 @@ getHideUnconnectedNodes = function (sig) {
  */
 getInheritedHideUnconnectedNodes = function (sig) {
     let hideUnconnectedNodes = getHideUnconnectedNodes(sig)
-    while (hideUnconnectedNodes == 'inherit') {
+    while (hideUnconnectedNodes === 'inherit') {
         const parent = getSigParent(sig)
         hideUnconnectedNodes = getHideUnconnectedNodes(sig)
         sig = parent
@@ -262,7 +274,7 @@ getInheritedHideUnconnectedNodes = function (sig) {
  */
 updateHideUnconnectedNodes = function (sig, newVal) {
     for (let i = 0; i < atomSettings.unconnectedNodes.length; i++) {
-        if (atomSettings.unconnectedNodes[i].type == sig) {
+        if (atomSettings.unconnectedNodes[i].type === sig) {
             atomSettings.unconnectedNodes[i].unconnectedNodes = newVal
             return
         }
@@ -278,7 +290,9 @@ updateHideUnconnectedNodes = function (sig, newVal) {
  */
 getDisplayNodesNumber = function (sig) {
     for (let i = 0; i < atomSettings.displayNodesNumber.length; i++) {
-        if (atomSettings.displayNodesNumber[i].type == sig) return atomSettings.displayNodesNumber[i].displayNodesNumber
+        if (atomSettings.displayNodesNumber[i].type === sig) {
+            return atomSettings.displayNodesNumber[i].displayNodesNumber
+        }
     }
     atomSettings.displayNodesNumber.push({ type: sig, displayNodesNumber: 'inherit' })
     return 'inherit'
@@ -292,7 +306,7 @@ getDisplayNodesNumber = function (sig) {
  */
 getInheritedDisplayNodesNumber = function (sig) {
     let displayNodesNumber = getDisplayNodesNumber(sig)
-    while (displayNodesNumber == 'inherit') {
+    while (displayNodesNumber === 'inherit') {
         const parent = getSigParent(sig)
         displayNodesNumber = getDisplayNodesNumber(sig)
         sig = parent
@@ -309,7 +323,7 @@ getInheritedDisplayNodesNumber = function (sig) {
  */
 updateDisplayNodesNumber = function (sig, newVal) {
     for (let i = 0; i < atomSettings.displayNodesNumber.length; i++) {
-        if (atomSettings.displayNodesNumber[i].type == sig) {
+        if (atomSettings.displayNodesNumber[i].type === sig) {
             atomSettings.displayNodesNumber[i].displayNodesNumber = newVal
             return
         }

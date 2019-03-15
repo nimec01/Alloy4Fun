@@ -1,4 +1,4 @@
-var relationSettings = {}
+relationSettings = {}
 relationSettings.edgeLabels = []
 relationSettings.edgeColors = []
 relationSettings.edgeStyles = []
@@ -14,7 +14,9 @@ relationSettings.showAsAttributes = []
  */
 getEdgeLabel = function (rel) {
     for (let i = 0; i < relationSettings.edgeLabels.length; i++) {
-        if (relationSettings.edgeLabels[i].relation == rel) return relationSettings.edgeLabels[i].label
+        if (relationSettings.edgeLabels[i].relation === rel) {
+            return relationSettings.edgeLabels[i].label
+        }
     }
     relationSettings.edgeLabels.push({ relation: rel, label: rel })
     return rel
@@ -28,7 +30,7 @@ getEdgeLabel = function (rel) {
  */
 updateEdgeLabel = function (rel, newVal) {
     for (let i = 0; i < relationSettings.edgeLabels.length; i++) {
-        if (relationSettings.edgeLabels[i].relation == rel) {
+        if (relationSettings.edgeLabels[i].relation === rel) {
             relationSettings.edgeLabels[i].label = newVal
             return
         }
@@ -44,7 +46,9 @@ updateEdgeLabel = function (rel, newVal) {
  */
 getEdgeColor = function (rel) {
     for (let i = 0; i < relationSettings.edgeColors.length; i++) {
-        if (relationSettings.edgeColors[i].relation == rel) return relationSettings.edgeColors[i].color
+        if (relationSettings.edgeColors[i].relation === rel) {
+            return relationSettings.edgeColors[i].color
+        }
     }
     relationSettings.edgeColors.push({ relation: rel, color: '#0074D9' })
     return '#0074D9'
@@ -58,7 +62,7 @@ getEdgeColor = function (rel) {
  */
 updateEdgeColor = function (rel, newVal) {
     for (let i = 0; i < relationSettings.edgeColors.length; i++) {
-        if (relationSettings.edgeColors[i].relation == rel) {
+        if (relationSettings.edgeColors[i].relation === rel) {
             relationSettings.edgeColors[i].color = newVal
             return
         }
@@ -74,7 +78,9 @@ updateEdgeColor = function (rel, newVal) {
  */
 getEdgeStyle = function (rel) {
     for (let i = 0; i < relationSettings.edgeStyles.length; i++) {
-        if (relationSettings.edgeStyles[i].relation == rel) return relationSettings.edgeStyles[i].edgeStyle
+        if (relationSettings.edgeStyles[i].relation === rel) {
+            return relationSettings.edgeStyles[i].edgeStyle
+        }
     }
     relationSettings.edgeStyles.push({ relation: rel, edgeStyle: 'solid' })
     return 'solid'
@@ -88,7 +94,7 @@ getEdgeStyle = function (rel) {
  */
 updateEdgeStyle = function (rel, newVal) {
     for (let i = 0; i < relationSettings.edgeStyles.length; i++) {
-        if (relationSettings.edgeStyles[i].relation == rel) {
+        if (relationSettings.edgeStyles[i].relation === rel) {
             relationSettings.edgeStyles[i].edgeStyle = newVal
             return
         }
@@ -104,7 +110,7 @@ updateEdgeStyle = function (rel, newVal) {
  */
 isShowAsArcsOn = function (rel) {
     for (let i = 0; i < relationSettings.showAsArcs.length; i++) {
-        if (relationSettings.showAsArcs[i].relation == rel) {
+        if (relationSettings.showAsArcs[i].relation === rel) {
             return relationSettings.showAsArcs[i].showAsArcs
         }
     }
@@ -120,7 +126,7 @@ isShowAsArcsOn = function (rel) {
  */
 updateShowAsArcs = function (rel, newVal) {
     for (let i = 0; i < relationSettings.showAsArcs.length; i++) {
-        if (relationSettings.showAsArcs[i].relation == rel) {
+        if (relationSettings.showAsArcs[i].relation === rel) {
             relationSettings.showAsArcs[i].showAsArcs = newVal
             return
         }
@@ -136,7 +142,7 @@ updateShowAsArcs = function (rel, newVal) {
  */
 isShowAsAttributesOn = function (rel) {
     for (let i = 0; i < relationSettings.showAsAttributes.length; i++) {
-        if (relationSettings.showAsAttributes[i].relation == rel) {
+        if (relationSettings.showAsAttributes[i].relation === rel) {
             return relationSettings.showAsAttributes[i].showAsAttributes
         }
     }
@@ -153,7 +159,7 @@ isShowAsAttributesOn = function (rel) {
  */
 updateShowAsAttributes = function (rel, newVal) {
     for (let i = 0; i < relationSettings.showAsAttributes.length; i++) {
-        if (relationSettings.showAsAttributes[i].relation == rel) {
+        if (relationSettings.showAsAttributes[i].relation === rel) {
             relationSettings.showAsAttributes[i].showAsAttributes = newVal
             return
         }
@@ -172,7 +178,7 @@ propagateAttributes = function () {
             const aux = {}
             for (let i = 0; i < edges.length; i++) {
                 if (!aux[edges[i].source().data().id])aux[edges[i].source().data().id] = []
-                aux[edges[i].source().data().id].push(edges[i].data().labelExt == ''
+                aux[edges[i].source().data().id].push(edges[i].data().labelExt === ''
                     ? edges[i].target().data().label
                     : `${edges[i].data().updatedLabelExt}->${edges[i].target().data().label}${edges[i].target().data().number}`)
             }
