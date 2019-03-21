@@ -40,9 +40,9 @@ generalSettings = (function generalSettings() {
     }
 
     /**
-     * Add a new prim sig to the settings with a given parent.
+     * Add a new sub sig to the settings with a given parent.
      *
-     * @param tp {String} the new prim sig
+     * @param tp {String} the new sub sig
      * @param pr {String} the parent sig
      */
     function addSubSig(tp, pr) {
@@ -52,6 +52,11 @@ generalSettings = (function generalSettings() {
         })
     }
 
+    /**
+     * Applies the use original atom names property.
+     *
+     * NOTE: should not be here but will be dropped for v1.3.
+     */
     function setOriginalAtomNamesValue(value) {
         if (value) {
             $('#atomLabelSettings').prop('disabled', true)
@@ -71,37 +76,82 @@ generalSettings = (function generalSettings() {
         }
     }
 
+    /**
+     * Retrieves the current layout property, initialized as breadthfirst.
+     *
+     * @returns {String} the value assigned to the property
+     */
     function getLayout() {
         return currentLayout
     }
 
+    /**
+     * Updates the current layout property.
+     *
+     * @param {String} newVal the new value for the property
+     */
     function updateLayout(value) {
         currentLayout = value
     }
 
+    /**
+     * Retrieves the use original atom names property, initialized as false.
+     *
+     * @returns {Object} the value assigned to the property
+     */
     function getUseOriginalAtomNames() {
         return useOriginalAtomNames
     }
 
+    /**
+     * Updates the use original atom names property.
+     *
+     * @param {String} newVal the new value for the property
+     */
     function updateOriginalAtomNames(value) {
         useOriginalAtomNames = value
     }
 
+    /**
+     * Resets the known hierarchy for a new instance.
+     */
     function resetHierarchy() {
         metaPrimSigs = [{ type: 'univ', parent: null }]
         metaSubsetSigs = []
     }
 
+    /**
+     * Retrieves the parent of a prim or sub sig.
+     *
+     * @param {String} the sig for which to find the parent
+     */
     function getSigParent(sigType) {
         for (const i in metaPrimSigs) {
-            if (metaPrimSigs[i].type == sigType) return metaPrimSigs[i].parent
+            if (metaPrimSigs[i].type === sigType) return metaPrimSigs[i].parent
         }
         for (const i in metaSubsetSigs) {
-            if (metaSubsetSigs[i].type == sigType) return metaSubsetSigs[i].parent
+            if (metaSubsetSigs[i].type === sigType) return metaSubsetSigs[i].parent
         }
         throw null
     }
 
+    /**
+     * Whether a sig has sub sigs.
+     *
+     * @param {String} the sig for which to children
+     */
+    function hasSubsetSig(subsetSig) {
+        for (let i = 0; i < metaSubsetSigs.length; i++) {
+            if (metaSubsetSigs[i].type === subsetSig) return true
+        }
+        return false
+    }
+
+    /**
+     * Updates the content of the side bar property settings.
+     *
+     * NOTE: should not be here but will be dropped for v1.3.
+     */
     function updateElementSelectionContent() {
         // var nodes = cy.nodes();
         const edges = cy.edges()
@@ -118,7 +168,9 @@ generalSettings = (function generalSettings() {
         })
         // Gather all distinct relations from edges represented in the graph
         edges.forEach((edge) => {
-            if ($.inArray(edge.data().relation, relations) == -1) relations.push(edge.data().relation)
+            if ($.inArray(edge.data().relation, relations) == -1) {
+                relations.push(edge.data().relation)
+            }
         })
 
         // Remove previous types available for selection
@@ -160,13 +212,6 @@ generalSettings = (function generalSettings() {
         // Replace tag on the bottom right corner of relation selection div
         $('.wrapper-select-relation > div > div.selectize-input > p').remove()
         $('.wrapper-select-relation > div > div.selectize-input').append("<p class='select-label'>Relations</p>")
-    }
-
-    function hasSubsetSig(subsetSig) {
-        for (let i = 0; i < metaSubsetSigs.length; i++) {
-            if (metaSubsetSigs[i].type == subsetSig) return true
-        }
-        return false
     }
 
     return {
