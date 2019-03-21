@@ -1,11 +1,7 @@
-import {
-    Meteor
-} from "meteor/meteor";
-import {
-    extractSecrets,
+import { Meteor } from 'meteor/meteor'
+import { extractSecrets,
     getCommandsFromCode,
-    containsValidSecret
-} from "../../lib/editor/text";
+    containsValidSecret } from '../../lib/editor/text'
 
 Meteor.methods({
 
@@ -18,7 +14,7 @@ Meteor.methods({
       * @param {String} id the document id
       * @return the respective model or instance
       */
-    getModel: function(id) {
+    getModel(id) {
         return getModelFromLink(id) || getModelFromInstance(id)
     }
 })
@@ -33,18 +29,18 @@ Meteor.methods({
   * @return the respective model
   */
 function getModelFromLink(linkId) {
-    let link = Link.findOne(linkId)
-    if (!link) return //undefined if link does not exist
-    let model = Model.findOne(link.model_id)
+    const link = Link.findOne(linkId)
+    if (!link) return // undefined if link does not exist
+    const model = Model.findOne(link.model_id)
 
-    // if the link is public, hide the secrets and retrieve the secrets commands 
+    // if the link is public, hide the secrets and retrieve the secrets commands
     // from the root (original)
     if (!link.private) {
-        let o = Model.findOne(model.original)
-        let secs = extractSecrets(o.code).secret    
-        model.code = extractSecrets(model.code).public                
+        const o = Model.findOne(model.original)
+        const secs = extractSecrets(o.code).secret
+        model.code = extractSecrets(model.code).public
         // register secret commands
-        let seccms = getCommandsFromCode(secs)
+        const seccms = getCommandsFromCode(secs)
         if (seccms) model.sec_commands = seccms
     }
     model.from_private = link.private // return info about the used link type
@@ -61,17 +57,17 @@ function getModelFromLink(linkId) {
   * @return the model associated with the instance
   */
 function getModelFromInstance(instanceId) {
-    let instance = Instance.findOne(instanceId)
-    if (!instance) return; //undefined if instance does not exist
-    let model = Model.findOne(instance.model_id)
+    const instance = Instance.findOne(instanceId)
+    if (!instance) return // undefined if instance does not exist
+    const model = Model.findOne(instance.model_id)
 
     if (!containsValidSecret(model.code)) {
-      let o = Model.findOne(model.original)
-      let secs = extractSecrets(o.code).secret    
-      model.code = extractSecrets(model.code).public                
-      // register secret commands
-      let seccms = getCommandsFromCode(secs)
-      if (seccms) model.sec_commands = seccms
+        const o = Model.findOne(model.original)
+        const secs = extractSecrets(o.code).secret
+        model.code = extractSecrets(model.code).public
+        // register secret commands
+        const seccms = getCommandsFromCode(secs)
+        if (seccms) model.sec_commands = seccms
     }
 
     model.instance = instance // so that frontend can access the instance

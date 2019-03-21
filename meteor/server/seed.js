@@ -1,19 +1,15 @@
-export {
-    seedWithModels
-}
+import { secretTag } from '../lib/editor/text'
 
-import { 
-    secretTag
-} from "../lib/editor/text"
+export { seedWithModels }
 
 /**
   Seed the database with a set of default models, with fixed ids so that they
   can be accessed from a fixed address.
 */
 function seedWithModels() {
-    let initialModels = [{
-        publicLink: "3cy7jaB4ESqdb2txK",
-        privateLink: "e88P5zwv9aJ7FJwp7",
+    const initialModels = [{
+        publicLink: '3cy7jaB4ESqdb2txK',
+        privateLink: 'e88P5zwv9aJ7FJwp7',
         model: {
             code: `//A student must be enrolled in one or more courses
 sig Course{}
@@ -32,8 +28,8 @@ check Solution {
             time: new Date().toLocaleString()
         }
     }, {
-        publicLink: "a3CyrvrbWHAdtE2x4",
-        privateLink: "oQNigwPnrgMESBRqx",
+        publicLink: 'a3CyrvrbWHAdtE2x4',
+        privateLink: 'oQNigwPnrgMESBRqx',
         model: {
             code: `sig Employee{}
 sig Department{}
@@ -59,8 +55,8 @@ check Solution {
             time: new Date().toLocaleString()
         }
     }, {
-        publicLink: "2zrpuc2wg4gsCaY63",
-        privateLink: "wCeMgMSdphxnPXiH9",
+        publicLink: '2zrpuc2wg4gsCaY63',
+        privateLink: 'wCeMgMSdphxnPXiH9',
         model: {
             code: `sig researchUnit {}
 sig researcher { 
@@ -82,8 +78,8 @@ check Solution{
             time: new Date().toLocaleString()
         }
     }, {
-        publicLink: "6pc5KQzjhozDkNgPv",
-        privateLink: "rFkF5B8ahR3TuuWgy",
+        publicLink: '6pc5KQzjhozDkNgPv',
+        privateLink: 'rFkF5B8ahR3TuuWgy',
         model: {
             code: `abstract sig Person {}
 sig Teacher extends Person {}
@@ -107,8 +103,8 @@ check Solution{
             time: new Date().toLocaleString()
         }
     }, {
-        publicLink: "QM77ku4rGxTMeK9oG",
-        privateLink: "bvmx4wCZJzK87wRDi",
+        publicLink: 'QM77ku4rGxTMeK9oG',
+        privateLink: 'bvmx4wCZJzK87wRDi',
         model: {
             code: `abstract sig Person {}
 sig Teacher extends Person {}
@@ -138,8 +134,8 @@ check Solution{
             time: new Date().toLocaleString()
         }
     }, {
-        publicLink: "aSPhAXu7aXWu9FeD6",
-        privateLink: "wFHzvXgffykvcjzdY",
+        publicLink: 'aSPhAXu7aXWu9FeD6',
+        privateLink: 'wFHzvXgffykvcjzdY',
         model: {
             code: `open util/ordering[Time]
 
@@ -214,8 +210,8 @@ check Inv4OK {
             time: new Date().toLocaleString()
         }
     }, {
-        publicLink: "xe9fdhwqCqKgChxbx",
-        privateLink: "zj8HQ53WhmQ3WkXp4",
+        publicLink: 'xe9fdhwqCqKgChxbx',
+        privateLink: 'zj8HQ53WhmQ3WkXp4',
         model: {
             code: `// Consider the following model for courses where students work in teams
 sig Student {}
@@ -295,8 +291,8 @@ check Inv5OK {
             time: new Date().toLocaleString()
         }
     }, {
-        publicLink: "EvHauGwoERQ3HHGfc",
-        privateLink: "W79MiiQicjDvEy8Jq",
+        publicLink: 'EvHauGwoERQ3HHGfc',
+        privateLink: 'W79MiiQicjDvEy8Jq',
         model: {
             code: `open util/ordering[Addr]
 
@@ -366,8 +362,8 @@ check Inv4OK {
             time: new Date().toLocaleString()
         }
     }, {
-        publicLink: "ri2bbMKEkonsY66v3",
-        privateLink: "2ieT5m4yh3b9qbjdq",
+        publicLink: 'ri2bbMKEkonsY66v3',
+        privateLink: '2ieT5m4yh3b9qbjdq',
         model: {
             code: `// Consider the following model of a online auction system
 sig Product {}
@@ -420,8 +416,8 @@ check Inv3OK {
             time: new Date().toLocaleString()
         }
     }, {
-        publicLink: "g8dYNQd3ys3MjbHoL",
-        privateLink: "KYRXKjgRHzvzD2j4N",
+        publicLink: 'g8dYNQd3ys3MjbHoL',
+        privateLink: 'KYRXKjgRHzvzD2j4N',
         model: {
             code: `// Consider the following simplified model of Java classes
 sig Class {
@@ -486,8 +482,8 @@ check Inv4OK {
             time: new Date().toLocaleString()
         }
     }, {
-        publicLink: "6umZreF5bnTXmWeTD",
-        privateLink: "9EeSuXX3J9mcSmgGh",
+        publicLink: '6umZreF5bnTXmWeTD',
+        privateLink: '9EeSuXX3J9mcSmgGh',
         model: {
             code: `open util/ordering[Decision]
 
@@ -560,8 +556,8 @@ check Inv4OK {
             time: new Date().toLocaleString()
         }
     }, {
-        publicLink: "xoJz9NfK4o8Gs2eDH",
-        privateLink: "BHfvq3t7rQrfoZt8N",
+        publicLink: 'xoJz9NfK4o8Gs2eDH',
+        privateLink: 'BHfvq3t7rQrfoZt8N',
         model: {
             code: `open util/ordering[Position]
 
@@ -638,8 +634,8 @@ check Inv4OK {
             time: new Date().toLocaleString()
         }
     }, {
-        publicLink: "4KYLfsxtvCNJThFpp",
-        privateLink: "etBPiN4HGeXu9WY9R",
+        publicLink: '4KYLfsxtvCNJThFpp',
+        privateLink: 'etBPiN4HGeXu9WY9R',
         model: {
             code: `/* 
     Consider the following model of an online CV platform that allows a
@@ -716,8 +712,8 @@ check Inv4OK {
             time: new Date().toLocaleString()
         }
     }, {
-        publicLink: "i5mpZsgf2YarYyepy",
-        privateLink: "6NjWouAZtYMgExcSB",
+        publicLink: 'i5mpZsgf2YarYyepy',
+        privateLink: '6NjWouAZtYMgExcSB',
         model: {
             code: `// A graph can be modeled using a set Node containing all nodes and
 // a binary relation Edge containing all the edges.
@@ -761,8 +757,8 @@ check TreeOk { Tree iff Tree' }`,
             time: new Date().toLocaleString()
         }
     }, {
-        publicLink: "HHqxbmmCu2iN9zNtF",
-        privateLink: "BotLD32mwmgrhGgvS",
+        publicLink: 'HHqxbmmCu2iN9zNtF',
+        privateLink: 'BotLD32mwmgrhGgvS',
         model: {
             code: `sig Person{}
 sig Man in Person{}
@@ -781,8 +777,8 @@ check solution {
             time: new Date().toLocaleString()
         }
     }, {
-        publicLink: "BAAEJo6RM2e2GcRZt",
-        privateLink: "ZCmPdRb7dwuJRTo6W",
+        publicLink: 'BAAEJo6RM2e2GcRZt',
+        privateLink: 'ZCmPdRb7dwuJRTo6W',
         model: {
             code: `//consider a simplifyed specification of a Graph 
 // with arrows between Points
@@ -807,8 +803,8 @@ check Quizz {
             time: new Date().toLocaleString()
         }
     }, {
-        publicLink: "5jabBMzWjWnBeFb64",
-        privateLink: "HZtYgbifqh9xbhX42",
+        publicLink: '5jabBMzWjWnBeFb64',
+        privateLink: 'HZtYgbifqh9xbhX42',
         model: {
             code: `sig Point { edge : some Point }
 
@@ -835,12 +831,12 @@ check Quizz{
 }`,
             time: new Date().toLocaleString()
         }
-    }, ]
-    initialModels.forEach(n => {
+    }]
+    initialModels.forEach((n) => {
         // insert the model
-        let id = Model.insert(n.model)
+        const id = Model.insert(n.model)
 
-        Model.update({ _id : id },{$set: {original : id}})
+        Model.update({ _id: id }, { $set: { original: id } })
 
         // insert the public link
         Link.insert({
@@ -854,7 +850,6 @@ check Quizz{
             private: true,
             model_id: id
         })
-
     })
     return initialModels.length
 }

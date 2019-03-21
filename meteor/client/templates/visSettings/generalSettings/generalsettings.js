@@ -1,24 +1,25 @@
-Template.generalSettings.helpers({
-});
+Template.elementSelection.onRendered(() => {
+    $('#layoutPicker').val(generalSettings.getLayout())
+})
 
 Template.generalSettings.events({
     'change #originalAtomNames'(event) {
-        setOriginalAtomNamesValue($(event.target).is(':checked'));
-        updateOriginalAtomNames($(event.target).is(':checked'));
-        refreshAttributes();
-        // refreshGraph();
+        generalSettings.setOriginalAtomNamesValue($(event.target).is(':checked'))
+        generalSettings.updateOriginalAtomNames($(event.target).is(':checked'))
+        refreshGraph()
     },
     'change #layoutPicker'(event) {
-        currentLayout = event.target.value;
-        if (currentLayout == 'breadthfirst') {
-            $('.node-spacing').show();
+        const currentLayout = event.target.value
+        generalSettings.updateLayout(currentLayout)
+        if (currentLayout === 'breadthfirst') {
+            $('.node-spacing').show()
         } else {
-            $('.node-spacing').hide();
+            $('.node-spacing').hide()
         }
-        applyCurrentLayout();
+        applyCurrentLayout()
     },
     'change #nodeSpacing'(event) {
-        updateNodeSpacing(event.target.value);
-        applyCurrentLayout();
-    },
-});
+        updateNodeSpacing(event.target.value)
+        applyCurrentLayout()
+    }
+})

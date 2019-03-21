@@ -1,21 +1,13 @@
-import CodeMirror from 'codemirror';
-import {
-    defineAlloyMode
-} from '/imports/editor/AlloyEditorMode';
-import {
-    getCommandsFromCode,
-    containsValidSecret
-} from "../../lib/editor/text"
-import 'codemirror/theme/twilight.css';
-import 'codemirror/lib/codemirror.css';
-import 'qtip2';
-import {
-    modelChanged,
-} from "../../client/lib/editor/state"
+import CodeMirror from 'codemirror'
+import { defineAlloyMode } from '/imports/editor/AlloyEditorMode'
+import { getCommandsFromCode,
+    containsValidSecret } from '../../lib/editor/text'
+import 'codemirror/theme/twilight.css'
+import 'codemirror/lib/codemirror.css'
+import 'qtip2'
+import { modelChanged } from '../../client/lib/editor/state'
 
-export {
-    initializeAlloyEditor
-};
+export { initializeAlloyEditor }
 
 /**
  * Editor initialization options.
@@ -33,37 +25,37 @@ const options = {
     // TODO: This is broken. Must be fixed to permit block folding.
     foldGutter: true,
     // Adds gutters to the editor. In this case a single one is added for the error icon placement
-    gutters: [],
-};
+    gutters: []
+}
 
 /**
  * Initialization of the code editor, in particular on change listeners.
  */
 function initializeAlloyEditor(htmlElement) {
-    defineAlloyMode(); //specify syntax highlighting
+    defineAlloyMode() // specify syntax highlighting
 
-    var editor = CodeMirror.fromTextArea(htmlElement, options);
-    options.mode = "alloy";
+    const editor = CodeMirror.fromTextArea(htmlElement, options)
+    options.mode = 'alloy'
 
-    //Text change event for the editor on alloy4fun/editor page
-    editor.on('change', function(editor) {
-        $(".qtip").remove();
+    // Text change event for the editor on alloy4fun/editor page
+    editor.on('change', (editor) => {
+        $('.qtip').remove()
 
         if ($.trim(editor.getValue()) == '') {
             // empty model
-            Session.set('empty-model',true);
+            Session.set('empty-model', true)
         } else {
-            Session.set('empty-model',false);
-            let local_secrets = containsValidSecret(editor.getValue());
+            Session.set('empty-model', false)
+            const local_secrets = containsValidSecret(editor.getValue())
             // whether there are local secrets defined
-            Session.set('local-secrets',local_secrets);
+            Session.set('local-secrets', local_secrets)
             // update the list of commands, if no local secrets append inherited hidden commands
-            let hidden_commands = local_secrets?[]:(Session.get("hidden_commands") || [])
-            Session.set("commands", getCommandsFromCode(editor.getValue()).concat(hidden_commands))
+            const hidden_commands = local_secrets ? [] : (Session.get('hidden_commands') || [])
+            Session.set('commands', getCommandsFromCode(editor.getValue()).concat(hidden_commands))
         }
         // notify model changed
-        modelChanged();
-    });
-    editor.setSize("100%", 400);
-    return editor;
+        modelChanged()
+    })
+    editor.setSize('100%', 400)
+    return editor
 }

@@ -11,13 +11,13 @@
  * @param {DOMElement} element the clicked element
  */
 export function copyToClipboard(element) {
-    let el = $(element.target);
-	el = el.is("button")?el:el.parent("button");
-	let text = el.attr("data-clipboard-text");
+    let el = $(element.target)
+    el = el.is('button') ? el : el.parent('button')
+    const text = el.attr('data-clipboard-text')
 
-    let $temp = $("<input>");
-    $("body").append($temp);
-    $temp.val(text).select();
-    document.execCommand("copy");
-    $temp.remove();
+    const $temp = $('<input>')
+    $('body').append($temp)
+    $temp.val(text).select()
+    document.execCommand('copy')
+    $temp.remove()
 }

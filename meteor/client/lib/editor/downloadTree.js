@@ -4,20 +4,18 @@
  * @module client/lib/editor/genUrl
  */
 
-import {
-    displayError
-} from "./feedback"
+import { displayError } from './feedback'
 
 /**
  * Creates the descendants tree for the current model and triggers its
  * download as a text file.
  */
 export function downloadTree() {
-    let linkId = Router.current().params._id
-    Meteor.call("downloadTree", linkId, (err, res) => {
+    const linkId = Router.current().params._id
+    Meteor.call('downloadTree', linkId, (err, res) => {
         if (err) return displayError(err)
-        let d = new Date()
-        download(`tree_${linkId}_${d.getFullYear()}_${lz(d.getMonth()+1)}_${lz(d.getDate())}_${lz(d.getHours())}_${lz(d.getMinutes())}_${lz(d.getSeconds())}.json`, JSON.stringify(descendantsToTree(res)))
+        const d = new Date()
+        download(`tree_${linkId}_${d.getFullYear()}_${lz(d.getMonth() + 1)}_${lz(d.getDate())}_${lz(d.getHours())}_${lz(d.getMinutes())}_${lz(d.getSeconds())}.json`, JSON.stringify(descendantsToTree(res)))
     })
 }
 
@@ -29,28 +27,28 @@ export function downloadTree() {
  * @returns the root of the tree
  */
 export function descendantsToTree(res) {
-    let descendants = res.descendants
-    let root = res.root
+    const { descendants } = res
+    const { root } = res
     // get all the ids
-    let ids = descendants.map(x => x._id)
+    const ids = descendants.map(x => x._id)
     ids.push(root._id)
     // generate a hashmap of id -> direct child
-    let hashmap = {}
-    ids.forEach(id => hashmap[id] = []);
-    descendants.forEach(model => {
+    const hashmap = {}
+    ids.forEach(id => hashmap[id] = [])
+    descendants.forEach((model) => {
         // the root may derive from other model
-        if (hashmap[model.derivationOf])
-            hashmap[model.derivationOf].push(model)
-    });
-    //depth first search to obtain recursive tree structure
-    let current, queue = [root]
+        if (hashmap[model.derivationOf]) hashmap[model.derivationOf].push(model)
+    })
+    // depth first search to obtain recursive tree structure
+    let current; const
+        queue = [root]
     while (queue.length) {
         current = queue.shift()
         current.children = current.children || []
-        hashmap[current._id].forEach(model => {
+        hashmap[current._id].forEach((model) => {
             queue.push(model)
             current.children.push(model)
-        });
+        })
     }
     return root
 }
@@ -62,24 +60,24 @@ export function descendantsToTree(res) {
  * @param {String} text the content of the file
  */
 function download(filename, text) {
-    let anchor = document.createElement('a');
-    anchor.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-    anchor.setAttribute('download', filename);
+    const anchor = document.createElement('a')
+    anchor.setAttribute('href', `data:text/plain;charset=utf-8,${encodeURIComponent(text)}`)
+    anchor.setAttribute('download', filename)
 
-    anchor.style.display = 'none';
-    document.body.appendChild(anchor);
+    anchor.style.display = 'none'
+    document.body.appendChild(anchor)
 
-    anchor.click();
+    anchor.click()
 
-    document.body.removeChild(anchor);
+    document.body.removeChild(anchor)
 }
 
 /**
  * Adds leading zeros to string: 9->09, 19->19.
  *
- * @param {String} s 
+ * @param {String} s
  * @returns s with leading zeros
  */
 function lz(s) {
-    return ('0' + s).slice(-2)
+    return (`0${s}`).slice(-2)
 }

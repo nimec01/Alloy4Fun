@@ -3,7 +3,7 @@
  * Must be saved so that shared models can keep the instances appearance
  */
 
-Theme = new Meteor.Collection('Theme');
+Theme = new Meteor.Collection('Theme')
 
 Theme.attachSchema(new SimpleSchema({
     _id: {
@@ -16,31 +16,31 @@ Theme.attachSchema(new SimpleSchema({
     // Node Colors
     nodeColors: {
         type: Array,
-        optional: true,
+        optional: true
     },
     'nodeColors.$': {
-        type: Object,
+        type: Object
     },
     'nodeColors.type': {
-        type: String,
+        type: String
     },
     'nodeColors.color': {
-        type: String,
+        type: String
     },
 
     // Node Shapes
     nodeShapes: {
         type: Array,
-        optional: true,
+        optional: true
     },
     'nodeShapes.$': {
-        type: Object,
+        type: Object
     },
     'nodeShapes.type': {
-        type: String,
+        type: String
     },
     'nodeShapes.shape': {
-        type: String,
+        type: String
     },
 
     /* nodePositions: {
@@ -67,48 +67,48 @@ Theme.attachSchema(new SimpleSchema({
     // Node labels in case of renaming
     nodeLabels: {
         type: Array,
-        optional: true,
+        optional: true
     },
     'nodeLabels.$': {
-        type: Object,
+        type: Object
     },
     'nodeLabels.type': {
-        type: String,
+        type: String
     },
     'nodeLabels.label': {
-        type: String,
+        type: String
     },
 
 
     // Edge Colors
     edgeColors: {
         type: Array,
-        optional: true,
+        optional: true
     },
     'edgeColors.$': {
-        type: Object,
+        type: Object
     },
     'edgeColors.relation': {
-        type: String,
+        type: String
     },
     'edgeColors.color': {
-        type: String,
+        type: String
     },
 
     // Edge Labels
     edgeLabels: {
         type: Array,
-        optional: true,
+        optional: true
     },
     'edgeLabels.$': {
-        type: Object,
+        type: Object
     },
     'edgeLabels.relation': {
-        type: String,
+        type: String
     },
-    "edgeLabels.label": {
+    'edgeLabels.label': {
         type: String
     }
 }))
 
-export { Theme };
+export { Theme }

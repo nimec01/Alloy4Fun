@@ -1,5 +1,4 @@
-currentLayout = 'breadthfirst';
-nodeSpacing = 0.1;
+nodeSpacing = 0.1
 layouts = {
     breadthfirst: {
         name: 'breadthfirst',
@@ -7,7 +6,7 @@ layouts = {
         maximalAdjustments: 1,
         padding: 10,
         directed: true,
-        spacingFactor: nodeSpacing,
+        spacingFactor: nodeSpacing
     },
     cocentric: {
         name: 'concentric',
@@ -24,16 +23,16 @@ layouts = {
         height: undefined, // height of layout area (overrides container height)
         width: undefined, // width of layout area (overrides container width)
         concentric(node) { // returns numeric value for each node, placing higher nodes in levels towards the centre
-            return node.degree();
+            return node.degree()
         },
         levelWidth(nodes) { // the variation of concentric values in each level
-            return nodes.maxDegree() / 4;
+            return nodes.maxDegree() / 4
         },
         animate: false, // whether to transition the node positions
         animationDuration: 500, // duration of animation in ms if enabled
         animationEasing: undefined, // easing of animation if enabled
         ready: undefined, // callback on layoutready
-        stop: undefined, // callback on layoutstop
+        stop: undefined // callback on layoutstop
     },
     random: {
         name: 'random',
@@ -45,7 +44,7 @@ layouts = {
         animationDuration: 500, // duration of animation in ms if enabled
         animationEasing: undefined, // easing of animation if enabled
         ready: undefined, // callback on layoutready
-        stop: undefined, // callback on layoutstop
+        stop: undefined // callback on layoutstop
     },
     circle: {
         name: 'circle',
@@ -63,7 +62,7 @@ layouts = {
         animationDuration: 500, // duration of animation in ms if enabled
         animationEasing: undefined, // easing of animation if enabled
         ready: undefined, // callback on layoutready
-        stop: undefined, // callback on layoutstop
+        stop: undefined // callback on layoutstop
     },
     grid: {
         name: 'grid',
@@ -77,13 +76,13 @@ layouts = {
         cols: undefined, // force num of columns in the grid
         position(node) {}, // returns { row, col } for element
         sort(a, b) {
-            return a.data('label') < b.data('label');
+            return a.data('label') < b.data('label')
         }, // a sorting function to order the nodes; e.g. function(a, b){ return a.data('weight') - b.data('weight') }
         animate: false, // whether to transition the node positions
         animationDuration: 500, // duration of animation in ms if enabled
         animationEasing: undefined, // easing of animation if enabled
         ready: undefined, // callback on layoutready
-        stop: undefined, // callback on layoutstop
+        stop: undefined // callback on layoutstop
     },
     cose: {
         name: 'cose',
@@ -108,13 +107,13 @@ layouts = {
         // Extra spacing between components in non-compound graphs
         componentSpacing: 100,
         // Node repulsion (non overlapping) multiplier
-        nodeRepulsion(node) { return 400000; },
+        nodeRepulsion(node) { return 400000 },
         // Node repulsion (overlapping) multiplier
         nodeOverlap: 10,
         // Ideal edge (non nested) length
-        idealEdgeLength(edge) { return 10; },
+        idealEdgeLength(edge) { return 10 },
         // Divisor to compute edge forces
-        edgeElasticity(edge) { return 100; },
+        edgeElasticity(edge) { return 100 },
         // Nesting factor (multiplier) to compute ideal edge length for nested edges
         nestingFactor: 5,
         // Gravity force (constant)
@@ -128,16 +127,19 @@ layouts = {
         // Lower temperature threshold (below this point the layout will end)
         minTemp: 1.0,
         // Whether to use threading to speed up the layout
-        useMultitasking: true,
-    },
+        useMultitasking: true
+    }
 
-};
+}
 
 applyCurrentLayout = function () {
-    if (cy.elements().size() > 0) cy.layout(layouts[currentLayout]);
-    cy.layout(layouts[currentLayout])
-};
+    // remove the hidden elements so that they are not affected by the layout
+    const tmp = cy.elements((element, i) => !i.visible())
+    cy.remove(tmp)
+    cy.layout(layouts[generalSettings.getLayout()])
+    cy.add(tmp)
+}
 
 updateNodeSpacing = function (newValue) {
-    layouts.breadthfirst.spacingFactor = (newValue / 100) * 5;
-};
+    layouts.breadthfirst.spacingFactor = (newValue / 100) * 5
+}

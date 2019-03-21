@@ -1,6 +1,4 @@
-import {
-    Model
-} from "../../lib/collections/model"
+import { Model } from '../../lib/collections/model'
 
 /**
  * This is used to retrieve data when the Route contains a link /:_id
@@ -9,31 +7,31 @@ editor = RouteController.extend({
     template: 'alloyEditor',
 
     // see http://iron-meteor.github.io/iron-router/#subscriptions
-    subscriptions: function() {
+    subscriptions() {
         this.subscribe('modelFromLink', this.params._id).wait()
     },
 
     // see http://iron-meteor.github.io/iron-router/#the-waiton-option
-    waitOn: function() {},
+    waitOn() {},
 
-    data: function() {
+    data() {
         return Model.findOne(this.params._id) || {
-            code: "Unable to retrieve Model from Link"
+            code: 'Unable to retrieve Model from Link'
         }
     },
 
     onRun() {
-        this.next();
+        this.next()
     },
     onRerun() {
-        this.next();
+        this.next()
     },
     onBeforeAction() {
-        this.next();
+        this.next()
     },
     action() {
-        this.render();
+        this.render()
     },
     onAfterAction() {},
-    onStop() {},
-});
+    onStop() {}
+})
