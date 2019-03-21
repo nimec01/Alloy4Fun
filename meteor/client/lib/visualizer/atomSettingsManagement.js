@@ -1,331 +1,384 @@
-atomSettings = {}
-atomSettings.nodeLabels = []
-atomSettings.nodeColors = [{ type: 'univ', color: '#2ECC40' }]
-atomSettings.nodeShapes = [{ type: 'univ', shape: 'ellipse' }]
-atomSettings.nodeBorders = [{ type: 'univ', border: 'solid' }]
-atomSettings.unconnectedNodes = [{ type: 'univ', unconnectedNodes: false }]
-atomSettings.displayNodesNumber = [{ type: 'univ', displayNodesNumber: true }]
-atomSettings.nodeVisibility = [{ type: 'univ', visibility: false }]
+atomSettings = (function atomSettings() {
+    let nodeLabels = []
+    let nodeColors = [{ type: 'univ', color: '#2ECC40' }]
+    let nodeShapes = [{ type: 'univ', shape: 'ellipse' }]
+    let nodeBorders = [{ type: 'univ', border: 'solid' }]
+    let unconnectedNodes = [{ type: 'univ', unconnectedNodes: false }]
+    let displayNodesNumber = [{ type: 'univ', displayNodesNumber: true }]
+    let nodeVisibility = [{ type: 'univ', visibility: false }]
 
-/**
- * Retrieves the atom label property of a sig, initializing to the sig label if
- * undefined.
- *
- * @param {String} sig the sig for which to get the property
- * @returns {String} the value assigned to the property
- */
-getAtomLabel = function (sig) {
-    for (let i = 0; i < atomSettings.nodeLabels.length; i++) {
-        if (atomSettings.nodeLabels[i].type === sig) {
-            return atomSettings.nodeLabels[i].label
+    function init(settings) {
+        nodeLabels = settings.nodeLabels || []
+        nodeColors = settings.nodeColors || [{ type: 'univ', color: '#2ECC40' }]
+        nodeShapes = settings.nodeShapes || [{ type: 'univ', shape: 'ellipse' }]
+        nodeBorders = settings.nodeBorders || [{ type: 'univ', border: 'solid' }]
+        unconnectedNodes = settings.unconnectedNodes || [{ type: 'univ', unconnectedNodes: false }]
+        displayNodesNumber = settings.displayNodesNumber || [{ type: 'univ', displayNodesNumber: true }]
+        nodeVisibility = settings.nodeVisibility || [{ type: 'univ', visibility: false }]
+    }
+
+    function data() {
+        const data = { nodeLabels: nodeLabels,
+              nodeColors: nodeColors,
+            nodeShapes: nodeShapes,
+            nodeBorders, nodeBorders,
+            unconnectedNodes: unconnectedNodes,
+            displayNodesNumber: displayNodesNumber,
+            nodeVisibility: nodeVisibility }
+        return data
+    }
+
+    /**
+     * Retrieves the atom label property of a sig, initializing to the sig label if
+     * undefined.
+     *
+     * @param {String} sig the sig for which to get the property
+     * @returns {String} the value assigned to the property
+     */
+    function getAtomLabel(sig) {
+        for (let i = 0; i < nodeLabels.length; i++) {
+            if (nodeLabels[i].type === sig) {
+                return nodeLabels[i].label
+            }
+        }
+        nodeLabels.push({ type: sig, label: sig })
+        return sig
+    }
+
+    /**
+     * Updates the atom label property of a sig. Assumes already initialized.
+     *
+     * @param {String} sig the sig for which to update the property
+     * @param {String} newVal the new value for the property
+     */
+    function updateAtomLabel(sig, newVal) {
+        for (let i = 0; i < nodeLabels.length; i++) {
+            if (nodeLabels[i].type === sig) {
+                nodeLabels[i].label = newVal
+                return
+            }
         }
     }
-    atomSettings.nodeLabels.push({ type: sig, label: sig })
-    return sig
-}
 
-/**
- * Updates the atom label property of a sig. Assumes already initialized.
- *
- * @param {String} sig the sig for which to update the property
- * @param {String} newVal the new value for the property
- */
-updateAtomLabel = function (sig, newVal) {
-    for (let i = 0; i < atomSettings.nodeLabels.length; i++) {
-        if (atomSettings.nodeLabels[i].type === sig) {
-            atomSettings.nodeLabels[i].label = newVal
-            return
+    /**
+     * Retrieves the atom colour property of a sig, initializing it to inherit if
+     * undefined.
+     *
+     * @param {String} sig the sig for which to get the property
+     * @returns {String} the value assigned to the property
+     */
+    function getAtomColor(sig) {
+        for (let i = 0; i < nodeColors.length; i++) {
+            if (nodeColors[i].type === sig) {
+                return nodeColors[i].color
+            }
+        }
+        nodeColors.push({ type: sig, color: 'inherit' })
+        return 'inherit'
+    }
+
+    /**
+     * Recursively gets the inherited atom colour property of a sig.
+     *
+     * @param {String} sig the signature for which to get the property
+     * @returns {String} the inherited property
+     */
+    function getInheritedAtomColor(sig) {
+        let cur = sig
+        let color = getAtomColor(cur)
+        while (color === 'inherit') {
+            const parent = generalSettings.getSigParent(cur)
+            color = getAtomColor(parent)
+            cur = parent
+        }
+        return color
+    }
+
+    /**
+     * Updates the atom color property of a sig. Assumes already initialized.
+     *
+     * @param {String} sig the sig for which to update the property
+     * @param {String} newVal the new value for the property
+     */
+    function updateAtomColor(sig, newVal) {
+        for (let i = 0; i < nodeColors.length; i++) {
+            if (nodeColors[i].type === sig) {
+                nodeColors[i].color = newVal
+                return
+            }
         }
     }
-}
 
-/**
- * Retrieves the atom colour property of a sig, initializing it to inherit if
- * undefined.
- *
- * @param {String} sig the sig for which to get the property
- * @returns {String} the value assigned to the property
- */
-getAtomColor = function (sig) {
-    for (let i = 0; i < atomSettings.nodeColors.length; i++) {
-        if (atomSettings.nodeColors[i].type === sig) {
-            return atomSettings.nodeColors[i].color
+    /**
+     * Retrieves the atom shape property of a sig, initializing it to inherit if
+     * undefined.
+     *
+     * @param {String} sig the sig for which to get the property
+     * @returns {String} the value assigned to the property
+     */
+    function getAtomShape(sig) {
+        for (let i = 0; i < nodeShapes.length; i++) {
+            if (nodeShapes[i].type === sig) {
+                return nodeShapes[i].shape
+            }
+        }
+        nodeShapes.push({ type: sig, shape: 'inherit' })
+        return 'inherit'
+    }
+
+    /**
+     * Recursively gets the inherited atom shape property of a sig.
+     *
+     * @param {String} sig the signature for which to get the property
+     * @returns {String} the inherited property
+     */
+    function getInheritedAtomShape(sig) {
+        let cur = sig
+        let shape = getAtomShape(cur)
+        while (shape === 'inherit') {
+            const parent = generalSettings.getSigParent(cur)
+            shape = getAtomShape(parent)
+            cur = parent
+        }
+        return shape
+    }
+
+    /**
+     * Updates the atom shape property of a sig. Assumes already initialized.
+     *
+     * @param {String} sig the sig for which to update the property
+     * @param {String} newVal the new value for the property
+     */
+    function updateAtomShape(sig, newVal) {
+        for (let i = 0; i < nodeShapes.length; i++) {
+            if (nodeShapes[i].type === sig) {
+                nodeShapes[i].shape = newVal
+                return
+            }
         }
     }
-    atomSettings.nodeColors.push({ type: sig, color: 'inherit' })
-    return 'inherit'
-}
 
-/**
- * Recursively gets the inherited atom colour property of a sig.
- *
- * @param {String} sig the signature for which to get the property
- * @returns {String} the inherited property
- */
-getInheritedAtomColor = function (sig) {
-    let color = getAtomColor(sig)
-    while (color === 'inherit') {
-        const parent = getSigParent(sig)
-        color = getAtomColor(parent)
-        sig = parent
+    /**
+     * Retrieves the atom border property of a sig, initializing it to inherit if
+     * undefined.
+     *
+     * @param {String} sig the sig for which to get the property
+     * @returns {String} the value assigned to the property
+     */
+    function getAtomBorder(sig) {
+        for (let i = 0; i < nodeBorders.length; i++) {
+            if (nodeBorders[i].type === sig) {
+                return nodeBorders[i].border
+            }
+        }
+        nodeBorders.push({ type: sig, border: 'inherit' })
+        return 'inherit'
     }
-    return color
-}
 
-/**
- * Updates the atom color property of a sig. Assumes already initialized.
- *
- * @param {String} sig the sig for which to update the property
- * @param {String} newVal the new value for the property
- */
-updateAtomColor = function (sig, newVal) {
-    for (let i = 0; i < atomSettings.nodeColors.length; i++) {
-        if (atomSettings.nodeColors[i].type === sig) {
-            atomSettings.nodeColors[i].color = newVal
-            return
+    /**
+     * Recursively gets the inherited atom border property of a sig.
+     *
+     * @param {String} sig the signature for which to get the property
+     * @returns {String} the inherited property
+     */
+    function getInheritedAtomBorder(sig) {
+        let cur = sig
+        let border = getAtomBorder(cur)
+        while (border === 'inherit') {
+            const parent = generalSettings.getSigParent(cur)
+            border = getAtomBorder(parent)
+            cur = parent
+        }
+        return border
+    }
+
+    /**
+     * Updates the atom border property of a sig. Assumes already initialized.
+     *
+     * @param {String} sig the sig for which to update the property
+     * @param {String} newVal the new value for the property
+     */
+    function updateAtomBorder(sig, newVal) {
+        for (let i = 0; i < nodeBorders.length; i++) {
+            if (nodeBorders[i].type === sig) {
+                nodeBorders[i].border = newVal
+                return
+            }
         }
     }
-}
 
-/**
- * Retrieves the atom shape property of a sig, initializing it to inherit if
- * undefined.
- *
- * @param {String} sig the sig for which to get the property
- * @returns {String} the value assigned to the property
- */
-getAtomShape = function (sig) {
-    for (let i = 0; i < atomSettings.nodeShapes.length; i++) {
-        if (atomSettings.nodeShapes[i].type === sig) {
-            return atomSettings.nodeShapes[i].shape
+    /**
+     * Retrieves the atom visibility property of a sig, initializing it to inherit if
+     * undefined.
+     *
+     * @param {String} sig the sig for which to get the property
+     * @returns {String} the value assigned to the property
+     */
+    function getAtomVisibility(sig) {
+        for (let i = 0; i < nodeVisibility.length; i++) {
+            if (nodeVisibility[i].type === sig) {
+                return nodeVisibility[i].visibility
+            }
+        }
+        nodeVisibility.push({ type: sig, visibility: 'inherit' })
+        return 'inherit'
+    }
+
+    /**
+     * Recursively gets the inherited atom visibility property of a sig.
+     *
+     * @param {String} sig the signature for which to get the property
+     * @returns {String} the inherited property
+     */
+    function getInheritedAtomVisibility(sig) {
+        let cur = sig
+        let visibility = getAtomVisibility(cur)
+        while (visibility === 'inherit') {
+            const parent = generalSettings.getSigParent(cur)
+            visibility = getAtomVisibility(parent)
+            cur = parent
+        }
+        return visibility
+    }
+
+    /**
+     * Updates the atom visibility property of a sig. Assumes already initialized.
+     *
+     * @param {String} sig the sig for which to update the property
+     * @param {String} newVal the new value for the property
+     */
+    function updateAtomVisibility(sig, newVal) {
+        for (let i = 0; i < nodeVisibility.length; i++) {
+            if (nodeVisibility[i].type === sig) {
+                nodeVisibility[i].visibility = newVal
+                return
+            }
         }
     }
-    atomSettings.nodeShapes.push({ type: sig, shape: 'inherit' })
-    return 'inherit'
-}
 
-/**
- * Recursively gets the inherited atom shape property of a sig.
- *
- * @param {String} sig the signature for which to get the property
- * @returns {String} the inherited property
- */
-getInheritedAtomShape = function (sig) {
-    let shape = getAtomShape(sig)
-    while (shape === 'inherit') {
-        const parent = getSigParent(sig)
-        shape = getAtomShape(parent)
-        sig = parent
+    /**
+     * Retrieves the hide unconnected nodes property of a sig, initializing it to
+     * inherit if undefined.
+     *
+     * @param {String} sig the sig for which to get the property
+     * @returns {String} the value assigned to the property
+     */
+    function getHideUnconnectedNodes(sig) {
+        for (let i = 0; i < unconnectedNodes.length; i++) {
+            if (unconnectedNodes[i].type === sig) {
+                return unconnectedNodes[i].unconnectedNodes
+            }
+        }
+        unconnectedNodes.push({ type: sig, unconnectedNodes: 'inherit' })
+        return 'inherit'
     }
-    return shape
-}
 
-/**
- * Updates the atom shape property of a sig. Assumes already initialized.
- *
- * @param {String} sig the sig for which to update the property
- * @param {String} newVal the new value for the property
- */
-updateAtomShape = function (sig, newVal) {
-    for (let i = 0; i < atomSettings.nodeShapes.length; i++) {
-        if (atomSettings.nodeShapes[i].type === sig) {
-            atomSettings.nodeShapes[i].shape = newVal
-            return
+    /**
+     * Recursively gets the inherited hide unconnected nodes property of a sig.
+     *
+     * @param {String} sig the signature for which to get the property
+     * @returns {String} the inherited property
+     */
+    function getInheritedHideUnconnectedNodes(sig) {
+        let cur = sig
+        let hideUnconnectedNodes = getHideUnconnectedNodes(cur)
+        while (hideUnconnectedNodes === 'inherit') {
+            const parent = generalSettings.getSigParent(cur)
+            hideUnconnectedNodes = getHideUnconnectedNodes(parent)
+            cur = parent
+        }
+
+        return hideUnconnectedNodes
+    }
+
+    /**
+     * Updates the hide unconnected nodes property of a sig. Assumes already
+     * initialized.
+     *
+     * @param {String} sig the sig for which to update the property
+     * @param {String} newVal the new value for the property
+     */
+    function updateHideUnconnectedNodes(sig, newVal) {
+        for (let i = 0; i < unconnectedNodes.length; i++) {
+            if (unconnectedNodes[i].type === sig) {
+                unconnectedNodes[i].unconnectedNodes = newVal
+                return
+            }
         }
     }
-}
 
-/**
- * Retrieves the atom border property of a sig, initializing it to inherit if
- * undefined.
- *
- * @param {String} sig the sig for which to get the property
- * @returns {String} the value assigned to the property
- */
-getAtomBorder = function (sig) {
-    for (let i = 0; i < atomSettings.nodeBorders.length; i++) {
-        if (atomSettings.nodeBorders[i].type === sig) {
-            return atomSettings.nodeBorders[i].border
+    /**
+     * Retrieves the display node number property of a sig, initializing it to
+     * inherit if undefined.
+     *
+     * @param {String} sig the sig for which to get the property
+     * @returns {String} the value assigned to the property
+     */
+    function getDisplayNodesNumber(sig) {
+        for (let i = 0; i < displayNodesNumber.length; i++) {
+            if (displayNodesNumber[i].type === sig) {
+                return displayNodesNumber[i].displayNodesNumber
+            }
+        }
+        displayNodesNumber.push({ type: sig, displayNodesNumber: 'inherit' })
+        return 'inherit'
+    }
+
+    /**
+     * Recursively gets the inherited display node numbers property of a sig.
+     *
+     * @param {String} sig the signature for which to get the property
+     * @returns {String} the inherited property
+     */
+    function getInheritedDisplayNodesNumber(sig) {
+        let cur = sig
+        let display = getDisplayNodesNumber(cur)
+        while (display === 'inherit') {
+            const parent = generalSettings.getSigParent(cur)
+            display = getDisplayNodesNumber(parent)
+            cur = parent
+        }
+        return display
+    }
+
+    /**
+     * Updates the display node numbers property of a sig. Assumes already
+     * initialized.
+     *
+     * @param {String} sig the sig for which to update the property
+     * @param {String} newVal the new value for the property
+     */
+    function updateDisplayNodesNumber(sig, newVal) {
+        for (let i = 0; i < displayNodesNumber.length; i++) {
+            if (displayNodesNumber[i].type === sig) {
+                displayNodesNumber[i].displayNodesNumber = newVal
+                return
+            }
         }
     }
-    atomSettings.nodeBorders.push({ type: sig, border: 'inherit' })
-    return 'inherit'
-}
 
-/**
- * Recursively gets the inherited atom border property of a sig.
- *
- * @param {String} sig the signature for which to get the property
- * @returns {String} the inherited property
- */
-getInheritedAtomBorder = function (sig) {
-    let border = getAtomBorder(sig)
-    while (border === 'inherit') {
-        const parent = getSigParent(sig)
-        border = getAtomBorder(parent)
-        sig = parent
+    return {
+        init,
+        data,
+        getAtomVisibility,
+        getAtomBorder,
+        getAtomShape,
+        getAtomColor,
+        getAtomLabel,
+        getHideUnconnectedNodes,
+        getDisplayNodesNumber,
+        getInheritedAtomVisibility,
+        getInheritedAtomBorder,
+        getInheritedAtomShape,
+        getInheritedAtomColor,
+        getInheritedDisplayNodesNumber,
+        getInheritedHideUnconnectedNodes,
+        updateAtomVisibility,
+        updateAtomBorder,
+        updateDisplayNodesNumber,
+        updateAtomShape,
+        updateAtomColor,
+        updateAtomLabel,
+        updateHideUnconnectedNodes
     }
-    return border
-}
-
-/**
- * Updates the atom border property of a sig. Assumes already initialized.
- *
- * @param {String} sig the sig for which to update the property
- * @param {String} newVal the new value for the property
- */
-updateAtomBorder = function (sig, newVal) {
-    for (let i = 0; i < atomSettings.nodeBorders.length; i++) {
-        if (atomSettings.nodeBorders[i].type === sig) {
-            atomSettings.nodeBorders[i].border = newVal
-            return
-        }
-    }
-}
-
-/**
- * Retrieves the atom visibility property of a sig, initializing it to inherit if
- * undefined.
- *
- * @param {String} sig the sig for which to get the property
- * @returns {String} the value assigned to the property
- */
-getAtomVisibility = function (sig) {
-    for (let i = 0; i < atomSettings.nodeVisibility.length; i++) {
-        if (atomSettings.nodeVisibility[i].type === sig) {
-            return atomSettings.nodeVisibility[i].visibility
-        }
-    }
-    atomSettings.nodeVisibility.push({ type: sig, visibility: 'inherit' })
-    return 'inherit'
-}
-
-/**
- * Recursively gets the inherited atom visibility property of a sig.
- *
- * @param {String} sig the signature for which to get the property
- * @returns {String} the inherited property
- */
-getInheritedAtomVisibility = function (sig) {
-    let visibility = getAtomVisibility(sig)
-    while (visibility === 'inherit') {
-        const parent = getSigParent(sig)
-        visibility = getAtomVisibility(sig)
-        sig = parent
-    }
-    return visibility
-}
-
-/**
- * Updates the atom visibility property of a sig. Assumes already initialized.
- *
- * @param {String} sig the sig for which to update the property
- * @param {String} newVal the new value for the property
- */
-updateAtomVisibility = function (sig, newVal) {
-    for (let i = 0; i < atomSettings.nodeVisibility.length; i++) {
-        if (atomSettings.nodeVisibility[i].type === sig) {
-            atomSettings.nodeVisibility[i].visibility = newVal
-            return
-        }
-    }
-}
-
-/**
- * Retrieves the hide unconnected nodes property of a sig, initializing it to
- * inherit if undefined.
- *
- * @param {String} sig the sig for which to get the property
- * @returns {String} the value assigned to the property
- */
-getHideUnconnectedNodes = function (sig) {
-    for (let i = 0; i < atomSettings.unconnectedNodes.length; i++) {
-        if (atomSettings.unconnectedNodes[i].type === sig) {
-            return atomSettings.unconnectedNodes[i].unconnectedNodes
-        }
-    }
-    atomSettings.unconnectedNodes.push({ type: sig, unconnectedNodes: 'inherit' })
-    return 'inherit'
-}
-
-/**
- * Recursively gets the inherited hide unconnected nodes property of a sig.
- *
- * @param {String} sig the signature for which to get the property
- * @returns {String} the inherited property
- */
-getInheritedHideUnconnectedNodes = function (sig) {
-    let hideUnconnectedNodes = getHideUnconnectedNodes(sig)
-    while (hideUnconnectedNodes === 'inherit') {
-        const parent = getSigParent(sig)
-        hideUnconnectedNodes = getHideUnconnectedNodes(sig)
-        sig = parent
-    }
-
-    return hideUnconnectedNodes
-}
-
-/**
- * Updates the hide unconnected nodes property of a sig. Assumes already
- * initialized.
- *
- * @param {String} sig the sig for which to update the property
- * @param {String} newVal the new value for the property
- */
-updateHideUnconnectedNodes = function (sig, newVal) {
-    for (let i = 0; i < atomSettings.unconnectedNodes.length; i++) {
-        if (atomSettings.unconnectedNodes[i].type === sig) {
-            atomSettings.unconnectedNodes[i].unconnectedNodes = newVal
-            return
-        }
-    }
-}
-
-/**
- * Retrieves the display node number property of a sig, initializing it to
- * inherit if undefined.
- *
- * @param {String} sig the sig for which to get the property
- * @returns {String} the value assigned to the property
- */
-getDisplayNodesNumber = function (sig) {
-    for (let i = 0; i < atomSettings.displayNodesNumber.length; i++) {
-        if (atomSettings.displayNodesNumber[i].type === sig) {
-            return atomSettings.displayNodesNumber[i].displayNodesNumber
-        }
-    }
-    atomSettings.displayNodesNumber.push({ type: sig, displayNodesNumber: 'inherit' })
-    return 'inherit'
-}
-
-/**
- * Recursively gets the inherited display node numbers property of a sig.
- *
- * @param {String} sig the signature for which to get the property
- * @returns {String} the inherited property
- */
-getInheritedDisplayNodesNumber = function (sig) {
-    let displayNodesNumber = getDisplayNodesNumber(sig)
-    while (displayNodesNumber === 'inherit') {
-        const parent = getSigParent(sig)
-        displayNodesNumber = getDisplayNodesNumber(sig)
-        sig = parent
-    }
-    return displayNodesNumber
-}
-
-/**
- * Updates the display node numbers property of a sig. Assumes already
- * initialized.
- *
- * @param {String} sig the sig for which to update the property
- * @param {String} newVal the new value for the property
- */
-updateDisplayNodesNumber = function (sig, newVal) {
-    for (let i = 0; i < atomSettings.displayNodesNumber.length; i++) {
-        if (atomSettings.displayNodesNumber[i].type === sig) {
-            atomSettings.displayNodesNumber[i].displayNodesNumber = newVal
-            return
-        }
-    }
-}
+}())

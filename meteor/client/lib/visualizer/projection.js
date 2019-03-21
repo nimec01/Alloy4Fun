@@ -33,6 +33,7 @@ function processProjection(err, projection) {
                         // add relations to subset sigs
                         for (let r = 0; r < frame.atom_rels[ar].relations.length; r++) {
                             node.data().subsetSigs.push(frame.atom_rels[ar].relations[r])
+                            generalSettings.addSubSig(`${frame.atom_rels[ar].relations[r]}`, node.data().type)
                         }
                         break
                     }
@@ -41,6 +42,7 @@ function processProjection(err, projection) {
                 cy.add(node)
             }
         }
+
     })
     // process relations
     cy.edges().remove()
@@ -69,11 +71,11 @@ function getProjectionEdges(relations) {
                         relation: relation.relation,
                         source: tuple[0],
                         target: tuple[tuple.length - 1],
-                        label: getEdgeLabel(relation.relation),
-                        color: getEdgeColor(relation.relation),
+                        label: relationSetting.getEdgeLabel(relation.relation),
+                        color: relationSetting.getEdgeColor(relation.relation),
                         labelExt,
                         updatedLabelExt: labelExt,
-                        edgeStyle: getEdgeStyle(relation.relation)
+                        edgeStyle: relationSetting.getEdgeStyle(relation.relation)
                     }
                 })
             }

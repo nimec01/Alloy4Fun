@@ -9,41 +9,39 @@ Template.relationSettings.helpers({
 updateOptionContentRelations = function () {
     const selectedRelation = Session.get('selectedRelation')
     if (selectedRelation) {
-        $('#relationColorSettings').val(getEdgeColor(selectedRelation))
-        $('#relationLabelSettings').val(getEdgeLabel(selectedRelation))
-        $('#showAsArcs').prop('checked', isShowAsArcsOn(selectedRelation))
-        $('#showAsAttributes').prop('checked', isShowAsAttributesOn(selectedRelation))
-        $('#relationEdgeStyleSettings').val(getEdgeStyle(selectedRelation))
+        $('#relationColorSettings').val(relationSettings.getEdgeColor(selectedRelation))
+        $('#relationLabelSettings').val(relationSettings.getEdgeLabel(selectedRelation))
+        $('#showAsArcs').prop('checked', relationSettings.isShowAsArcsOn(selectedRelation))
+        $('#showAsAttributes').prop('checked', relationSettings.isShowAsAttributesOn(selectedRelation))
+        $('#relationEdgeStyleSettings').val(relationSettings.getEdgeStyle(selectedRelation))
     }
 }
 
 Template.relationSettings.events({
     'change #relationLabelSettings'(event) {
         const selectedRelation = Session.get('selectedRelation')
-        cy.edges(`[relation='${selectedRelation}']`).data({ label: event.target.value })
-        updateEdgeLabel(selectedRelation, event.target.value)
+        relationSettings.updateEdgeLabel(selectedRelation, event.target.value)
         refreshGraph()
     },
 
     'change #relationColorSettings'(event) {
         const selectedRelation = Session.get('selectedRelation')
-        cy.edges(`[relation='${selectedRelation}']`).data({ color: event.target.value })
-        updateEdgeColor(selectedRelation, event.target.value)
+        relationSettings.updateEdgeColor(selectedRelation, event.target.value)
+        refreshGraph()
     },
     'change #showAsArcs'(event) {
         const selectedRelation = Session.get('selectedRelation')
-        updateShowAsArcs(selectedRelation, $(event.target).is(':checked'))
+        relationSettings.updateShowAsArcs(selectedRelation, $(event.target).is(':checked'))
         refreshGraph()
     },
     'change #showAsAttributes'(event) {
         const selectedRelation = Session.get('selectedRelation')
-        updateShowAsAttributes(selectedRelation, $(event.target).is(':checked'))
+        relationSettings.updateShowAsAttributes(selectedRelation, $(event.target).is(':checked'))
         refreshGraph()
     },
     'change #relationEdgeStyleSettings'(event) {
         const selectedRelation = Session.get('selectedRelation')
-        cy.edges(`[relation='${selectedRelation}']`).data({ edgeStyle: event.target.value })
-        updateEdgeStyle(selectedRelation, event.target.value)
+        relationSettings.updateEdgeStyle(selectedRelation, event.target.value)
         refreshGraph()
     }
 })

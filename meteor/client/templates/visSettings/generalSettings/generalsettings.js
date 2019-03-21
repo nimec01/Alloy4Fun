@@ -3,8 +3,8 @@ Template.generalSettings.helpers({
 
 Template.generalSettings.events({
     'change #originalAtomNames'(event) {
-        setOriginalAtomNamesValue($(event.target).is(':checked'))
-        updateOriginalAtomNames($(event.target).is(':checked'))
+        generalSettings.setOriginalAtomNamesValue($(event.target).is(':checked'))
+        generalSettings.updateOriginalAtomNames($(event.target).is(':checked'))
         refreshGraph()
     },
     'change #layoutPicker'(event) {

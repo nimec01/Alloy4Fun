@@ -217,13 +217,11 @@ Template.alloyEditor.onRendered(() => {
         // retrieve the shared theme
         const themeData = model.theme
         if (themeData) {
-            atomSettings = themeData.atomSettings
-            relationSettings = themeData.relationSettings
-            generalSettings = themeData.generalSettings
+            atomSettings.init(themeData.atomSettings)
+            relationSettings.init(themeData.relationSettings)
+            generalSettings.init(themeData.generalSettings)
             currentFramePosition = themeData.currentFramePosition
             currentlyProjectedSigs = themeData.currentlyProjectedSigs
-            if (themeData.metaPrimSigs) metaPrimSigs = themeData.metaPrimSigs
-            if (themeData.metaSubsetSigs) metaSubsetSigs = themeData.metaSubsetSigs
             if (currentlyProjectedSigs.length !== 0) staticProjection()
         }
 
@@ -237,7 +235,7 @@ Template.alloyEditor.onRendered(() => {
             // load graph JSON data
             if (cy && model.instance.graph.elements.nodes) {
                 cy.add(model.instance.graph.elements)
-                updateElementSelectionContent()
+                generalSettings.updateElementSelectionContent()
                 cy.zoom(model.instance.graph.zoom)
                 cy.pan(model.instance.graph.pan)
             }

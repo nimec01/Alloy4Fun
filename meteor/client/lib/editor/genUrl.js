@@ -14,13 +14,11 @@ import { modelShared,
  */
 export function shareModel() {
     const themeData = {
-        atomSettings,
-        relationSettings,
-        generalSettings,
+        atomSettings: atomSettings.data(),
+        relationSettings: relationSettings.data(),
+        generalSettings: generalSettings.data(),
         currentFramePosition,
         currentlyProjectedSigs,
-        metaPrimSigs,
-        metaSubsetSigs
     }
 
     const modelToShare = textEditor.getValue()
@@ -33,13 +31,11 @@ export function shareModel() {
  */
 export function shareInstance() {
     const themeData = {
-        atomSettings,
-        relationSettings,
-        generalSettings,
+        atomSettings: atomSettings.data(),
+        relationSettings: relationSettings.data(),
+        generalSettings: generalSettings.data(),
         currentFramePosition,
-        currentlyProjectedSigs,
-        metaPrimSigs,
-        metaSubsetSigs
+        currentlyProjectedSigs
     }
     Meteor.call('storeInstance', Session.get('last_id'), getCommandIndex(), cy.json(), themeData, handleShareInstance)
 }

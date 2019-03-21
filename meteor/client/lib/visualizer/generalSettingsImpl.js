@@ -133,14 +133,12 @@ layouts = {
 
 }
 
-var tmp = [];
-
 applyCurrentLayout = function () {
-    cy.add(tmp)
     // remove the hidden elements so that they are not affected by the layout
-    tmp = cy.elements(function(element, i){ return !i.visible(); })
+    let tmp = cy.elements((element, i) => !i.visible())
     cy.remove(tmp)
     cy.layout(layouts[currentLayout])
+    cy.add(tmp)
 }
 
 updateNodeSpacing = function (newValue) {

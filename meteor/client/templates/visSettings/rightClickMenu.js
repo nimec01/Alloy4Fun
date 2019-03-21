@@ -35,12 +35,12 @@ Template.rightClickMenu.helpers({
 export function updateRightClickContent() {
     selected = Session.get('rightClickSig')
     if (selected) {
-        $('.changeAtomColorPicker').val(getAtomColor(selected))
-        $('.changeAtomShapePicker').val(getAtomShape(selected))
+        $('.changeAtomColorPicker').val(atomSettings.getAtomColor(selected))
+        $('.changeAtomShapePicker').val(atomSettings.getAtomShape(selected))
     } else {
         selected = Session.get('rightClickRel')
         if (selected) {
-            $('.changeAtomColorPicker').val(getEdgeColor(selected))
+            $('.changeAtomColorPicker').val(relationSettings.getEdgeColor(selected))
         }
     }
     themeChanged()
@@ -50,19 +50,16 @@ Template.rightClickMenu.events({
     'change .changeAtomColorPicker'(event) {
         selected = Session.get('rightClickSig')
         if (selected) {
-            cy.nodes(`[type='${selected}']`).data({ color: event.target.value })
-            updateAtomColor(selected, event.target.value)
+            atomSettings.updateAtomColor(selected, event.target.value)
         } else {
             selected = Session.get('rightClickRel')
-            cy.edges(`[relation='${selected}']`).data({ color: event.target.value })
-            updateEdgeColor(selected, event.target.value)
+            relationSettings.updateEdgeColor(selected, event.target.value)
         }
         refreshGraph()
     },
     'change .changeAtomShapePicker'(event) {
         const selected = Session.get('rightClickSig')
-        cy.nodes(`[type='${selected}']`).data({ shape: event.target.value })
-        updateAtomShape(selected, event.target.value)
+        atomSettings.updateAtomShape(selected, event.target.value)
         refreshGraph()
     },
     'click #rightClickProject'() {
