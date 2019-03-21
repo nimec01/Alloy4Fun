@@ -1,4 +1,3 @@
-currentLayout = 'breadthfirst'
 nodeSpacing = 0.1
 layouts = {
     breadthfirst: {
@@ -137,7 +136,7 @@ applyCurrentLayout = function () {
     // remove the hidden elements so that they are not affected by the layout
     let tmp = cy.elements((element, i) => !i.visible())
     cy.remove(tmp)
-    cy.layout(layouts[currentLayout])
+    cy.layout(layouts[generalSettings.getLayout()])
     cy.add(tmp)
 }
 

@@ -1,4 +1,5 @@
-Template.generalSettings.helpers({
+Template.elementSelection.onRendered(() => {
+    $('#layoutPicker').val(generalSettings.getLayout())
 })
 
 Template.generalSettings.events({
@@ -8,8 +9,9 @@ Template.generalSettings.events({
         refreshGraph()
     },
     'change #layoutPicker'(event) {
-        currentLayout = event.target.value
-        if (currentLayout == 'breadthfirst') {
+        const currentLayout = event.target.value
+        generalSettings.updateLayout(currentLayout)
+        if (currentLayout === 'breadthfirst') {
             $('.node-spacing').show()
         } else {
             $('.node-spacing').hide()

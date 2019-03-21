@@ -148,21 +148,24 @@ Template.alloyEditor.helpers({
      * The current private model sharing URL.
      */
     privateModelURL() {
-        return Session.get('private-model-url')
+        const id = Session.get('private-model-url')
+        return `${window.location.origin}/${id}`
     },
 
     /**
      * The current public model sharing URL.
      */
     publicModelURL() {
-        return Session.get('public-model-url')
+        const id = Session.get('public-model-url')
+        return `${window.location.origin}/${id}`
     },
 
     /**
      * The current instance sharing URL.
      */
     instanceURL() {
-        return Session.get('inst-url')
+        const id = Session.get('inst-url')
+        return `${window.location.origin}/${id}`
     }
 
 })

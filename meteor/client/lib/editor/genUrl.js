@@ -49,8 +49,8 @@ export function shareInstance() {
 function handleShareModel(err, result) {
     if (err) return displayError(err)
 
-    Session.set('public-model-url', `${window.location.origin}/${result.public}`)
-    Session.set('private-model-url', `${window.location.origin}/${result.private}`)
+    Session.set('public-model-url', `${result.public}`)
+    Session.set('private-model-url', `${result.private}`)
 
     modelShared()
 }
@@ -64,7 +64,7 @@ function handleShareModel(err, result) {
 function handleShareInstance(err, result) {
     if (err) return displayError(err)
 
-    Session.set('inst-url', `${window.location.origin}/${result}`)
+    Session.set('inst-url', `${result}`)
 
     instShared()
 }

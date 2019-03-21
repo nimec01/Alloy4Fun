@@ -1,5 +1,6 @@
 generalSettings = (function generalSettings() {
 
+    let currentLayout = 'breadthfirst'
     let useOriginalAtomNames = false
     let metaPrimSigs = [{ type: 'univ', parent: null }]
     // stores the parent prim sig of each sub sig
@@ -51,14 +52,22 @@ generalSettings = (function generalSettings() {
         }
     }
     
-    function updateOriginalAtomNames(value) {
-        useOriginalAtomNames = value
-    }   
+    function getLayout() {
+        return currentLayout
+    }
+    
+    function updateLayout(value) {
+        currentLayout = value
+    }  
     
     function getUseOriginalAtomNames() {
         return useOriginalAtomNames
     }
     
+    function updateOriginalAtomNames(value) {
+        useOriginalAtomNames = value
+    }  
+
     function resetHierarchy() {
         metaPrimSigs = [{ type: 'univ', parent: null }]
         metaSubsetSigs = []
@@ -144,6 +153,8 @@ generalSettings = (function generalSettings() {
     return {
         init,
         data,
+        getLayout,
+        updateLayout,
         setOriginalAtomNamesValue,
         updateOriginalAtomNames,
         getUseOriginalAtomNames,
