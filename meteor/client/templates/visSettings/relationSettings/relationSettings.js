@@ -33,6 +33,7 @@ Template.relationSettings.events({
         const selectedRelation = Session.get('selectedRelation')
         relationSettings.updateShowAsArcs(selectedRelation, $(event.target).is(':checked'))
         refreshGraph()
+        applyCurrentLayout()
     },
     'change #showAsAttributes'(event) {
         const selectedRelation = Session.get('selectedRelation')

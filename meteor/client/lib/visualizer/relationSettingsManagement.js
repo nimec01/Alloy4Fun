@@ -190,6 +190,9 @@ relationSettings = (function relationSettings() {
         showAsAttributes.forEach((item) => {
             rel = item.relation
             val = item.showAsAttributes
+            cy.nodes().forEach((n) => {
+                n.data().attributes = []
+            })
             const edges = cy.edges(`[relation='${rel}']`)
             if (val) {
                 const aux = {}
@@ -202,11 +205,6 @@ relationSettings = (function relationSettings() {
                 for (const key in aux) {
                     if (!cy.nodes(`[id='${key}']`)[0].data().attributes)cy.nodes(`[id='${key}']`)[0].data().attributes = []
                     cy.nodes(`[id='${key}']`)[0].data().attributes[rel] = aux[key]
-                }
-            } else {
-                for (let i = 0; i < edges.length; i++) {
-                    const as = cy.nodes(`[id='${edges[i].source().data().id}']`)[0].data().attributes
-                    if (as) delete as[rel]
                 }
             }
         })

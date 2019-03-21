@@ -99,7 +99,6 @@ export function getCurrentInstance() {
 export function getNextInstance() {
     const instanceIndex = Session.get('currentInstance')
     Session.set('currentInstance', instanceIndex + 1)
-    console.log(instances[instanceIndex + 1])
     return instances[instanceIndex + 1]
 }
 
@@ -111,7 +110,6 @@ export function getNextInstance() {
 export function getPreviousInstance() {
     const instanceIndex = Session.get('currentInstance')
     Session.set('currentInstance', instanceIndex - 1)
-    console.log(instances[instanceIndex - 1])
     return instances[instanceIndex - 1]
 }
 

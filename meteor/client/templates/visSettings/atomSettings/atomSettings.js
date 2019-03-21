@@ -150,7 +150,7 @@ Template.atomSettings.events({
             if (event.currentTarget.checked)addSigToProjection(selectedSig)
             else removeSigFromProjection(selectedSig)
         } catch (err) {
-            console.log(err)
+            console.error(err)
         }
     }
 })

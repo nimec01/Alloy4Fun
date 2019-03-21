@@ -68,7 +68,7 @@ Template.rightClickMenu.events({
             if (currentlyProjectedSigs.indexOf(selected) == -1) addSigToProjection(selected)
             else removeSigFromProjection(selected)
         } catch (err) {
-            console.log(err)
+            console.error(err)
         }
     }
 })
