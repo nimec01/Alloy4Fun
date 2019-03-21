@@ -1,7 +1,7 @@
 import { removeSigFromProjection,
     addSigToProjection } from '../../../lib/visualizer/projection'
 
-Template.atomSettings.helpers({
+Template.sigSettings.helpers({
     getSig() {
         const type = Session.get('selectedSig')
         return type || undefined
@@ -20,37 +20,37 @@ updateOptionContentSigs = function () {
     else $('.not-for-univ').show()
     const isSubset = selectedSig ? selectedSig.indexOf(':') != -1 : false
     if (selectedSig) {
-        $('#atomLabelSettings').val(atomSettings.getAtomLabel(selectedSig))
+        $('#atomLabelSettings').val(sigSettings.getAtomLabel(selectedSig))
 
         if (!isSubset) {
             $('#projectOverSig').prop('checked', $.inArray(selectedSig, currentlyProjectedSigs) > -1)
-            const unconnectedNodes = atomSettings.getHideUnconnectedNodes(selectedSig)
+            const unconnectedNodes = sigSettings.getHideUnconnectedNodes(selectedSig)
 
             if (unconnectedNodes == 'inherit') {
                 $('#atomHideUnconnectedNodes').prop('disabled', true)
                 $('#inheritHideUnconnectedNodes').prop('checked', true)
-                $('#atomHideUnconnectedNodes').prop('checked', atomSettings.getInheritedHideUnconnectedNodes(selectedSig))
+                $('#atomHideUnconnectedNodes').prop('checked', sigSettings.getInheritedHideUnconnectedNodes(selectedSig))
             } else {
                 $('#atomHideUnconnectedNodes').prop('disabled', false)
                 $('#inheritHideUnconnectedNodes').prop('checked', false)
                 $('#atomHideUnconnectedNodes').prop('checked', unconnectedNodes)
             }
 
-            const displayNodesNumber = atomSettings.getDisplayNodesNumber(selectedSig)
+            const displayNodesNumber = sigSettings.getDisplayNodesNumber(selectedSig)
 
             if (displayNodesNumber == 'inherit') {
                 $('#displayNodesNumber').prop('disabled', true)
                 $('#inheritDisplayNodesNumber').prop('checked', true)
-                $('#displayNodesNumber').prop('checked', atomSettings.getInheritedDisplayNodesNumber(selectedSig))
+                $('#displayNodesNumber').prop('checked', sigSettings.getInheritedDisplayNodesNumber(selectedSig))
             } else {
                 $('#displayNodesNumber').prop('disabled', false)
                 $('#inheritDisplayNodesNumber').prop('checked', false)
                 $('#displayNodesNumber').prop('checked', displayNodesNumber)
             }
 
-            const visibility = atomSettings.getAtomVisibility(selectedSig)
+            const visibility = sigSettings.getAtomVisibility(selectedSig)
             if (visibility == 'inherit') {
-                const inheritedVisibility = atomSettings.getInheritedAtomVisibility(selectedSig)
+                const inheritedVisibility = sigSettings.getInheritedAtomVisibility(selectedSig)
                 $('#inheritHideNodes').prop('checked', true)
                 $('#hideNodes').prop('checked', inheritedVisibility)
                 $('#hideNodes').prop('disabled', true)
@@ -60,38 +60,38 @@ updateOptionContentSigs = function () {
                 $('#hideNodes').prop('disabled', false)
             }
         }
-        $('#atomColorSettings').val(atomSettings.getAtomColor(selectedSig))
-        $('#atomShapeSettings').val(atomSettings.getAtomShape(selectedSig))
-        $('#atomBorderSettings').val(atomSettings.getAtomBorder(selectedSig))
+        $('#atomColorSettings').val(sigSettings.getAtomColor(selectedSig))
+        $('#atomShapeSettings').val(sigSettings.getAtomShape(selectedSig))
+        $('#atomBorderSettings').val(sigSettings.getAtomBorder(selectedSig))
     }
 }
 
-Template.atomSettings.events({
+Template.sigSettings.events({
     'change #atomLabelSettings'(event) {
         const selectedSig = Session.get('selectedSig')
-        atomSettings.updateAtomLabel(selectedSig, event.target.value)
+        sigSettings.updateAtomLabel(selectedSig, event.target.value)
         refreshGraph()
     },
 
     'change #atomColorSettings'(event) {
         const selectedSig = Session.get('selectedSig')
-        atomSettings.updateAtomColor(selectedSig, event.target.value)
+        sigSettings.updateAtomColor(selectedSig, event.target.value)
         refreshGraph()
     },
 
     'change #atomShapeSettings'(event) {
         const selectedSig = Session.get('selectedSig')
-        atomSettings.updateAtomShape(selectedSig, event.target.value)
+        sigSettings.updateAtomShape(selectedSig, event.target.value)
         refreshGraph()
     },
     'change #atomBorderSettings'(event) {
         const selectedSig = Session.get('selectedSig')
-        atomSettings.updateAtomBorder(selectedSig, event.target.value)
+        sigSettings.updateAtomBorder(selectedSig, event.target.value)
         refreshGraph()
     },
     'change #hideNodes'(event) {
         const selectedSig = Session.get('selectedSig')
-        atomSettings.updateAtomVisibility(selectedSig, $(event.target).is(':checked'))
+        sigSettings.updateAtomVisibility(selectedSig, $(event.target).is(':checked'))
         refreshGraph()
         applyCurrentLayout()
     },
@@ -99,18 +99,18 @@ Template.atomSettings.events({
         const selectedSig = Session.get('selectedSig')
         if ($(event.target).is(':checked')) {
             $('#hideNodes').prop('disabled', true)
-            atomSettings.updateAtomVisibility(selectedSig, 'inherit')
+            sigSettings.updateAtomVisibility(selectedSig, 'inherit')
         } else {
             $('#hideNodes').prop('disabled', false)
         }
-        const inheritedVisibility = atomSettings.getInheritedAtomVisibility(selectedSig)
+        const inheritedVisibility = sigSettings.getInheritedAtomVisibility(selectedSig)
         $('#hideNodes').prop('checked', inheritedVisibility)
         refreshGraph()
         applyCurrentLayout()
     },
     'change #atomHideUnconnectedNodes'(event) {
         const selectedSig = Session.get('selectedSig')
-        atomSettings.updateHideUnconnectedNodes(selectedSig, $(event.target).is(':checked'))
+        sigSettings.updateHideUnconnectedNodes(selectedSig, $(event.target).is(':checked'))
         refreshGraph()
         applyCurrentLayout()
     },
@@ -118,29 +118,29 @@ Template.atomSettings.events({
         const selectedSig = Session.get('selectedSig')
         if ($(event.target).is(':checked')) {
             $('#atomHideUnconnectedNodes').prop('disabled', true)
-            atomSettings.updateHideUnconnectedNodes(selectedSig, 'inherit')
+            sigSettings.updateHideUnconnectedNodes(selectedSig, 'inherit')
         } else {
             $('#atomHideUnconnectedNodes').prop('disabled', false)
         }
-        const inheritedVisibility = atomSettings.getInheritedHideUnconnectedNodes(selectedSig)
+        const inheritedVisibility = sigSettings.getInheritedHideUnconnectedNodes(selectedSig)
         $('#atomHideUnconnectedNodes').prop('checked', inheritedVisibility)
         refreshGraph()
         applyCurrentLayout()
     },
     'change #displayNodesNumber'(event) {
         const selectedSig = Session.get('selectedSig')
-        atomSettings.updateDisplayNodesNumber(selectedSig, $(event.target).is(':checked'))
+        sigSettings.updateDisplayNodesNumber(selectedSig, $(event.target).is(':checked'))
         refreshGraph()
     },
     'change #inheritDisplayNodesNumber'(event) {
         const selectedSig = Session.get('selectedSig')
         if ($(event.target).is(':checked')) {
             $('#displayNodesNumber').prop('disabled', true)
-            atomSettings.updateDisplayNodesNumber(selectedSig, 'inherit')
+            sigSettings.updateDisplayNodesNumber(selectedSig, 'inherit')
         } else {
             $('#displayNodesNumber').prop('disabled', false)
         }
-        const displayNodesNumber = atomSettings.getInheritedDisplayNodesNumber(selectedSig)
+        const displayNodesNumber = sigSettings.getInheritedDisplayNodesNumber(selectedSig)
         $('#displayNodesNumber').prop('checked', displayNodesNumber)
         refreshGraph()
     },
@@ -155,6 +155,6 @@ Template.atomSettings.events({
     }
 })
 
-Template.atomSettings.onRendered(() => {
+Template.sigSettings.onRendered(() => {
     $('.atom-settings').hide()
 })

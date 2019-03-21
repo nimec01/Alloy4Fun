@@ -35,8 +35,8 @@ Template.rightClickMenu.helpers({
 export function updateRightClickContent() {
     selected = Session.get('rightClickSig')
     if (selected) {
-        $('.changeAtomColorPicker').val(atomSettings.getAtomColor(selected))
-        $('.changeAtomShapePicker').val(atomSettings.getAtomShape(selected))
+        $('.changeAtomColorPicker').val(sigSettings.getAtomColor(selected))
+        $('.changeAtomShapePicker').val(sigSettings.getAtomShape(selected))
     } else {
         selected = Session.get('rightClickRel')
         if (selected) {
@@ -50,7 +50,7 @@ Template.rightClickMenu.events({
     'change .changeAtomColorPicker'(event) {
         selected = Session.get('rightClickSig')
         if (selected) {
-            atomSettings.updateAtomColor(selected, event.target.value)
+            sigSettings.updateAtomColor(selected, event.target.value)
         } else {
             selected = Session.get('rightClickRel')
             relationSettings.updateEdgeColor(selected, event.target.value)
@@ -59,7 +59,7 @@ Template.rightClickMenu.events({
     },
     'change .changeAtomShapePicker'(event) {
         const selected = Session.get('rightClickSig')
-        atomSettings.updateAtomShape(selected, event.target.value)
+        sigSettings.updateAtomShape(selected, event.target.value)
         refreshGraph()
     },
     'click #rightClickProject'() {

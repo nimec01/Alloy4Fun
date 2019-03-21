@@ -134,7 +134,7 @@ layouts = {
 
 applyCurrentLayout = function () {
     // remove the hidden elements so that they are not affected by the layout
-    let tmp = cy.elements((element, i) => !i.visible())
+    const tmp = cy.elements((element, i) => !i.visible())
     cy.remove(tmp)
     cy.layout(layouts[generalSettings.getLayout()])
     cy.add(tmp)

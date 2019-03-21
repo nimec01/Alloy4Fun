@@ -220,7 +220,7 @@ Template.alloyEditor.onRendered(() => {
         // retrieve the shared theme
         const themeData = model.theme
         if (themeData) {
-            atomSettings.init(themeData.atomSettings)
+            sigSettings.init(themeData.sigSettings)
             relationSettings.init(themeData.relationSettings)
             generalSettings.init(themeData.generalSettings)
             currentFramePosition = themeData.currentFramePosition

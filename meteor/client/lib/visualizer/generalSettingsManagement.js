@@ -1,32 +1,51 @@
 generalSettings = (function generalSettings() {
-
     let currentLayout = 'breadthfirst'
     let useOriginalAtomNames = false
     let metaPrimSigs = [{ type: 'univ', parent: null }]
     // stores the parent prim sig of each sub sig
     let metaSubsetSigs = []
 
+    /**
+     * Initialize general settings structures.
+     */
     function init(settings) {
+        currentLayout = settings.currentLayout || 'breadthfirst'
         useOriginalAtomNames = settings.useOriginalAtomNames || []
         metaPrimSigs = settings.metaPrimSigs || [{ type: 'univ', parent: null }]
         metaSubsetSigs = settings.metaSubsetSigs || []
     }
 
+    /**
+     * Export general settings structures as object.
+     */
     function data() {
-        const data = { useOriginalAtomNames: useOriginalAtomNames,
-              metaPrimSigs: metaPrimSigs,
-            metaSubsetSigs: metaSubsetSigs }
+        const data = { currentLayout,
+            useOriginalAtomNames,
+            metaPrimSigs,
+            metaSubsetSigs }
         return data
     }
 
-    function addPrimSig(tp,pr) {
+    /**
+     * Add a new prim sig to the settings with a given parent.
+     *
+     * @param tp {String} the new prim sig
+     * @param pr {String} the parent sig
+     */
+    function addPrimSig(tp, pr) {
         metaPrimSigs.push({
             type: tp,
             parent: pr
         })
     }
 
-    function addSubSig(tp,pr) {
+    /**
+     * Add a new prim sig to the settings with a given parent.
+     *
+     * @param tp {String} the new prim sig
+     * @param pr {String} the parent sig
+     */
+    function addSubSig(tp, pr) {
         metaSubsetSigs.push({
             type: tp,
             parent: pr
@@ -46,33 +65,33 @@ generalSettings = (function generalSettings() {
             $('#atomLabelSettings').prop('disabled', false)
             var nodes = cy.nodes()
             nodes.forEach((node) => {
-                node.data().label = atomSettings.getAtomLabel(node.data().type)
+                node.data().label = sigSettings.getAtomLabel(node.data().type)
                 node.data().dollar = ''
             })
         }
     }
-    
+
     function getLayout() {
         return currentLayout
     }
-    
+
     function updateLayout(value) {
         currentLayout = value
-    }  
-    
+    }
+
     function getUseOriginalAtomNames() {
         return useOriginalAtomNames
     }
-    
+
     function updateOriginalAtomNames(value) {
         useOriginalAtomNames = value
-    }  
+    }
 
     function resetHierarchy() {
         metaPrimSigs = [{ type: 'univ', parent: null }]
         metaSubsetSigs = []
     }
-    
+
     function getSigParent(sigType) {
         for (const i in metaPrimSigs) {
             if (metaPrimSigs[i].type == sigType) return metaPrimSigs[i].parent
@@ -83,7 +102,7 @@ generalSettings = (function generalSettings() {
         throw null
     }
 
-    function updateElementSelectionContent () {
+    function updateElementSelectionContent() {
         // var nodes = cy.nodes();
         const edges = cy.edges()
         const types = []
@@ -101,19 +120,19 @@ generalSettings = (function generalSettings() {
         edges.forEach((edge) => {
             if ($.inArray(edge.data().relation, relations) == -1) relations.push(edge.data().relation)
         })
-    
+
         // Remove previous types available for selection
         selectAtomElement.selectize.clear()
         selectAtomElement.selectize.clearOptions()
-    
+
         // Remove previous subsets available for selection
         selectSubset.selectize.clear()
         selectSubset.selectize.clearOptions()
-    
+
         // Remove previous relations available for selection
         selectRelationElement.selectize.clear()
         selectRelationElement.selectize.clearOptions()
-    
+
         // Add new Types
         types.forEach((type) => {
             selectAtomElement.selectize.addOption({ value: type, text: type })
@@ -122,8 +141,8 @@ generalSettings = (function generalSettings() {
         // Replace tag on the bottom right corner of type selection div
         $('.wrapper-select-atom > div > div.selectize-input > p').remove()
         $('.wrapper-select-atom > div > div.selectize-input').append("<p class='select-label'>Signatures</p>")
-    
-    
+
+
         // Add new Subsets
         subsets.forEach((subset) => {
             selectSubset.selectize.addOption({ value: subset, text: subset })
@@ -132,7 +151,7 @@ generalSettings = (function generalSettings() {
         // Replace tag on the bottom right corner of subset selection div
         $('.wrapper-select-subset > div > div.selectize-input > p').remove()
         $('.wrapper-select-subset > div > div.selectize-input').append("<p class='select-label'>Subsets</p>")
-    
+
         // Add new Relations
         relations.forEach((relation) => {
             selectRelationElement.selectize.addOption({ value: relation, text: relation })
@@ -142,7 +161,7 @@ generalSettings = (function generalSettings() {
         $('.wrapper-select-relation > div > div.selectize-input > p').remove()
         $('.wrapper-select-relation > div > div.selectize-input').append("<p class='select-label'>Relations</p>")
     }
-    
+
     function hasSubsetSig(subsetSig) {
         for (let i = 0; i < metaSubsetSigs.length; i++) {
             if (metaSubsetSigs[i].type == subsetSig) return true

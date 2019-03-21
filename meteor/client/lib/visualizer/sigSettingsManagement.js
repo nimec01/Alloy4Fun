@@ -1,4 +1,4 @@
-atomSettings = (function atomSettings() {
+sigSettings = (function sigSettings() {
     let nodeLabels = []
     let nodeColors = [{ type: 'univ', color: '#2ECC40' }]
     let nodeShapes = [{ type: 'univ', shape: 'ellipse' }]
@@ -7,6 +7,9 @@ atomSettings = (function atomSettings() {
     let displayNodesNumber = [{ type: 'univ', displayNodesNumber: true }]
     let nodeVisibility = [{ type: 'univ', visibility: false }]
 
+    /**
+     * Initialize signature settings structures.
+     */
     function init(settings) {
         nodeLabels = settings.nodeLabels || []
         nodeColors = settings.nodeColors || [{ type: 'univ', color: '#2ECC40' }]
@@ -17,14 +20,18 @@ atomSettings = (function atomSettings() {
         nodeVisibility = settings.nodeVisibility || [{ type: 'univ', visibility: false }]
     }
 
+    /**
+     * Export signature settings structures as object.
+     */
     function data() {
-        const data = { nodeLabels: nodeLabels,
-              nodeColors: nodeColors,
-            nodeShapes: nodeShapes,
-            nodeBorders, nodeBorders,
-            unconnectedNodes: unconnectedNodes,
-            displayNodesNumber: displayNodesNumber,
-            nodeVisibility: nodeVisibility }
+        const data = { nodeLabels,
+            nodeColors,
+            nodeShapes,
+            nodeBorders,
+            nodeBorders,
+            unconnectedNodes,
+            displayNodesNumber,
+            nodeVisibility }
         return data
     }
 

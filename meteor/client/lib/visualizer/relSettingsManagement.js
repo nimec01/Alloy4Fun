@@ -5,6 +5,9 @@ relationSettings = (function relationSettings() {
     let showAsArcs = []
     let showAsAttributes = []
 
+    /**
+     * Initialize relation settings structures.
+     */
     function init(settings) {
         edgeLabels = settings.edgeLabels || []
         edgeColors = settings.edgeColors || []
@@ -13,12 +16,16 @@ relationSettings = (function relationSettings() {
         showAsAttributes = settings.showAsAttributes || []
     }
 
+    /**
+     * Export relation settings structures as object.
+     */
     function data() {
-        const data = { edgeLabels: edgeLabels,
-              edgeColors: edgeColors,
-            edgeStyles: edgeStyles,
-            showAsAttributes, showAsAttributes,
-            showAsArcs: showAsArcs }
+        const data = { edgeLabels,
+            edgeColors,
+            edgeStyles,
+            showAsAttributes,
+            showAsAttributes,
+            showAsArcs }
         return data
     }
 

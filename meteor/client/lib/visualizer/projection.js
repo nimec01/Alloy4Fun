@@ -42,7 +42,6 @@ function processProjection(err, projection) {
                 cy.add(node)
             }
         }
-
     })
     // process relations
     cy.edges().remove()
@@ -71,11 +70,11 @@ function getProjectionEdges(relations) {
                         relation: relation.relation,
                         source: tuple[0],
                         target: tuple[tuple.length - 1],
-                        label: relationSetting.getEdgeLabel(relation.relation),
-                        color: relationSetting.getEdgeColor(relation.relation),
+                        label: relationSettings.getEdgeLabel(relation.relation),
+                        color: relationSettings.getEdgeColor(relation.relation),
                         labelExt,
                         updatedLabelExt: labelExt,
-                        edgeStyle: relationSetting.getEdgeStyle(relation.relation)
+                        edgeStyle: relationSettings.getEdgeStyle(relation.relation)
                     }
                 })
             }

@@ -14,11 +14,11 @@ import { modelShared,
  */
 export function shareModel() {
     const themeData = {
-        atomSettings: atomSettings.data(),
+        sigSettings: sigSettings.data(),
         relationSettings: relationSettings.data(),
         generalSettings: generalSettings.data(),
         currentFramePosition,
-        currentlyProjectedSigs,
+        currentlyProjectedSigs
     }
 
     const modelToShare = textEditor.getValue()
@@ -31,7 +31,7 @@ export function shareModel() {
  */
 export function shareInstance() {
     const themeData = {
-        atomSettings: atomSettings.data(),
+        sigSettings: sigSettings.data(),
         relationSettings: relationSettings.data(),
         generalSettings: generalSettings.data(),
         currentFramePosition,
