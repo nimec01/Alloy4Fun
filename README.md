@@ -2,7 +2,7 @@
 
 Web application for editing, sharing and interpreting [Alloy](http://alloytools.org/) models in your browser, in real time.
 
-<a href="https://travis-ci.org/haslab/Alloy4FunWebApp"><img align="right" alt="Build Status" src="https://travis-ci.org/haslab/Alloy4FunWebApp.svg?branch=master"/></a>
+<a href="https://travis-ci.org/haslab/Alloy4Fun"><img align="right" alt="Build Status" src="https://travis-ci.org/haslab/Alloy4Fun.svg?branch=master"/></a>
 
 Alloy4Fun is live at http://alloy4fun.inesctec.pt, and you can get started with these [examples](https://github.com/haslab/Alloy4Fun/wiki/Examples).
 
