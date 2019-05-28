@@ -1,6 +1,7 @@
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -9,11 +10,9 @@ import javax.ws.rs.core.Response;
 
 import org.json.JSONObject;
 
-import com.fasterxml.jackson.databind.util.JSONPObject;
-
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.Err;
-import edu.mit.csail.sdg.parser.CompUtil;
+import edu.mit.csail.sdg.alloy4compiler.parser.CompUtil;
 
 /**
  * The post body should contain a JSON object with the following structure:
@@ -28,10 +27,15 @@ public class AlloyValidate {
 	public Response doPost(String body) throws IOException {
 		String model = getModelFromJSON(body);
 		A4Reporter rep = new A4Reporter();
-		// File tmpAls = CompUtil.flushModelToFile(model, null);
 
 		try {
-			CompUtil.parseEverything_fromString(rep, model);
+            File tmpAls = File.createTempFile("alloy_heredoc", ".als");
+            tmpAls.deleteOnExit();
+            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(tmpAls));
+            bos.write(model.getBytes());
+            bos.flush();
+            bos.close();
+			CompUtil.parseEverything_fromFile(rep, null, tmpAls.getAbsolutePath());
 		} catch (Err e) {
 			int[] errorLocation = getErrorLocationFromException(e);
 			String message = e.getMessage();

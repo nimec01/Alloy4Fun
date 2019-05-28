@@ -1,4 +1,6 @@
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.concurrent.Executors;
@@ -21,19 +23,19 @@ import org.json.JSONObject;
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
-import edu.mit.csail.sdg.ast.Command;
-import edu.mit.csail.sdg.ast.ExprVar;
-import edu.mit.csail.sdg.ast.Sig;
-import edu.mit.csail.sdg.ast.Sig.Field;
-import edu.mit.csail.sdg.ast.Sig.PrimSig;
-import edu.mit.csail.sdg.ast.Sig.SubsetSig;
-import edu.mit.csail.sdg.parser.CompModule;
-import edu.mit.csail.sdg.parser.CompUtil;
-import edu.mit.csail.sdg.translator.A4Options;
-import edu.mit.csail.sdg.translator.A4Solution;
-import edu.mit.csail.sdg.translator.A4Tuple;
-import edu.mit.csail.sdg.translator.A4TupleSet;
-import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
+import edu.mit.csail.sdg.alloy4compiler.ast.Command;
+import edu.mit.csail.sdg.alloy4compiler.ast.ExprVar;
+import edu.mit.csail.sdg.alloy4compiler.ast.Sig;
+import edu.mit.csail.sdg.alloy4compiler.ast.Sig.Field;
+import edu.mit.csail.sdg.alloy4compiler.ast.Sig.PrimSig;
+import edu.mit.csail.sdg.alloy4compiler.ast.Sig.SubsetSig;
+import edu.mit.csail.sdg.alloy4compiler.parser.CompModule;
+import edu.mit.csail.sdg.alloy4compiler.parser.CompUtil;
+import edu.mit.csail.sdg.alloy4compiler.translator.A4Options;
+import edu.mit.csail.sdg.alloy4compiler.translator.A4Solution;
+import edu.mit.csail.sdg.alloy4compiler.translator.A4Tuple;
+import edu.mit.csail.sdg.alloy4compiler.translator.A4TupleSet;
+import edu.mit.csail.sdg.alloy4compiler.translator.TranslateAlloyToKodkod;
 import kodkod.instance.Instance;
 import kodkod.instance.TupleSet;
 import kodkod.util.ints.IndexedEntry;
@@ -44,7 +46,7 @@ public class AlloyGetInstances {
 
 	@POST
 	@Produces("text/json")
-	public Response doGet(String body) throws IOException {
+	public Response doGet(String body) throws IOException, Err {
 		InstancesRequest req = parseJSON(body);
 		String res = "";
 		List<ErrorWarning> warnings = new ArrayList<ErrorWarning>();
@@ -63,9 +65,15 @@ public class AlloyGetInstances {
 			CompModule world;
 
 			try {
-				world = CompUtil.parseEverything_fromString(rep, req.model);			
+	            File tmpAls = File.createTempFile("alloy_heredoc", ".als");
+	            tmpAls.deleteOnExit();
+	            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(tmpAls));
+	            bos.write(req.model.getBytes());
+	            bos.flush();
+	            bos.close();
+				world = CompUtil.parseEverything_fromFile(rep, null, tmpAls.getAbsolutePath());		
 			} catch (Err e) {
-				System.out.println(e.getMessage());
+				e.printStackTrace();
 				JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
 				instanceJSON.add("alloy_error", true);
 				instanceJSON.add("msg", e.msg);
@@ -73,14 +81,15 @@ public class AlloyGetInstances {
 				instanceJSON.add("column", e.pos.x);
 				return Response.ok(instanceJSON.build().toString()).build();
 			} catch (Exception e) {
+				e.printStackTrace();
 				JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
-				System.out.println(e.getMessage());
 				instanceJSON.add("alloy_error", true);
 				instanceJSON.add("msg", e.getMessage());
 				return Response.ok(instanceJSON.build().toString()).build();
 			}
 			
 			A4Options opt = new A4Options();
+			opt.originalFilename = "alloy_heredoc.als";
 			opt.solver = A4Options.SatSolver.SAT4J;
 			Command command = world.getAllCommands().get(req.commandIndex);
 			try {
@@ -96,7 +105,7 @@ public class AlloyGetInstances {
 					}
 				}, 600, TimeUnit.SECONDS);
 			} catch (Err e) {
-				System.out.println(e.getMessage());
+				e.printStackTrace();
 				JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
 				instanceJSON.add("alloy_error", true);
 				instanceJSON.add("msg", e.msg);
@@ -108,7 +117,7 @@ public class AlloyGetInstances {
 		return Response.ok(res).build();
 	}
 
-	private String batchAdd(InstancesRequest req,List<ErrorWarning> warnings) {
+	private String batchAdd(InstancesRequest req,List<ErrorWarning> warnings) throws Err {
 		JsonArrayBuilder solsArrayJSON = Json.createArrayBuilder();
 		A4Solution ans = RestApplication.getSol(req.sessionId);
 		Command cmd = RestApplication.getCommand(req.sessionId);
