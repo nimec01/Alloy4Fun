@@ -30,7 +30,7 @@ function defineAlloyMode() {
             token: 'comment',
             next: 'comment' // Jump to comment mode.
         }, {
-            regex: /(\+\+ )|=>|<=>|\+\+|=<|->|>=|\|\||<:|:>|&&|!=|\+|-|&|\.|~|\*|\^|!|#/,
+            regex: /(\+\+ )|=>|<=>|\+\+|=<|->|>=|\|\||<:|:>|&&|!=|\+|-|&|\.|~|\*|\^|!|#|\'/,
             token: 'operator'
         }, {
             // Line comment.
