@@ -97,6 +97,8 @@ public class AlloyGetInstances {
 				RestApplication.add(req.sessionId,ans,command);
 
 				res = batchAdd(req,warnings);
+				
+				System.out.println(res);
 
 				ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 				scheduler.schedule(new Runnable() {
@@ -164,42 +166,55 @@ public class AlloyGetInstances {
 		instanceJSON.add("cnt", cnt);
 
 		if (answer.satisfiable()) {
+			instanceJSON.add("loop", answer.getLoopState());
+
+			JsonArrayBuilder traceJSON = Json.createArrayBuilder();
+
 			try {
 				Instance sol = answer.debugExtractKInstance();
 
-				JsonArrayBuilder integersArrayJSON = Json.createArrayBuilder();
-				for (IndexedEntry<TupleSet> e : sol.intTuples()) {
-					Object atom = e.value().iterator().next().atom(0);
-					integersArrayJSON.add(atom.toString());
-				}
-				instanceJSON.add("integers", integersArrayJSON);
-
-				JsonArrayBuilder atomsJSON = Json.createArrayBuilder();
-				JsonArrayBuilder fieldsJSON = Json.createArrayBuilder();
-
-				for (Sig signature : answer.getAllReachableSigs()) {
-					atomsJSON.add(sigToJSON(answer, signature));
-
-					for (Field field : signature.getFields()) {
-						fieldsJSON.add(fieldToJSON(answer, signature, field));
+				for (int i = 0; i < answer.getTraceLength(); i++) {
+					JsonObjectBuilder stateJSON = Json.createObjectBuilder();
+					
+					JsonArrayBuilder integersArrayJSON = Json.createArrayBuilder();
+					for (IndexedEntry<TupleSet> e : sol.intTuples()) {
+						Object atom = e.value().iterator().next().atom(0);
+						integersArrayJSON.add(atom.toString());
 					}
+					stateJSON.add("integers", integersArrayJSON);
+	
+					JsonArrayBuilder atomsJSON = Json.createArrayBuilder();
+					JsonArrayBuilder fieldsJSON = Json.createArrayBuilder();
+	
+					for (Sig signature : answer.getAllReachableSigs()) {
+						atomsJSON.add(sigToJSON(answer, signature, i));
+	
+						for (Field field : signature.getFields()) {
+							fieldsJSON.add(fieldToJSON(answer, signature, field, i));
+						}
+					}
+					stateJSON.add("atoms", atomsJSON);
+					stateJSON.add("fields", fieldsJSON);
+					stateJSON.add("skolem", skolemsToJSON(answer, i));
+					
+					traceJSON.add(stateJSON);
 				}
-				instanceJSON.add("atoms", atomsJSON);
-				instanceJSON.add("fields", fieldsJSON);
-				instanceJSON.add("skolem", skolemsToJSON(answer));
 			} catch (Err er) {
 				JsonObjectBuilder errorJSON = Json.createObjectBuilder();
 				errorJSON.add("err", String.format("Evaluator error occurred: %s", er));
 				return errorJSON.build();
 			}
+			
+			instanceJSON.add("instance", traceJSON);
 		}
+
 		return instanceJSON.build();
 	}
 
-	JsonObjectBuilder skolemsToJSON(A4Solution answer) throws Err {
+	JsonObjectBuilder skolemsToJSON(A4Solution answer, int state) throws Err {
 		JsonObjectBuilder skolemJSON = Json.createObjectBuilder();
 		for (ExprVar var : answer.getAllSkolems()) {
-			A4TupleSet tupleSet = (A4TupleSet) answer.eval(var);
+			A4TupleSet tupleSet = (A4TupleSet) answer.eval(var,state);
 			JsonArrayBuilder varTuplesJSON = Json.createArrayBuilder();
 			for (A4Tuple tuple : tupleSet) {
 				varTuplesJSON.add(tupleToJSONArray(tuple));
@@ -216,12 +231,12 @@ public class AlloyGetInstances {
 		return tupleJSON;
 	}
 
-	JsonObjectBuilder fieldToJSON(A4Solution answer, Sig signature, Field field) {
+	JsonObjectBuilder fieldToJSON(A4Solution answer, Sig signature, Field field, int state) {
 		JsonObjectBuilder fieldJSON = Json.createObjectBuilder();
 		fieldJSON.add("type", signature.toString());
 		fieldJSON.add("label", field.label);
 
-		Iterator<A4Tuple> tupleIt = answer.eval(field).iterator();
+		Iterator<A4Tuple> tupleIt = answer.eval(field,state).iterator();
 		if (tupleIt.hasNext()) {
 			A4Tuple tuple = tupleIt.next();
 			fieldJSON.add("arity", tuple.arity());
@@ -238,7 +253,7 @@ public class AlloyGetInstances {
 		return fieldJSON;
 	}
 
-	JsonObjectBuilder sigToJSON(A4Solution answer, Sig signature) {
+	JsonObjectBuilder sigToJSON(A4Solution answer, Sig signature, int state) {
 		JsonObjectBuilder atomJSON = Json.createObjectBuilder();
 		atomJSON.add("type", signature.toString());
 		atomJSON.add("isSubsetSig", signature instanceof SubsetSig);
@@ -264,7 +279,7 @@ public class AlloyGetInstances {
 		atomJSON.add("isPrimSig", signature instanceof PrimSig);
 
 		JsonArrayBuilder instancesJSON = Json.createArrayBuilder();
-		for (A4Tuple tuple : answer.eval(signature)) {
+		for (A4Tuple tuple : answer.eval(signature,state)) {
 			instancesJSON.add(tuple.atom(0));
 		}
 		atomJSON.add("values", instancesJSON);
