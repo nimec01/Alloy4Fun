@@ -3,7 +3,7 @@ import { updateRightClickContent } from '../../templates/visSettings/rightClickM
 import { instChanged } from '../editor/state'
 import { newInstanceSetup } from './projection'
 
-updateGraph = function (instance) {
+updateGraph = function (instance,v) {
     // Remove previous nodes and edges.
     cy.remove(cy.elements())
     // Add new ones.
@@ -15,7 +15,7 @@ updateGraph = function (instance) {
     // Apply same theme settings as previous instance.
     applyThemeSettings()
     // Draw data according to the selected layout.
-    applyCurrentLayout()
+    if (!v) applyCurrentLayout()
 }
 
 applyThemeSettings = function () {

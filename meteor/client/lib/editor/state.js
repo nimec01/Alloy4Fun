@@ -16,6 +16,7 @@ export function modelChanged() {
     Session.set('log-message', '')
     Session.set('log-class', '')
     Session.set('currentInstance', 0)
+    Session.set('currentState', 0)
     Session.set('maxInstance', -1)
     Session.set('instances', [])
 }
@@ -88,7 +89,8 @@ export function storeInstances(allInstances) {
  */
 export function getCurrentInstance() {
     const instanceIndex = Session.get('currentInstance')
-    return instances[instanceIndex]
+    const stateIndex = Session.get('currentState')
+    return instances[instanceIndex].instance[stateIndex]
 }
 
 /**
@@ -98,8 +100,10 @@ export function getCurrentInstance() {
  */
 export function getNextInstance() {
     const instanceIndex = Session.get('currentInstance')
+    const stateIndex = Session.get('currentState')
     Session.set('currentInstance', instanceIndex + 1)
-    return instances[instanceIndex + 1]
+    console.log(instances)
+    return instances[instanceIndex + 1].instance[stateIndex]
 }
 
 /**
@@ -109,8 +113,33 @@ export function getNextInstance() {
  */
 export function getPreviousInstance() {
     const instanceIndex = Session.get('currentInstance')
+    const stateIndex = Session.get('currentState')
     Session.set('currentInstance', instanceIndex - 1)
-    return instances[instanceIndex - 1]
+    return instances[instanceIndex - 1].instance[stateIndex]
+}
+
+export function nextState() {
+    const stateIndex = Session.get('currentState')
+    const instanceIndex = Session.get('currentInstance')
+    if (stateIndex + 1 == instances[instanceIndex].instance.length)
+        Session.set('currentState',instances[instanceIndex].loop)
+    else
+        Session.set('currentState',stateIndex+1)
+    return getCurrentInstance()
+}
+
+export function lastState() {
+    if (instances.length == 0)
+        return -1
+    const instanceIndex = Session.get('currentInstance')
+    return instances[instanceIndex].instance.length
+}
+
+export function prevState() {
+    const stateIndex = Session.get('currentState')
+    if (stateIndex > 0)
+        Session.set('currentState',stateIndex-1)
+    return getCurrentInstance()
 }
 
 /**

@@ -41,13 +41,16 @@ Meteor.methods({
                 data: {
                     model: code_with_secrets,
                     numberOfInstances: Meteor.settings.env.MAX_INSTANCES,
-                    commandIndex,
+                    commandIndex: commandIndex,
                     sessionId: new_model_id
                 }
             }, (error, result) => {
                 if (error) reject(error)
 
                 const content = JSON.parse(result.content)
+
+                console.log(content)
+
                 let sat
                 let cmd_n
                 let chk

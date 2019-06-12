@@ -162,7 +162,7 @@ export function savePositions() {
 }
 
 // applies saved node positions
-function applyPositions() {
+export function applyPositions() {
     for (const id in nodePositions) {
         const node = cy.nodes(`[id='${id}']`)
         if (node.length > 0) {

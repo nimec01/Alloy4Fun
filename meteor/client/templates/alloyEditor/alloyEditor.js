@@ -5,8 +5,8 @@ import { shareModel, shareInstance } from '../../lib/editor/genUrl'
 import { executeModel, nextInstance, prevInstance } from '../../lib/editor/executeModel'
 import { downloadTree } from '../../lib/editor/downloadTree'
 import { copyToClipboard } from '../../lib/editor/clipboard'
-import { cmdChanged, isUnsatInstance } from '../../lib/editor/state'
-import { staticProjection } from '../../lib/visualizer/projection'
+import { cmdChanged, isUnsatInstance, prevState, nextState, lastState } from '../../lib/editor/state'
+import { staticProjection, savePositions, applyPositions } from '../../lib/visualizer/projection'
 
 Template.alloyEditor.helpers({
     /**
@@ -166,6 +166,22 @@ Template.alloyEditor.helpers({
     instanceURL() {
         const id = Session.get('inst-url')
         return `${window.location.origin}/${id}`
+    },
+
+    prevEnabled() {
+        const state = Session.get('currentState')
+        return (state != 0) ? '' : 'disabled'
+    },
+
+    nextShape() {
+        const state = Session.get('currentState')
+        const last = lastState()
+        return (state && state == last - 1) ? 'fa-undo' : 'fa-arrow-right'
+    },
+
+    currentTrace() {
+        const state = Session.get('currentState')
+        return state || 0
     }
 
 })
@@ -181,6 +197,16 @@ Template.alloyEditor.events({
     'click #genUrl > button': shareModel,
     'click #prev > button': prevInstance,
     'click #next > button': nextInstance,
+    'click #nextTrace'() {       
+        savePositions() 
+        updateGraph(nextState(),true)
+        applyPositions()
+    },
+    'click #prevTrace'() {
+        savePositions()
+        updateGraph(prevState(),true)
+        applyPositions()
+    },
     'click #genInstanceUrl > button': shareInstance,
     'click #downloadTree > button': downloadTree,
     'click .clipboardbutton'(evt) {
@@ -193,6 +219,7 @@ Template.alloyEditor.onRendered(() => {
     Session.set('model-updated', false)
     Session.set('inst-shared', false)
     Session.set('currentInstance', 0)
+    Session.set('currentState', 0)
     Session.set('maxInstance', -1)
     Session.set('commands', [])
     Session.set('local-secrets', false)

@@ -115,7 +115,8 @@ function handleExecuteModel(err, result) {
             Session.set('log-class', result.check ? 'log-wrong' : 'log-complete')
             initGraphViewer('instance')
             resetPositions()
-            updateGraph(result)
+            Session.set("currentState",0)
+            updateGraph(result.instance[0])
         }
     }
     modelExecuted()
