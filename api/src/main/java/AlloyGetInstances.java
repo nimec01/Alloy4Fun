@@ -1,4 +1,6 @@
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.concurrent.Executors;
@@ -21,19 +23,19 @@ import org.json.JSONObject;
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
-import edu.mit.csail.sdg.ast.Command;
-import edu.mit.csail.sdg.ast.ExprVar;
-import edu.mit.csail.sdg.ast.Sig;
-import edu.mit.csail.sdg.ast.Sig.Field;
-import edu.mit.csail.sdg.ast.Sig.PrimSig;
-import edu.mit.csail.sdg.ast.Sig.SubsetSig;
-import edu.mit.csail.sdg.parser.CompModule;
-import edu.mit.csail.sdg.parser.CompUtil;
-import edu.mit.csail.sdg.translator.A4Options;
-import edu.mit.csail.sdg.translator.A4Solution;
-import edu.mit.csail.sdg.translator.A4Tuple;
-import edu.mit.csail.sdg.translator.A4TupleSet;
-import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
+import edu.mit.csail.sdg.alloy4compiler.ast.Command;
+import edu.mit.csail.sdg.alloy4compiler.ast.ExprVar;
+import edu.mit.csail.sdg.alloy4compiler.ast.Sig;
+import edu.mit.csail.sdg.alloy4compiler.ast.Sig.Field;
+import edu.mit.csail.sdg.alloy4compiler.ast.Sig.PrimSig;
+import edu.mit.csail.sdg.alloy4compiler.ast.Sig.SubsetSig;
+import edu.mit.csail.sdg.alloy4compiler.parser.CompModule;
+import edu.mit.csail.sdg.alloy4compiler.parser.CompUtil;
+import edu.mit.csail.sdg.alloy4compiler.translator.A4Options;
+import edu.mit.csail.sdg.alloy4compiler.translator.A4Solution;
+import edu.mit.csail.sdg.alloy4compiler.translator.A4Tuple;
+import edu.mit.csail.sdg.alloy4compiler.translator.A4TupleSet;
+import edu.mit.csail.sdg.alloy4compiler.translator.TranslateAlloyToKodkod;
 import kodkod.instance.Instance;
 import kodkod.instance.TupleSet;
 import kodkod.util.ints.IndexedEntry;
@@ -44,7 +46,7 @@ public class AlloyGetInstances {
 
 	@POST
 	@Produces("text/json")
-	public Response doGet(String body) throws IOException {
+	public Response doGet(String body) throws IOException, Err {
 		InstancesRequest req = parseJSON(body);
 		String res = "";
 		List<ErrorWarning> warnings = new ArrayList<ErrorWarning>();
@@ -63,9 +65,15 @@ public class AlloyGetInstances {
 			CompModule world;
 
 			try {
-				world = CompUtil.parseEverything_fromString(rep, req.model);			
+	            File tmpAls = File.createTempFile("alloy_heredoc", ".als");
+	            tmpAls.deleteOnExit();
+	            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(tmpAls));
+	            bos.write(req.model.getBytes());
+	            bos.flush();
+	            bos.close();
+				world = CompUtil.parseEverything_fromFile(rep, null, tmpAls.getAbsolutePath());		
 			} catch (Err e) {
-				System.out.println(e.getMessage());
+				e.printStackTrace();
 				JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
 				instanceJSON.add("alloy_error", true);
 				instanceJSON.add("msg", e.msg);
@@ -73,14 +81,15 @@ public class AlloyGetInstances {
 				instanceJSON.add("column", e.pos.x);
 				return Response.ok(instanceJSON.build().toString()).build();
 			} catch (Exception e) {
+				e.printStackTrace();
 				JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
-				System.out.println(e.getMessage());
 				instanceJSON.add("alloy_error", true);
 				instanceJSON.add("msg", e.getMessage());
 				return Response.ok(instanceJSON.build().toString()).build();
 			}
 			
 			A4Options opt = new A4Options();
+			opt.originalFilename = "alloy_heredoc.als";
 			opt.solver = A4Options.SatSolver.SAT4J;
 			Command command = world.getAllCommands().get(req.commandIndex);
 			try {
@@ -88,6 +97,8 @@ public class AlloyGetInstances {
 				RestApplication.add(req.sessionId,ans,command);
 
 				res = batchAdd(req,warnings);
+				
+				System.out.println(res);
 
 				ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 				scheduler.schedule(new Runnable() {
@@ -96,7 +107,7 @@ public class AlloyGetInstances {
 					}
 				}, 600, TimeUnit.SECONDS);
 			} catch (Err e) {
-				System.out.println(e.getMessage());
+				e.printStackTrace();
 				JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
 				instanceJSON.add("alloy_error", true);
 				instanceJSON.add("msg", e.msg);
@@ -108,7 +119,7 @@ public class AlloyGetInstances {
 		return Response.ok(res).build();
 	}
 
-	private String batchAdd(InstancesRequest req,List<ErrorWarning> warnings) {
+	private String batchAdd(InstancesRequest req,List<ErrorWarning> warnings) throws Err {
 		JsonArrayBuilder solsArrayJSON = Json.createArrayBuilder();
 		A4Solution ans = RestApplication.getSol(req.sessionId);
 		Command cmd = RestApplication.getCommand(req.sessionId);
@@ -155,42 +166,55 @@ public class AlloyGetInstances {
 		instanceJSON.add("cnt", cnt);
 
 		if (answer.satisfiable()) {
+			instanceJSON.add("loop", answer.getLoopState());
+
+			JsonArrayBuilder traceJSON = Json.createArrayBuilder();
+
 			try {
 				Instance sol = answer.debugExtractKInstance();
 
-				JsonArrayBuilder integersArrayJSON = Json.createArrayBuilder();
-				for (IndexedEntry<TupleSet> e : sol.intTuples()) {
-					Object atom = e.value().iterator().next().atom(0);
-					integersArrayJSON.add(atom.toString());
-				}
-				instanceJSON.add("integers", integersArrayJSON);
-
-				JsonArrayBuilder atomsJSON = Json.createArrayBuilder();
-				JsonArrayBuilder fieldsJSON = Json.createArrayBuilder();
-
-				for (Sig signature : answer.getAllReachableSigs()) {
-					atomsJSON.add(sigToJSON(answer, signature));
-
-					for (Field field : signature.getFields()) {
-						fieldsJSON.add(fieldToJSON(answer, signature, field));
+				for (int i = 0; i < answer.getTraceLength(); i++) {
+					JsonObjectBuilder stateJSON = Json.createObjectBuilder();
+					
+					JsonArrayBuilder integersArrayJSON = Json.createArrayBuilder();
+					for (IndexedEntry<TupleSet> e : sol.intTuples()) {
+						Object atom = e.value().iterator().next().atom(0);
+						integersArrayJSON.add(atom.toString());
 					}
+					stateJSON.add("integers", integersArrayJSON);
+	
+					JsonArrayBuilder atomsJSON = Json.createArrayBuilder();
+					JsonArrayBuilder fieldsJSON = Json.createArrayBuilder();
+	
+					for (Sig signature : answer.getAllReachableSigs()) {
+						atomsJSON.add(sigToJSON(answer, signature, i));
+	
+						for (Field field : signature.getFields()) {
+							fieldsJSON.add(fieldToJSON(answer, signature, field, i));
+						}
+					}
+					stateJSON.add("atoms", atomsJSON);
+					stateJSON.add("fields", fieldsJSON);
+					stateJSON.add("skolem", skolemsToJSON(answer, i));
+					
+					traceJSON.add(stateJSON);
 				}
-				instanceJSON.add("atoms", atomsJSON);
-				instanceJSON.add("fields", fieldsJSON);
-				instanceJSON.add("skolem", skolemsToJSON(answer));
 			} catch (Err er) {
 				JsonObjectBuilder errorJSON = Json.createObjectBuilder();
 				errorJSON.add("err", String.format("Evaluator error occurred: %s", er));
 				return errorJSON.build();
 			}
+			
+			instanceJSON.add("instance", traceJSON);
 		}
+
 		return instanceJSON.build();
 	}
 
-	JsonObjectBuilder skolemsToJSON(A4Solution answer) throws Err {
+	JsonObjectBuilder skolemsToJSON(A4Solution answer, int state) throws Err {
 		JsonObjectBuilder skolemJSON = Json.createObjectBuilder();
 		for (ExprVar var : answer.getAllSkolems()) {
-			A4TupleSet tupleSet = (A4TupleSet) answer.eval(var);
+			A4TupleSet tupleSet = (A4TupleSet) answer.eval(var,state);
 			JsonArrayBuilder varTuplesJSON = Json.createArrayBuilder();
 			for (A4Tuple tuple : tupleSet) {
 				varTuplesJSON.add(tupleToJSONArray(tuple));
@@ -207,12 +231,12 @@ public class AlloyGetInstances {
 		return tupleJSON;
 	}
 
-	JsonObjectBuilder fieldToJSON(A4Solution answer, Sig signature, Field field) {
+	JsonObjectBuilder fieldToJSON(A4Solution answer, Sig signature, Field field, int state) {
 		JsonObjectBuilder fieldJSON = Json.createObjectBuilder();
 		fieldJSON.add("type", signature.toString());
 		fieldJSON.add("label", field.label);
 
-		Iterator<A4Tuple> tupleIt = answer.eval(field).iterator();
+		Iterator<A4Tuple> tupleIt = answer.eval(field,state).iterator();
 		if (tupleIt.hasNext()) {
 			A4Tuple tuple = tupleIt.next();
 			fieldJSON.add("arity", tuple.arity());
@@ -229,7 +253,7 @@ public class AlloyGetInstances {
 		return fieldJSON;
 	}
 
-	JsonObjectBuilder sigToJSON(A4Solution answer, Sig signature) {
+	JsonObjectBuilder sigToJSON(A4Solution answer, Sig signature, int state) {
 		JsonObjectBuilder atomJSON = Json.createObjectBuilder();
 		atomJSON.add("type", signature.toString());
 		atomJSON.add("isSubsetSig", signature instanceof SubsetSig);
@@ -255,7 +279,7 @@ public class AlloyGetInstances {
 		atomJSON.add("isPrimSig", signature instanceof PrimSig);
 
 		JsonArrayBuilder instancesJSON = Json.createArrayBuilder();
-		for (A4Tuple tuple : answer.eval(signature)) {
+		for (A4Tuple tuple : answer.eval(signature,state)) {
 			instancesJSON.add(tuple.atom(0));
 		}
 		atomJSON.add("values", instancesJSON);

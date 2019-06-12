@@ -1,6 +1,5 @@
 import java.io.File;
 import java.io.IOException;
-import java.util.AbstractMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +15,7 @@ import javax.ws.rs.core.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import edu.mit.csail.sdg.alloy4compiler.translator.A4Solution;
 import edu.mit.csail.sdg.alloy4viz.AlloyAtom;
 import edu.mit.csail.sdg.alloy4viz.AlloyInstance;
 import edu.mit.csail.sdg.alloy4viz.AlloyProjection;
@@ -26,7 +26,6 @@ import edu.mit.csail.sdg.alloy4viz.AlloyType;
 import edu.mit.csail.sdg.alloy4viz.StaticInstanceReader;
 import edu.mit.csail.sdg.alloy4viz.StaticProjector;
 import edu.mit.csail.sdg.alloy4viz.VizState;
-import edu.mit.csail.sdg.translator.A4Solution;
 
 @Path("/getProjection")
 public class AlloyGetProjection {
@@ -42,7 +41,7 @@ public class AlloyGetProjection {
 			tempFile.deleteOnExit();
 			System.out.println("Projecting "+req.type+" at "+req.index);
 			sol.writeXML(tempFile.getAbsolutePath());
-			AlloyInstance myInstance = StaticInstanceReader.parseInstance(tempFile.getAbsoluteFile());
+			AlloyInstance myInstance = StaticInstanceReader.parseInstance(tempFile.getAbsoluteFile(),0);
 			
 			JsonArrayBuilder jsonResponseBuilder = Json.createArrayBuilder();
 			
