@@ -176,14 +176,21 @@ public class AlloyGetInstances {
 				for (int i = 0; i < answer.getTraceLength(); i++) {
 					JsonObjectBuilder stateJSON = Json.createObjectBuilder();
 					
-					JsonArrayBuilder integersArrayJSON = Json.createArrayBuilder();
-					for (IndexedEntry<TupleSet> e : sol.intTuples()) {
-						Object atom = e.value().iterator().next().atom(0);
-						integersArrayJSON.add(atom.toString());
-					}
-					stateJSON.add("integers", integersArrayJSON);
-	
 					JsonArrayBuilder atomsJSON = Json.createArrayBuilder();
+					
+//					JsonObjectBuilder intsJSON = Json.createObjectBuilder();
+//					intsJSON.add("type", Sig.SIGINT.toString());
+//					intsJSON.add("isSubsetSig", false);
+//					intsJSON.add("isPrimSig", true);
+//					intsJSON.add("parent", Sig.SIGINT.parent.label);
+//					JsonArrayBuilder instancesJSON = Json.createArrayBuilder();
+//					for (IndexedEntry<TupleSet> e : sol.intTuples()) {
+//						Object atom = e.value().iterator().next().atom(0);
+//						instancesJSON.add(atom.toString());
+//					}
+//					intsJSON.add("values", instancesJSON);
+//					atomsJSON.add(intsJSON);
+					
 					JsonArrayBuilder fieldsJSON = Json.createArrayBuilder();
 	
 					for (Sig signature : answer.getAllReachableSigs()) {
