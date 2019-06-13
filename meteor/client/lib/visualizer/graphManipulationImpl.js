@@ -66,6 +66,33 @@ getAtoms = function (instance) {
                     )
                     return atoms
                 })
+            } else if (atom.type == 'Int') {
+                generalSettings.addPrimSig(atom.type, atom.parent)
+                sigSettings.getAtomBorder(atom.type)
+                sigSettings.getAtomColor(atom.type)
+                sigSettings.getAtomShape(atom.type)
+                atom.values.forEach((value) => {
+                    const type = value.substr(1, value.length - 2)
+                    atoms.push(
+                        {
+                            group: 'nodes',
+                            classes: 'multiline-manual',
+                            data: {
+                                number: value,
+                                numberBackup: value,
+                                color: sigSettings.getAtomColor(type),
+                                shape: sigSettings.getAtomShape(type),
+                                id: value,
+                                type: 'Int',
+                                label: '',
+                                dollar: '',
+                                border: sigSettings.getAtomBorder(type),
+                                subsetSigs: []
+                            }
+                        }
+                    )
+                    return atoms
+                })
             } else if (atom.type.toLowerCase().indexOf('this/') > -1) {
                 if (atom.isPrimSig) {
                     generalSettings.addPrimSig(atom.type.split('/')[1], atom.parent.indexOf('/') > -1 ? atom.parent.split('/')[1] : atom.parent)
@@ -201,7 +228,7 @@ initGraphViewer = function (element) {
                         } else val = sigSettings.getInheritedDisplayNodesNumber(ele.data().type)
                         let l
                         // if string atom, do not pre-pend the sig label
-                        if (ele.data().label == 'String') l = ele.data().number
+                        if (ele.data().label == 'String' || ele.data().label == 'Int') l = ele.data().number
                         // whether to show numbers on labels
                         else { l = sigSettings.getAtomLabel(ele.data().type) + (val ? (ele.data().dollar + ele.data().number) : '') }
                         // subsig labels

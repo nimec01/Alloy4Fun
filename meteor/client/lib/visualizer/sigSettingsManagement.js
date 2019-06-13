@@ -5,7 +5,7 @@ sigSettings = (function sigSettings() {
     let nodeBorders = [{ type: 'univ', border: 'solid' }]
     let unconnectedNodes = [{ type: 'univ', unconnectedNodes: false }]
     let displayNodesNumber = [{ type: 'univ', displayNodesNumber: true }]
-    let nodeVisibility = [{ type: 'univ', visibility: false }]
+    let nodeVisibility = [{ type: 'univ', visibility: false }, { type: 'Int', visibility: true }]
 
     /**
      * Initialize signature settings structures.
@@ -17,7 +17,7 @@ sigSettings = (function sigSettings() {
         nodeBorders = settings.nodeBorders || [{ type: 'univ', border: 'solid' }]
         unconnectedNodes = settings.unconnectedNodes || [{ type: 'univ', unconnectedNodes: false }]
         displayNodesNumber = settings.displayNodesNumber || [{ type: 'univ', displayNodesNumber: true }]
-        nodeVisibility = settings.nodeVisibility || [{ type: 'univ', visibility: false }]
+        nodeVisibility = settings.nodeVisibility || [{ type: 'univ', visibility: false }, { type: 'Int', visibility: true }]
     }
 
     /**
