@@ -39,11 +39,12 @@ getAtoms = function (instance) {
     generalSettings.resetHierarchy()
     if (instance.atoms) {
         instance.atoms.forEach((atom) => {
-            if (atom.type == 'String') {
-                generalSettings.addPrimSig(atom.type, atom.parent)
-                sigSettings.getAtomBorder(atom.type)
-                sigSettings.getAtomColor(atom.type)
-                sigSettings.getAtomShape(atom.type)
+            if (atom.type == 'String' || atom.type == 'Int') {
+                const tp = atom.type
+                generalSettings.addPrimSig(tp, atom.parent)
+                sigSettings.getAtomBorder(tp)
+                sigSettings.getAtomColor(tp)
+                sigSettings.getAtomShape(tp)
                 atom.values.forEach((value) => {
                     const type = value.substr(1, value.length - 2)
                     atoms.push(
@@ -56,34 +57,7 @@ getAtoms = function (instance) {
                                 color: sigSettings.getAtomColor(type),
                                 shape: sigSettings.getAtomShape(type),
                                 id: value,
-                                type: 'String',
-                                label: value,
-                                dollar: '',
-                                border: sigSettings.getAtomBorder(type),
-                                subsetSigs: []
-                            }
-                        }
-                    )
-                    return atoms
-                })
-            } else if (atom.type == 'Int') {
-                generalSettings.addPrimSig(atom.type, atom.parent)
-                sigSettings.getAtomBorder(atom.type)
-                sigSettings.getAtomColor(atom.type)
-                sigSettings.getAtomShape(atom.type)
-                atom.values.forEach((value) => {
-                    const type = value.substr(1, value.length - 2)
-                    atoms.push(
-                        {
-                            group: 'nodes',
-                            classes: 'multiline-manual',
-                            data: {
-                                number: value,
-                                numberBackup: value,
-                                color: sigSettings.getAtomColor(type),
-                                shape: sigSettings.getAtomShape(type),
-                                id: value,
-                                type: 'Int',
+                                type: tp,
                                 label: '',
                                 dollar: '',
                                 border: sigSettings.getAtomBorder(type),
@@ -94,11 +68,13 @@ getAtoms = function (instance) {
                     return atoms
                 })
             } else if (atom.type.toLowerCase().indexOf('this/') > -1) {
+                const tp = atom.type.split('/')[1]
+                const pa = atom.parent.indexOf('/') > -1 ? atom.parent.split('/')[1] : atom.parent
                 if (atom.isPrimSig) {
-                    generalSettings.addPrimSig(atom.type.split('/')[1], atom.parent.indexOf('/') > -1 ? atom.parent.split('/')[1] : atom.parent)
-                    sigSettings.getAtomBorder(atom.type.split('/')[1])
-                    sigSettings.getAtomColor(atom.type.split('/')[1])
-                    sigSettings.getAtomShape(atom.type.split('/')[1])
+                    generalSettings.addPrimSig(tp, pa)
+                    sigSettings.getAtomBorder(tp)
+                    sigSettings.getAtomColor(tp)
+                    sigSettings.getAtomShape(tp)
 
                     atom.values.forEach((value) => {
                         if (value.indexOf('/') == -1) var type = value.split('$')[0]
@@ -124,18 +100,20 @@ getAtoms = function (instance) {
                     })
                 } else {
                     atom.values.forEach((value) => {
-                        if (!generalSettings.hasSubsetSig(`${atom.type.split('/')[1]}:${value.split('$')[0]}`)) {
-                            const type = `${atom.type.split('/')[1]}:${value.split('$')[0]}`
-                            generalSettings.addSubSig(`${atom.type.split('/')[1]}:${value.split('$')[0]}`, value.split('$')[0])
-                            sigSettings.getAtomBorder(type)
-                            sigSettings.getAtomColor(type)
-                            sigSettings.getAtomShape(type)
-                            sigSettings.getAtomLabel(type)
-                            sigSettings.updateAtomLabel(type, atom.type.split('/')[1])
-                        }
                         for (let i = 0; i < atoms.length; i++) {
                             if (atoms[i].data.id == value) {
-                                atoms[i].data.subsetSigs.push(`${atom.type.split('/')[1]}:${value.split('$')[0]}`)
+                                let paren = atoms[i].data.type
+                                paren = paren.indexOf('/') > -1 ? paren.split('/')[1] : paren
+                                const canon = `${tp}:${paren}`
+                                if (!generalSettings.hasSubsetSig(canon)) {
+                                    generalSettings.addSubSig(canon, paren)
+                                    sigSettings.getAtomBorder(canon)
+                                    sigSettings.getAtomColor(canon)
+                                    sigSettings.getAtomShape(canon)
+                                    sigSettings.getAtomLabel(canon)
+                                    sigSettings.updateAtomLabel(canon, atom.type.split('/')[1])
+                                }
+                            atoms[i].data.subsetSigs.push(canon)
                             }
                         }
                     })
@@ -228,7 +206,7 @@ initGraphViewer = function (element) {
                         } else val = sigSettings.getInheritedDisplayNodesNumber(ele.data().type)
                         let l
                         // if string atom, do not pre-pend the sig label
-                        if (ele.data().label == 'String' || ele.data().label == 'Int') l = ele.data().number
+                        if (ele.data().type == 'String' || ele.data().type == 'Int') l = ele.data().number
                         // whether to show numbers on labels
                         else { l = sigSettings.getAtomLabel(ele.data().type) + (val ? (ele.data().dollar + ele.data().number) : '') }
                         // subsig labels
@@ -236,10 +214,9 @@ initGraphViewer = function (element) {
 
                         // relations as attributes labels
                         relationSettings.propagateAttributes()
-
                         let attributes = ''
                         for (const i in ele.data().attributes) attributes += `\n${cy.edges(`[relation='${i}']`)[0].data().label} : ${ele.data().attributes[i].toString()}`
-
+            
                         // skolem variable labels
                         const skolems = typeof ele.data().skolem !== 'undefined' ? `\n${ele.data().skolem}` : ''
 
