@@ -15,7 +15,9 @@ import { getCommandIndex,
     getPreviousInstance,
     instChanged,
     isUnsatInstance,
-    getCommandLabel } from './state'
+    getCommandLabel,
+    resetState,
+    currentState } from './state'
 import { resetPositions } from '../visualizer/projection'
 
 /**
@@ -116,8 +118,8 @@ function handleExecuteModel(err, result) {
             Session.set('log-class', result.check ? 'log-wrong' : 'log-complete')
             initGraphViewer('instance')
             resetPositions()
-            Session.set("currentState",0)
-            updateGraph(result.instance[0])
+            resetState()
+            updateGraph(result.instance[currentState()])
         }
     }
 }

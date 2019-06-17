@@ -127,6 +127,18 @@ export function nextState() {
     return getCurrentInstance()
 }
 
+export function resetState() {
+    Session.set('currentState',0)
+}
+
+export function currentState() {
+    return Session.get('currentState')
+}
+
+export function setCurrentState(st) {
+    Session.set('currentState',st) 
+}
+
 export function lastState() {
     if (instances.length == 0)
         return -1

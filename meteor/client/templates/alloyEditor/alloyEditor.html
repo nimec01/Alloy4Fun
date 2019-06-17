@@ -110,10 +110,10 @@
                 <!-- Instance Viewer -->
                 <div class="col-lg-8 col-lg-offset-0 col-xs-10 col-xs-offset-1" {{showInstance}}>
                     <div id="instanceViewer" class="instanceViewer col-xs-12">
-                        <button id="prevTrace" class="cbutton"  {{prevEnabled}}>
+                        <button id="prevTrace" class="cbutton" {{prevEnabled}}>
                             <i class="cbutton__icon fa fa-fw fa-arrow-left auto-margin"></i>
                         </button>
-                        <button id="nextTrace" class="cbutton">
+                        <button id="nextTrace" class="cbutton" {{nextEnabled}}>
                             <i class="cbutton__icon fa fa-fw {{nextShape}} auto-margin"></i>
                         </button>
                         <div id="currentTrace">{{currentTrace}}</div>

@@ -5,7 +5,7 @@ import { shareModel, shareInstance } from '../../lib/editor/genUrl'
 import { executeModel, nextInstance, prevInstance } from '../../lib/editor/executeModel'
 import { downloadTree } from '../../lib/editor/downloadTree'
 import { copyToClipboard } from '../../lib/editor/clipboard'
-import { cmdChanged, isUnsatInstance, prevState, nextState, lastState } from '../../lib/editor/state'
+import { cmdChanged, isUnsatInstance, prevState, nextState, lastState, currentState, setCurrentState } from '../../lib/editor/state'
 import { staticProjection, savePositions, applyPositions } from '../../lib/visualizer/projection'
 
 Template.alloyEditor.helpers({
@@ -168,19 +168,25 @@ Template.alloyEditor.helpers({
         return `${window.location.origin}/${id}`
     },
 
+    nextEnabled() {
+        const m = Session.get('maxInstance')
+        return (m > 0) ? '' : 'disabled'
+    },
+
     prevEnabled() {
-        const state = Session.get('currentState')
-        return (state != 0) ? '' : 'disabled'
+        const m = Session.get('maxInstance')
+        const state = currentState()
+        return (state != 0 && m > 0) ? '' : 'disabled'
     },
 
     nextShape() {
-        const state = Session.get('currentState')
+        const state = currentState()
         const last = lastState()
         return (state && state == last - 1) ? 'fa-undo' : 'fa-arrow-right'
     },
 
     currentTrace() {
-        const state = Session.get('currentState')
+        const state = currentState()
         return state || 0
     }
 
@@ -247,6 +253,7 @@ Template.alloyEditor.onRendered(() => {
         // retrieve the shared theme
         const themeData = model.theme
         if (themeData) {
+            setCurrentState(themeData.currentState)
             sigSettings.init(themeData.sigSettings)
             relationSettings.init(themeData.relationSettings)
             generalSettings.init(themeData.generalSettings)

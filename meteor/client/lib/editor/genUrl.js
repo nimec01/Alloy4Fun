@@ -7,7 +7,8 @@
 import { displayError } from './feedback'
 import { modelShared,
     getCommandIndex,
-    instShared } from './state'
+    instShared,
+    currentState } from './state'
 
 /**
  * Store and share the current model and generate the sharing URLs.
@@ -34,6 +35,7 @@ export function shareInstance() {
         sigSettings: sigSettings.data(),
         relationSettings: relationSettings.data(),
         generalSettings: generalSettings.data(),
+        currentState: currentState(),
         currentFramePosition,
         currentlyProjectedSigs
     }
