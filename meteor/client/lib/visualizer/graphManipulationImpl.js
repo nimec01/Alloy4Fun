@@ -173,6 +173,9 @@ refreshGraph = function () {
 }
 
 initGraphViewer = function (element) {
+    // the element must be visible for the layout to be correctly 
+    // applied, but the template will only trigger after
+    document.getElementById(element).parentElement.parentElement.removeAttribute('hidden')
     cy = cytoscape({
         container: document.getElementById(element), // container to render in
         elements: [ // list of graph elements to start with
