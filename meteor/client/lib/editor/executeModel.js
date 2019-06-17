@@ -28,6 +28,7 @@ export function executeModel() {
 
     // execute command
     else {
+        modelExecuted()
         const model = textEditor.getValue()
         Session.set('maxInstance', 0) // this is needed so that the visualizer is shown by the helper before the handler is executed
         Meteor.call('getInstances', model, commandIndex, Session.get('from_private'), Session.get('last_id'), handleExecuteModel)
@@ -119,5 +120,4 @@ function handleExecuteModel(err, result) {
             updateGraph(result.instance[0])
         }
     }
-    modelExecuted()
 }
