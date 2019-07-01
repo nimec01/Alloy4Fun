@@ -204,9 +204,10 @@ relationSettings = (function relationSettings() {
             if (val) {
                 const aux = {}
                 for (let i = 0; i < edges.length; i++) {
-                    if (!aux[edges[i].source().data().id])aux[edges[i].source().data().id] = []
+                    if (!aux[edges[i].source().data().id]) aux[edges[i].source().data().id] = []
+                    console.log(`${edges[i].data().updatedLabelExt}->${edges[i].target().data().label}${edges[i].target().data().number}`)
                     aux[edges[i].source().data().id].push(edges[i].data().labelExt === ''
-                        ? edges[i].target().data().label
+                        ? edges[i].target().data().label+'$'+edges[i].target().data().number
                         : `${edges[i].data().updatedLabelExt}->${edges[i].target().data().label}${edges[i].target().data().number}`)
                 }
                 for (const key in aux) {
