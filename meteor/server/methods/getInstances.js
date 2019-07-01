@@ -49,8 +49,6 @@ Meteor.methods({
 
                 const content = JSON.parse(result.content)
 
-                console.log(content)
-
                 let sat
                 let cmd_n
                 let chk

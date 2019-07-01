@@ -5,7 +5,7 @@ import { shareModel, shareInstance } from '../../lib/editor/genUrl'
 import { executeModel, nextInstance, prevInstance } from '../../lib/editor/executeModel'
 import { downloadTree } from '../../lib/editor/downloadTree'
 import { copyToClipboard } from '../../lib/editor/clipboard'
-import { cmdChanged, isUnsatInstance, prevState, nextState, lastState, currentState, setCurrentState } from '../../lib/editor/state'
+import { cmdChanged, isUnsatInstance, prevState, nextState, lastState, currentState, setCurrentState, storeInstances, getCurrentInstance } from '../../lib/editor/state'
 import { staticProjection, savePositions, applyPositions } from '../../lib/visualizer/projection'
 
 Template.alloyEditor.helpers({
@@ -259,6 +259,7 @@ Template.alloyEditor.onRendered(() => {
             generalSettings.init(themeData.generalSettings)
             currentFramePosition = themeData.currentFramePosition
             currentlyProjectedSigs = themeData.currentlyProjectedSigs
+            nodePositions = themeData.nodePositions
             if (currentlyProjectedSigs.length !== 0) staticProjection()
         }
 
@@ -267,11 +268,12 @@ Template.alloyEditor.onRendered(() => {
             Session.set('from-instance', true)
             Session.set('log-message', 'Static shared instance. Execute model to iterate.')
             Session.set('log-class', 'log-info')
-            Session.set('empty-instance', typeof model.instance.graph.elements.nodes === 'undefined')
             initGraphViewer('instance')
             // load graph JSON data
-            if (cy && model.instance.graph.elements.nodes) {
-                cy.add(model.instance.graph.elements)
+            if (cy && model.instance.graph.instance[0].atoms.length > 0) {
+                storeInstances([model.instance.graph])
+                updateGraph(getCurrentInstance())
+                applyPositions()
                 generalSettings.updateElementSelectionContent()
                 cy.zoom(model.instance.graph.zoom)
                 cy.pan(model.instance.graph.pan)

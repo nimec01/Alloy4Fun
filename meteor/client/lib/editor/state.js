@@ -93,6 +93,12 @@ export function getCurrentInstance() {
     return instances[instanceIndex].instance[stateIndex]
 }
 
+export function getInstances() {
+    const instanceIndex = Session.get('currentInstance')
+    const stateIndex = Session.get('currentState')
+    return instances[instanceIndex]
+}
+
 /**
  * Sets the next known instance as the current one and returns it.
  *

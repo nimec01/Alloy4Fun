@@ -226,7 +226,7 @@ public class AlloyGetInstances {
 			for (A4Tuple tuple : tupleSet) {
 				varTuplesJSON.add(tupleToJSONArray(tuple));
 			}
-			skolemJSON.add(var.label, varTuplesJSON);
+			skolemJSON.add("_"+var.label, varTuplesJSON);
 		}
 		return skolemJSON;
 	}
