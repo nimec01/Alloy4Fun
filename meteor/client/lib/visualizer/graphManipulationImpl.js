@@ -55,6 +55,7 @@ getAtoms = function (instance) {
                 })
             // module sigs
             } else if (sig.type.toLowerCase().indexOf('this/') > -1) {
+                console.log(instance)
                 const tp = sig.type.split('/')[1]
                 const pa = sig.parent.indexOf('/') > -1 ? sig.parent.split('/')[1] : sig.parent
                 // prim sig
@@ -68,7 +69,7 @@ getAtoms = function (instance) {
                                 data: {
                                     number: atom.split('$')[1],
                                     id: atom,
-                                    type: atom.split('$')[0],
+                                    type: tp,
                                     subsetSigs: []
                                 }
                             }
@@ -168,10 +169,7 @@ initGraphViewer = function (element) {
                     },
                     label(ele) {
                         let l = relationSettings.calculateNodeLabel(ele)
-
-
-                        console.log(ele.data().subsetSigs)
-                        console.log(sigSettings)
+                    
                         // subsig labels
                         const subsigs = ele.data().subsetSigs.length > 0 ? `\n(${ele.data().subsetSigs.map(x => x.split(':')[0])})` : ''
 

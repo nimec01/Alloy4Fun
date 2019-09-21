@@ -24,7 +24,9 @@ import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
 import edu.mit.csail.sdg.alloy4compiler.ast.Command;
+import edu.mit.csail.sdg.alloy4compiler.ast.Expr;
 import edu.mit.csail.sdg.alloy4compiler.ast.ExprVar;
+import edu.mit.csail.sdg.alloy4compiler.ast.ExprConstant;
 import edu.mit.csail.sdg.alloy4compiler.ast.Sig;
 import edu.mit.csail.sdg.alloy4compiler.ast.Sig.Field;
 import edu.mit.csail.sdg.alloy4compiler.ast.Sig.PrimSig;
@@ -285,11 +287,20 @@ public class AlloyGetInstances {
 		atomJSON.add("parents", atomParentsJSON);
 		atomJSON.add("isPrimSig", signature instanceof PrimSig);
 
-		JsonArrayBuilder instancesJSON = Json.createArrayBuilder();
-		for (A4Tuple tuple : answer.eval(signature,state)) {
-			instancesJSON.add(tuple.atom(0));
-		}
-		atomJSON.add("values", instancesJSON);
+		Expr sum = ExprConstant.EMPTYNESS;
+		try {
+			if (signature instanceof PrimSig) {
+				for (PrimSig c : ((PrimSig) signature).children())
+		            sum = sum.plus(c);
+	    	}
+
+			JsonArrayBuilder instancesJSON = Json.createArrayBuilder();
+			for (A4Tuple tuple : (A4TupleSet) answer.eval(signature.minus(sum),state)) {
+				instancesJSON.add(tuple.atom(0));
+			}
+			atomJSON.add("values", instancesJSON);
+
+    	} catch (Err e) {}
 
 		return atomJSON;
 	}
