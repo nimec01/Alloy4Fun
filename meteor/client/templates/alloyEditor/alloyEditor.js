@@ -180,9 +180,10 @@ Template.alloyEditor.helpers({
     },
 
     nextShape() {
+        const m = Session.get('maxInstance') // this is to trigger when exec
         const state = currentState()
         const last = lastState()
-        return (state && state == last - 1) ? 'fa-undo' : 'fa-arrow-right'
+        return (state == last - 1) ? 'fa-undo' : 'fa-arrow-right'
     },
 
     currentTrace() {

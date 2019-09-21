@@ -10,7 +10,6 @@ updateOptionContentRelations = function () {
     const selectedRelation = Session.get('selectedRelation')
     if (selectedRelation) {
         $('#relationColorSettings').val(relationSettings.getEdgeColor(selectedRelation))
-        $('#relationLabelSettings').val(relationSettings.getEdgeLabel(selectedRelation))
         $('#showAsArcs').prop('checked', relationSettings.isShowAsArcsOn(selectedRelation))
         $('#showAsAttributes').prop('checked', relationSettings.isShowAsAttributesOn(selectedRelation))
         $('#relationEdgeStyleSettings').val(relationSettings.getEdgeStyle(selectedRelation))
@@ -18,12 +17,6 @@ updateOptionContentRelations = function () {
 }
 
 Template.relationSettings.events({
-    'change #relationLabelSettings'(event) {
-        const selectedRelation = Session.get('selectedRelation')
-        relationSettings.updateEdgeLabel(selectedRelation, event.target.value)
-        refreshGraph()
-    },
-
     'change #relationColorSettings'(event) {
         const selectedRelation = Session.get('selectedRelation')
         relationSettings.updateEdgeColor(selectedRelation, event.target.value)

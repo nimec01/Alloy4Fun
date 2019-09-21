@@ -26,7 +26,7 @@ function processProjection(err, projection) {
             if (node.data().id == frame.atoms[i]) {
                 // for each atom, check relations on frame's atom_rels
                 for (let ar = 0; ar < frame.atom_rels.length; ar++) {
-                    if (frame.atom_rels[ar].atom == node.data().id) {
+                    if (frame.atom_rels[ar].atom == node.data().number) {
                         // the atom has relations
                         // create the array, or replace by empty
                         node.data().subsetSigs = []
@@ -60,9 +60,6 @@ function getProjectionEdges(relations) {
             for (let i = 0; i < relation.tuples.length; i += relation.arity) {
                 let tuple = []
                 for (let j = i; j < relation.arity + i; j++) tuple.push(relation.tuples[j])
-                const tempTuple = tuple.slice(0)
-                const labelExt = tuple.splice(1, tuple.length - 2).toString()
-                tuple = tempTuple
                 result.push({
                     group: 'edges',
                     selectable: true,
@@ -70,11 +67,7 @@ function getProjectionEdges(relations) {
                         relation: relation.relation,
                         source: tuple[0],
                         target: tuple[tuple.length - 1],
-                        label: relationSettings.getEdgeLabel(relation.relation),
-                        color: relationSettings.getEdgeColor(relation.relation),
-                        labelExt,
-                        updatedLabelExt: labelExt,
-                        edgeStyle: relationSettings.getEdgeStyle(relation.relation)
+                        atoms: tuple.slice(0)
                     }
                 })
             }

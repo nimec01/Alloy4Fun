@@ -7,7 +7,7 @@ updateGraph = function (instance,v) {
     // Remove previous nodes and edges.
     cy.remove(cy.elements())
     // Add new ones.
-    const atomElements = getAtoms(instance)
+    const atomElements = getAtoms(instance) 
     cy.add(atomElements)
     cy.add(getEdges(instance))
     Session.set('empty-instance', atomElements.length == 0)
@@ -19,9 +19,6 @@ updateGraph = function (instance,v) {
 }
 
 applyThemeSettings = function () {
-    // Apply show as attributes option set on previous instances.
-    generalSettings.setOriginalAtomNamesValue(!!generalSettings.getUseOriginalAtomNames())
-
     // In case of label change.
     refreshGraph()
     // Add types, subsets and relations to selection area on settings tab.
@@ -32,86 +29,62 @@ applyThemeSettings = function () {
     newInstanceSetup()
 }
 
-
 // Get atom information received from server ready to upload to cytoscape object.
 getAtoms = function (instance) {
     const atoms = []
     generalSettings.resetHierarchy()
     if (instance.atoms) {
-        instance.atoms.forEach((atom) => {
-            if (atom.type == 'String' || atom.type == 'Int') {
-                const tp = atom.type
-                generalSettings.addPrimSig(tp, atom.parent)
-                sigSettings.getAtomBorder(tp)
-                sigSettings.getAtomColor(tp)
-                sigSettings.getAtomShape(tp)
-                atom.values.forEach((value) => {
-                    const type = value.substr(1, value.length - 2)
+        instance.atoms.forEach((sig) => {
+            // built-in sigs
+            if (sig.type == 'String' || sig.type == 'Int') {
+                const tp = sig.type
+                generalSettings.addPrimSig(tp, sig.parent)
+                sig.values.forEach((atom) => {
                     atoms.push(
                         {
                             group: 'nodes',
                             classes: 'multiline-manual',
                             data: {
-                                number: value,
-                                numberBackup: value,
-                                color: sigSettings.getAtomColor(type),
-                                shape: sigSettings.getAtomShape(type),
-                                id: value,
+                                number: atom,
+                                id: atom,
                                 type: tp,
-                                label: '',
-                                dollar: '',
-                                border: sigSettings.getAtomBorder(type),
                                 subsetSigs: []
                             }
                         }
                     )
-                    return atoms
                 })
-            } else if (atom.type.toLowerCase().indexOf('this/') > -1) {
-                const tp = atom.type.split('/')[1]
-                const pa = atom.parent.indexOf('/') > -1 ? atom.parent.split('/')[1] : atom.parent
-                if (atom.isPrimSig) {
+            // module sigs
+            } else if (sig.type.toLowerCase().indexOf('this/') > -1) {
+                const tp = sig.type.split('/')[1]
+                const pa = sig.parent.indexOf('/') > -1 ? sig.parent.split('/')[1] : sig.parent
+                // prim sig
+                if (sig.isPrimSig) {
                     generalSettings.addPrimSig(tp, pa)
-                    sigSettings.getAtomBorder(tp)
-                    sigSettings.getAtomColor(tp)
-                    sigSettings.getAtomShape(tp)
-
-                    atom.values.forEach((value) => {
-                        if (value.indexOf('/') == -1) var type = value.split('$')[0]
+                    sig.values.forEach((atom) => {
                         atoms.push(
                             {
                                 group: 'nodes',
                                 classes: 'multiline-manual',
                                 data: {
-                                    number: value.split('$')[1],
-                                    numberBackup: value.split('$')[1],
-                                    color: sigSettings.getAtomColor(type),
-                                    shape: sigSettings.getAtomShape(type),
-                                    id: value,
-                                    type,
-                                    label: sigSettings.getAtomLabel(type),
-                                    dollar: '',
-                                    border: sigSettings.getAtomBorder(type),
+                                    number: atom.split('$')[1],
+                                    id: atom,
+                                    type: atom.split('$')[0],
                                     subsetSigs: []
                                 }
                             }
                         )
-                        return atoms
                     })
+                // sub sig
                 } else {
-                    atom.values.forEach((value) => {
+                    sig.values.forEach((atom) => {
                         for (let i = 0; i < atoms.length; i++) {
-                            if (atoms[i].data.id == value) {
+                            if (atoms[i].data.id == atom) {
                                 let paren = atoms[i].data.type
                                 paren = paren.indexOf('/') > -1 ? paren.split('/')[1] : paren
                                 const canon = `${tp}:${paren}`
                                 if (!generalSettings.hasSubsetSig(canon)) {
                                     generalSettings.addSubSig(canon, paren)
-                                    sigSettings.getAtomBorder(canon)
-                                    sigSettings.getAtomColor(canon)
-                                    sigSettings.getAtomShape(canon)
-                                    sigSettings.getAtomLabel(canon)
-                                    sigSettings.updateAtomLabel(canon, atom.type.split('/')[1])
+                                    sigSettings.updateAtomLabel(canon, sig.type.split('/')[1])
                                 }
                             atoms[i].data.subsetSigs.push(canon)
                             }
@@ -141,7 +114,6 @@ getEdges = function (instance) {
             if (field.type.indexOf('this/') != -1) {
                 field.values.forEach((relation) => {
                     const { label } = field
-                    const labelExt = relation.slice(1, relation.length - 1).toString()
                     result.push({
                         group: 'edges',
                         selectable: true,
@@ -149,13 +121,7 @@ getEdges = function (instance) {
                             relation: label,
                             source: relation[0],
                             target: relation[relation.length - 1],
-                            label: relationSettings.getEdgeLabel(label),
-                            color: relationSettings.getEdgeColor(label),
-                            // when relation's arity > 2, add remaining involved types to its label
-                            labelExt: field.arity > 2 ? labelExt : '',
-                            // useful when these types have their labels edited. "labelExt" is a backup of the original while "updatedLabelExt" reflects the current state of the world
-                            updatedLabelExt: field.arity > 2 ? labelExt : '',
-                            edgeStyle: relationSettings.getEdgeStyle(label)
+                            atoms: relation
                         }
                     })
                 })
@@ -202,28 +168,19 @@ initGraphViewer = function (element) {
                         return val
                     },
                     label(ele) {
-                        let val
-                        if (ele.data().subsetSigs.length > 0) {
-                        // TODO: this randomly selects one of the subsigs (as does the AA)
-                            val = sigSettings.getInheritedDisplayNodesNumber(ele.data().subsetSigs[0])
-                        } else val = sigSettings.getInheritedDisplayNodesNumber(ele.data().type)
-                        let l
-                        // if string atom, do not pre-pend the sig label
-                        if (ele.data().type == 'String' || ele.data().type == 'Int') l = ele.data().number
-                        // whether to show numbers on labels
-                        else { l = sigSettings.getAtomLabel(ele.data().type) + (val ? (ele.data().dollar + ele.data().number) : '') }
+                        let l = relationSettings.calculateNodeLabel(ele)
+
                         // subsig labels
                         const subsigs = ele.data().subsetSigs.length > 0 ? `\n(${ele.data().subsetSigs.map(sigSettings.getAtomLabel)})` : ''
 
                         // relations as attributes labels
-                        relationSettings.propagateAttributes()
-                        let attributes = ''
-                        for (const i in ele.data().attributes) attributes += `\n${cy.edges(`[relation='${i}']`)[0].data().label} : ${ele.data().attributes[i].toString()}`
+                        // TODO: should not be everytime called in every node!
+                        let attributes = relationSettings.getAttributeLabel(ele)
             
                         // skolem variable labels
                         const skolems = typeof ele.data().skolem !== 'undefined' ? `\n${ele.data().skolem}` : ''
 
-                        return `${l}${subsigs}${attributes}${skolems}`
+                        return `${l}${subsigs}\n${attributes}\n${skolems}`
                     },
                     'border-style'(ele) {
                         let val
@@ -241,16 +198,12 @@ initGraphViewer = function (element) {
                     },
                     visibility(ele) {
                         let val1
-                        let val2
                         if (ele.data().subsetSigs.length > 0) {
                             val1 = sigSettings.getInheritedAtomVisibility(ele.data().subsetSigs[0])
-                            val2 = sigSettings.getInheritedHideUnconnectedNodes(ele.data().subsetSigs[0])
                         } else {
                             val1 = sigSettings.getInheritedAtomVisibility(ele.data().type)
-                            val2 = sigSettings.getInheritedHideUnconnectedNodes(ele.data().type)
                         }
-                        if (val2) val2 = ele.neighbourhood().length == 0
-                        return val1 || val2 ? 'hidden' : 'visible'
+                        return val1 ? 'hidden' : 'visible'
                     },
                     width: 'label',
                     height: 'label',
@@ -268,23 +221,15 @@ initGraphViewer = function (element) {
                 selector: 'edge',
                 style: {
                     width: 1,
-                    'line-color'(ele) { return relationSettings.getEdgeColor(ele.data().relation) },
-                    'target-arrow-color'(ele) { return relationSettings.getEdgeColor(ele.data().relation) },
+                    'line-color'(ele) { 
+                        return relationSettings.getEdgeColor(ele.data().relation) 
+                    },
+                    'target-arrow-color'(ele) { 
+                        return relationSettings.getEdgeColor(ele.data().relation) 
+                    },
                     'target-arrow-shape': 'triangle',
-                    label(ele) {
-                        if (ele.data().labelExt == '') return relationSettings.getEdgeLabel(ele.data().relation)
-
-                        let auxLabelExt = ele.data().labelExt
-                        const sigs = ele.data().labelExt.split(',')
-                        for (let i = 0; i < sigs.length; i++) {
-                            const currentLabel = cy.nodes(`[id='${sigs[i]}']`)[0].data().label + cy.nodes(`[id='${sigs[i]}']`)[0].data().dollar + cy.nodes(`[id='${sigs[i]}']`)[0].data().number
-                            auxLabelExt = auxLabelExt.replace(sigs[i], currentLabel)
-                        }
-                        ele.data().updatedLabelExt = auxLabelExt
-                        return `${ele.data().label}[${auxLabelExt}]`
-
-                        ele.data().updatedLabelExt = auxLabelExt
-                        return `${ele.data().label}[${auxLabelExt}]`
+                    'label'(ele) {
+                        return relationSettings.getEdgeLabel(ele)
                     },
                     'curve-style': 'bezier',
                     'text-valign': 'center',
@@ -335,6 +280,28 @@ initGraphViewer = function (element) {
         }
 
     })
+
+    cy.on('cxttap', function(evt){
+      var evtTarget = evt.cyTarget;    
+      if( evtTarget === cy ){
+        // close side panel
+        $('.settings-panel').removeClass('open')
+        // Place right click options menu on mouse position and display it
+        $('#optionsMenu').css({
+            // overlap cytoscape canvas
+            'z-index': 10,
+            position: 'absolute',
+            // +1 avoids recapturing right click event and opening browser's context menu.
+            top: evt.originalEvent.offsetY + 1,
+            // if the menu's width overflows page width, place it behind the cursor.
+            left: evt.originalEvent.screenX + 1 + 300 > $(window).width() ? evt.originalEvent.offsetX + 1 - 300 : evt.originalEvent.offsetX + 1
+        }).fadeIn('slow')
+        Session.set('rightClickRel', undefined)
+        Session.set('rightClickSig', undefined)
+        updateRightClickContent()
+        return false
+      }
+    });
 
     // right click event on cytoscape's node
     cy.on('cxttap', 'node', {}, (evt) => {
@@ -394,9 +361,7 @@ initGraphViewer = function (element) {
                 $('.atom-settings').slideDown()
                 // Redisplay options hidden by subsetsig selection
                 $('.projection-settings').show()
-                $('.hide-unconnected-settings').show()
                 $('.hide-nodes-settings').show()
-                $('.number-nodes-settings').show()
             } else {
                 // Clicked an edge
                 Session.set('selectedRelation', evtTarget.data().relation)

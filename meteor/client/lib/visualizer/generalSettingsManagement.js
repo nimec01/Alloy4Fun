@@ -1,6 +1,5 @@
 generalSettings = (function generalSettings() {
     let currentLayout = 'breadthfirst'
-    let useOriginalAtomNames = false
     let metaPrimSigs = [{ type: 'univ', parent: null }]
     // stores the parent prim sig of each sub sig
     let metaSubsetSigs = []
@@ -10,7 +9,6 @@ generalSettings = (function generalSettings() {
      */
     function init(settings) {
         currentLayout = settings.currentLayout || 'breadthfirst'
-        useOriginalAtomNames = settings.useOriginalAtomNames || []
         metaPrimSigs = settings.metaPrimSigs || [{ type: 'univ', parent: null }]
         metaSubsetSigs = settings.metaSubsetSigs || []
     }
@@ -19,8 +17,8 @@ generalSettings = (function generalSettings() {
      * Export general settings structures as object.
      */
     function data() {
-        const data = { currentLayout,
-            useOriginalAtomNames,
+        const data = { 
+            currentLayout,
             metaPrimSigs,
             metaSubsetSigs }
         return data
@@ -53,30 +51,6 @@ generalSettings = (function generalSettings() {
     }
 
     /**
-     * Applies the use original atom names property.
-     *
-     * NOTE: should not be here but will be dropped for v1.3.
-     */
-    function setOriginalAtomNamesValue(value) {
-        if (value) {
-            $('#atomLabelSettings').prop('disabled', true)
-            var nodes = cy.nodes()
-            nodes.forEach((node) => {
-                const originalName = node.data().id.split('$')[0]
-                node.data().label = originalName
-                node.data().dollar = '$'
-            })
-        } else {
-            $('#atomLabelSettings').prop('disabled', false)
-            var nodes = cy.nodes()
-            nodes.forEach((node) => {
-                node.data().label = sigSettings.getAtomLabel(node.data().type)
-                node.data().dollar = ''
-            })
-        }
-    }
-
-    /**
      * Retrieves the current layout property, initialized as breadthfirst.
      *
      * @returns {String} the value assigned to the property
@@ -92,24 +66,6 @@ generalSettings = (function generalSettings() {
      */
     function updateLayout(value) {
         currentLayout = value
-    }
-
-    /**
-     * Retrieves the use original atom names property, initialized as false.
-     *
-     * @returns {Object} the value assigned to the property
-     */
-    function getUseOriginalAtomNames() {
-        return useOriginalAtomNames
-    }
-
-    /**
-     * Updates the use original atom names property.
-     *
-     * @param {String} newVal the new value for the property
-     */
-    function updateOriginalAtomNames(value) {
-        useOriginalAtomNames = value
     }
 
     /**
@@ -219,9 +175,6 @@ generalSettings = (function generalSettings() {
         data,
         getLayout,
         updateLayout,
-        setOriginalAtomNamesValue,
-        updateOriginalAtomNames,
-        getUseOriginalAtomNames,
         getSigParent,
         resetHierarchy,
         updateElementSelectionContent,

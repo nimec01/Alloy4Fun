@@ -29,9 +29,7 @@ Template.elementSelection.onRendered(() => {
             $('.atom-settings').slideDown()
 
             $('.projection-settings').show()
-            $('.hide-unconnected-settings').show()
             $('.hide-nodes-settings').show()
-            $('.number-nodes-settings').show()
         })
     })
 
@@ -69,9 +67,7 @@ Template.elementSelection.onRendered(() => {
             $('.atom-settings').slideDown()
 
             $('.projection-settings').hide()
-            $('.hide-unconnected-settings').hide()
             $('.hide-nodes-settings').hide()
-            $('.number-nodes-settings').hide()
         })
     })
 })

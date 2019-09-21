@@ -139,7 +139,3 @@ applyCurrentLayout = function () {
     cy.layout(layouts[generalSettings.getLayout()])
     cy.add(tmp)
 }
-
-updateNodeSpacing = function (newValue) {
-    layouts.breadthfirst.spacingFactor = (newValue / 100) * 5
-}
