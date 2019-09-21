@@ -55,7 +55,6 @@ getAtoms = function (instance) {
                 })
             // module sigs
             } else if (sig.type.toLowerCase().indexOf('this/') > -1) {
-                console.log(instance)
                 const tp = sig.type.split('/')[1]
                 const pa = sig.parent.indexOf('/') > -1 ? sig.parent.split('/')[1] : sig.parent
                 // prim sig
@@ -196,9 +195,13 @@ initGraphViewer = function (element) {
                         return val
                     },
                     visibility(ele) {
-                        let val1
+                        let val1 = true
                         if (ele.data().subsetSigs.length > 0) {
-                            val1 = sigSettings.getInheritedAtomVisibility(ele.data().subsetSigs[0])
+                            ele.data().subsetSigs.forEach(ss => {
+                                console.log(ss)
+                                console.log(sigSettings.getInheritedAtomVisibility(ss))
+                                val1 = val1 && sigSettings.getInheritedAtomVisibility(ss)
+                            })
                         } else {
                             val1 = sigSettings.getInheritedAtomVisibility(ele.data().type)
                         }
