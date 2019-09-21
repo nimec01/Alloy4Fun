@@ -29,7 +29,6 @@ Template.elementSelection.onRendered(() => {
             $('.atom-settings').slideDown()
 
             $('.projection-settings').show()
-            $('.hide-nodes-settings').show()
         })
     })
 
@@ -67,7 +66,6 @@ Template.elementSelection.onRendered(() => {
             $('.atom-settings').slideDown()
 
             $('.projection-settings').hide()
-            $('.hide-nodes-settings').hide()
         })
     })
 })

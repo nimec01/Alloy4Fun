@@ -22,19 +22,19 @@ updateOptionContentSigs = function () {
     if (selectedSig) {
         if (!isSubset) {
             $('#projectOverSig').prop('checked', $.inArray(selectedSig, currentlyProjectedSigs) > -1)
-
-            const visibility = sigSettings.getAtomVisibility(selectedSig)
-            if (visibility == 'inherit') {
-                const inheritedVisibility = sigSettings.getInheritedAtomVisibility(selectedSig)
-                $('#inheritHideNodes').prop('checked', true)
-                $('#hideNodes').prop('checked', inheritedVisibility)
-                $('#hideNodes').prop('disabled', true)
-            } else {
-                $('#inheritHideNodes').prop('checked', false)
-                $('#hideNodes').prop('checked', visibility)
-                $('#hideNodes').prop('disabled', false)
-            }
         }
+        const visibility = sigSettings.getAtomVisibility(selectedSig)
+        if (visibility == 'inherit') {
+            const inheritedVisibility = sigSettings.getInheritedAtomVisibility(selectedSig)
+            $('#inheritHideNodes').prop('checked', true)
+            $('#hideNodes').prop('checked', inheritedVisibility)
+            $('#hideNodes').prop('disabled', true)
+        } else {
+            $('#inheritHideNodes').prop('checked', false)
+            $('#hideNodes').prop('checked', visibility)
+            $('#hideNodes').prop('disabled', false)
+        }
+        
         $('#atomColorSettings').val(sigSettings.getAtomColor(selectedSig))
         $('#atomShapeSettings').val(sigSettings.getAtomShape(selectedSig))
         $('#atomBorderSettings').val(sigSettings.getAtomBorder(selectedSig))
