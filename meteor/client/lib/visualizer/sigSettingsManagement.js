@@ -47,21 +47,6 @@ sigSettings = (function sigSettings() {
     }
 
     /**
-     * Updates the atom label property of a sig. Assumes already initialized.
-     *
-     * @param {String} sig the sig for which to update the property
-     * @param {String} newVal the new value for the property
-     */
-    function updateAtomLabel(sig, newVal) {
-        for (let i = 0; i < nodeLabels.length; i++) {
-            if (nodeLabels[i].type === sig) {
-                nodeLabels[i].label = newVal
-                return
-            }
-        }
-    }
-
-    /**
      * Retrieves the atom colour property of a sig, initializing it to inherit if
      * undefined.
      *
@@ -272,7 +257,6 @@ sigSettings = (function sigSettings() {
         updateAtomVisibility,
         updateAtomBorder,
         updateAtomShape,
-        updateAtomColor,
-        updateAtomLabel
+        updateAtomColor
     }
 }())

@@ -84,7 +84,6 @@ getAtoms = function (instance) {
                                 const canon = `${tp}:${paren}`
                                 if (!generalSettings.hasSubsetSig(canon)) {
                                     generalSettings.addSubSig(canon, paren)
-                                    sigSettings.updateAtomLabel(canon, sig.type.split('/')[1])
                                 }
                             atoms[i].data.subsetSigs.push(canon)
                             }
@@ -170,11 +169,13 @@ initGraphViewer = function (element) {
                     label(ele) {
                         let l = relationSettings.calculateNodeLabel(ele)
 
+
+                        console.log(ele.data().subsetSigs)
+                        console.log(sigSettings)
                         // subsig labels
-                        const subsigs = ele.data().subsetSigs.length > 0 ? `\n(${ele.data().subsetSigs.map(sigSettings.getAtomLabel)})` : ''
+                        const subsigs = ele.data().subsetSigs.length > 0 ? `\n(${ele.data().subsetSigs.map(x => x.split(':')[0])})` : ''
 
                         // relations as attributes labels
-                        // TODO: should not be everytime called in every node!
                         let attributes = relationSettings.getAttributeLabel(ele)
             
                         // skolem variable labels
