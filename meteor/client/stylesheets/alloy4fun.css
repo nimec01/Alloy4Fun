@@ -592,6 +592,12 @@ input[disabled] {
     padding-left: 16px;
 }
 
+.changeAtomBorderPicker {
+    width: 100%;
+    background-color: rgba(142, 140, 140, 0.88);
+    padding-left: 16px;
+}
+
 .cm-keyword-secret {}
 
 #headTitle {

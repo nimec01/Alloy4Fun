@@ -37,6 +37,7 @@ export function updateRightClickContent() {
     if (selected) {
         $('.changeAtomColorPicker').val(sigSettings.getAtomColor(selected))
         $('.changeAtomShapePicker').val(sigSettings.getAtomShape(selected))
+        $('.changeAtomBorderPicker').val(sigSettings.getAtomBorder(selected))
     } else {
         selected = Session.get('rightClickRel')
         if (selected) {
@@ -60,6 +61,11 @@ Template.rightClickMenu.events({
     'change .changeAtomShapePicker'(event) {
         const selected = Session.get('rightClickSig')
         sigSettings.updateAtomShape(selected, event.target.value)
+        refreshGraph()
+    },
+    'change .changeAtomBorderPicker'(event) {
+        const selected = Session.get('rightClickSig')
+        sigSettings.updateAtomBorder(selected, event.target.value)
         refreshGraph()
     },
     'click #rightClickProject'() {

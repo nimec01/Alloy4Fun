@@ -49,7 +49,20 @@
                         </li>
                     </ul>
                 </li>
-                <li class="has-sub {{showSigProps}} {{showProjectionProp}}"><a id="rightClickProject" href='#'>Project over {{getRightClickLabel}}</a></li>
+                <li class="has-sub {{showSigProps}}">
+                    <a id="changeAtomBorder" href='#'>Change border of {{getRightClickLabel}}</a>
+                    <ul>
+                        <li>
+                            <select class="changeAtomBorderPicker" >
+                                <option value="inherit">Inherit</option>
+                                <option value="solid">Solid</option>
+                                <option value="dotted">Dotted</option>
+                                <option value="dashed">Dashed</option>
+                                <option value="double">Double</option>
+                            </select>
+                        </li>
+                    </ul>
+                </li>                <li class="has-sub {{showSigProps}} {{showProjectionProp}}"><a id="rightClickProject" href='#'>Project over {{getRightClickLabel}}</a></li>
             </ul>
         </div>
     </div>

@@ -197,11 +197,9 @@ initGraphViewer = function (element) {
                     visibility(ele) {
                         let val1 = true
                         if (ele.data().subsetSigs.length > 0) {
-                            ele.data().subsetSigs.forEach(ss => {
-                                console.log(ss)
-                                console.log(sigSettings.getInheritedAtomVisibility(ss))
-                                val1 = val1 && sigSettings.getInheritedAtomVisibility(ss)
-                            })
+                            // only hide if all subsigs want to hide
+                            ele.data().subsetSigs.forEach(ss =>
+                                val1 = val1 && sigSettings.getInheritedAtomVisibility(ss))
                         } else {
                             val1 = sigSettings.getInheritedAtomVisibility(ele.data().type)
                         }
