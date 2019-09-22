@@ -108,7 +108,10 @@ export function getNextInstance() {
     const instanceIndex = Session.get('currentInstance')
     const stateIndex = Session.get('currentState')
     Session.set('currentInstance', instanceIndex + 1)
-    return instances[instanceIndex + 1].instance[stateIndex]
+    if (instances[instanceIndex + 1].unsat)
+        return instances[instanceIndex + 1]
+    else 
+        return instances[instanceIndex + 1].instance[stateIndex]
 }
 
 /**
