@@ -8,7 +8,7 @@ Template.rightClickMenu.helpers({
      * The target of the right click menu, may be a sig or a relation.
      */
     getRightClickLabel() {
-        target = Session.get('rightClickSig')
+        let target = Session.get('rightClickSig')
         if (!target) target = Session.get('rightClickRel')
         return target
     },
@@ -33,7 +33,7 @@ Template.rightClickMenu.helpers({
  * atom, with the current state of each property.
  */
 export function updateRightClickContent() {
-    selected = Session.get('rightClickSig')
+    let selected = Session.get('rightClickSig')
     if (selected) {
         $('.changeAtomColorPicker').val(sigSettings.getAtomColor(selected))
         $('.changeAtomShapePicker').val(sigSettings.getAtomShape(selected))
@@ -49,7 +49,7 @@ export function updateRightClickContent() {
 
 Template.rightClickMenu.events({
     'change .changeAtomColorPicker'(event) {
-        selected = Session.get('rightClickSig')
+        let selected = Session.get('rightClickSig')
         if (selected) {
             sigSettings.updateAtomColor(selected, event.target.value)
         } else {
@@ -64,8 +64,13 @@ Template.rightClickMenu.events({
         refreshGraph()
     },
     'change .changeAtomBorderPicker'(event) {
-        const selected = Session.get('rightClickSig')
-        sigSettings.updateAtomBorder(selected, event.target.value)
+        let selected = Session.get('rightClickSig')
+        if (selected) {
+            sigSettings.updateAtomBorder(selected, event.target.value)
+        } else {
+            selected = Session.get('rightClickRel')
+            relationSettings.updateEdgeStyle(selected, event.target.value)
+        }
         refreshGraph()
     },
     'click #hideAtom'() {

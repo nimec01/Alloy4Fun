@@ -49,8 +49,8 @@
                         </li>
                     </ul>
                 </li>
-                <li class="has-sub {{showSigProps}}">
-                    <a id="changeAtomBorder" href='#'>Change border of {{getRightClickLabel}}</a>
+                <li class="has-sub">
+                    <a id="changeAtomBorder" href='#'>Change stroke style of {{getRightClickLabel}}</a>
                     <ul>
                         <li>
                             <select class="changeAtomBorderPicker" >
@@ -58,7 +58,7 @@
                                 <option value="solid">Solid</option>
                                 <option value="dotted">Dotted</option>
                                 <option value="dashed">Dashed</option>
-                                <option value="double">Double</option>
+                                <option class="{{showSigProps}}" value="double">Double</option>
                             </select>
                         </li>
                     </ul>
