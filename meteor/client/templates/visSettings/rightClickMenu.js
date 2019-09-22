@@ -73,6 +73,8 @@ export function updateRightClickContent() {
             $('.changeAtomColorPicker').each(function() {
                 $(this).val(relationSettings.getEdgeColor($(this).attr("elm")))
             })
+        } else {
+            $('.changeLayoutPicker').val(generalSettings.getLayout())
         }
     }
     Session.set('theme-changed', !Session.get('theme-changed'))
@@ -93,6 +95,11 @@ Template.rightClickMenu.events({
         const elem = event.target.getAttribute("elm")
         sigSettings.updateAtomShape(elem, event.target.value)
         refreshGraph()
+    },
+    'change .changeLayoutPicker'(event) {
+        generalSettings.updateLayout(event.target.value)
+        refreshGraph()
+        applyCurrentLayout()
     },
     'change .changeAtomBorderPicker'(event) {
         const elem = event.target.getAttribute("elm")

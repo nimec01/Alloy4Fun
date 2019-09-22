@@ -73,6 +73,21 @@
                 <li class="{{showSigProps}} {{showProjectionProp}}">
                     <a elm="{{getRightClickLabel}}" class="rightClickProject" href='#'>Project over {{getRightClickLabel}}</a>
                 </li>
+                <li class="has-sub {{showGeneralProps}}">
+                    <a class="changeLayout" href='#'>Change layout</a>
+                    <ul>
+                        <li>
+                            <select class="changeLayoutPicker">
+                                <option value="breadthfirst">Breadthfirst</option>
+                                <option value="random">Random</option>
+                                <option value="grid">Grid</option>
+                                <option value="circle">Circle</option>
+                                <option value="cocentric">Cocentric</option>
+                                <option value="cose">Cose</option>
+                            </select>
+                        </li>
+                    </ul>
+                </li>
                 <li class="{{showGeneralProps}}">
                     <a class="rightClickReset" href='#'>Reset theme</a>
                 </li>

@@ -586,6 +586,12 @@ input[disabled] {
     padding-left: 16px;
 }
 
+.changeLayoutPicker {
+    width: 100%;
+    background-color: rgba(142, 140, 140, 0.88);
+    padding-left: 16px;
+}
+
 .changeAtomColorPicker {
     width: 100%;
     background-color: rgba(142, 140, 140, 0.88);
