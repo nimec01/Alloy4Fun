@@ -8,9 +8,11 @@ generalSettings = (function generalSettings() {
      * Initialize general settings structures.
      */
     function init(settings) {
-        currentLayout = settings.currentLayout || 'breadthfirst'
-        metaPrimSigs = settings.metaPrimSigs || [{ type: 'univ', parent: null }]
-        metaSubsetSigs = settings.metaSubsetSigs || []
+        currentLayout = (settings && settings.currentLayout) || 'breadthfirst'
+        if (settings) {
+            metaPrimSigs = settings.metaPrimSigs || [{ type: 'univ', parent: null }]
+            metaSubsetSigs = settings.metaSubsetSigs || []
+        }
     }
 
     /**

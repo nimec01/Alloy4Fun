@@ -8,10 +8,10 @@ relationSettings = (function relationSettings() {
      * Initialize relation settings structures.
      */
     function init(settings) {
-        edgeColors = settings.edgeColors || []
-        edgeStyles = settings.edgeStyles || []
-        showAsArcs = settings.showAsArcs || []
-        showAsAttributes = settings.showAsAttributes || []
+        edgeColors = (settings && settings.edgeColors) || []
+        edgeStyles = (settings && settings.edgeStyles) || []
+        showAsArcs = (settings && settings.showAsArcs) || []
+        showAsAttributes = (settings && settings.showAsAttributes) || []
     }
 
     /**

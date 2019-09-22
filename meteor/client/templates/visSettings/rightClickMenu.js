@@ -10,6 +10,7 @@ Template.rightClickMenu.helpers({
     getRightClickLabels() {
         let target = Session.get('rightClickSig')
         if (!target) target = Session.get('rightClickRel')
+        if (!target) target = ['general']
         return target
     },
 
@@ -24,11 +25,29 @@ Template.rightClickMenu.helpers({
         return Session.get('rightClickRel') ? '' : 'hidden'
     },
 
+    showGeneralProps() {
+        Session.get('theme-changed')
+        return (Session.get('rightClickSig') || Session.get('rightClickRel')) ? 'hidden' : ''
+    },
+
+    showElemProps() {
+        Session.get('theme-changed')
+        return (Session.get('rightClickSig') || Session.get('rightClickRel')) ? '' : 'hidden'
+    },
+
+    showRelProps() {
+        return Session.get('rightClickRel') ? '' : 'hidden'
+    },
+
     /**
      * Whether to show projection theme options.
      */
     showProjectionProp() {
         return Session.get('from-instance') ? 'hidden' : ''
+    },
+
+    hideAtomLabel(event) {
+        return 'Show'
     }
 })
 
@@ -40,26 +59,23 @@ export function updateRightClickContent() {
     let selected = Session.get('rightClickSig')
     if (selected) {
         $('.changeAtomColorPicker').each(function() {
-            console.log($(this).val())
             $(this).val(sigSettings.getAtomColor($(this).attr("elm")))
         })
         $('.changeAtomShapePicker').each(function() {
-            console.log($(this).val())
             $(this).val(sigSettings.getAtomShape($(this).attr("elm")))
         })
         $('.changeAtomBorderPicker').each(function() {
-            console.log($(this).val())
             $(this).val(sigSettings.getAtomBorder($(this).attr("elm")))
         })
     } else {
         selected = Session.get('rightClickRel')
         if (selected) {
             $('.changeAtomColorPicker').each(function() {
-                console.log($(this).val())
                 $(this).val(relationSettings.getEdgeColor($(this).attr("elm")))
             })
         }
     }
+    Session.set('theme-changed', !Session.get('theme-changed'))
     themeChanged()
 }
 
@@ -87,7 +103,7 @@ Template.rightClickMenu.events({
         }
         refreshGraph()
     },
-    'click #hideAtom'() {
+    'click .hideAtom'() {
         const elem = event.target.getAttribute("elm")
         if (Session.get('rightClickSig')) {
             const val = sigSettings.getInheritedAtomVisibility(elem)
@@ -99,13 +115,13 @@ Template.rightClickMenu.events({
         refreshGraph()
         applyCurrentLayout()
     },
-    'click #showAsAttribute'() {
+    'click .showAsAttribute'() {
         const elem = event.target.getAttribute("elm")
         const val = relationSettings.isShowAsAttributesOn(elem)
         relationSettings.updateShowAsAttributes(elem, !val)
         refreshGraph()
     },
-    'click #rightClickProject'() {
+    'click .rightClickProject'() {
         const elem = event.target.getAttribute("elm")
         try {
             if (currentlyProjectedSigs.indexOf(elem) == -1) addSigToProjection(elem)
@@ -113,6 +129,13 @@ Template.rightClickMenu.events({
         } catch (err) {
             console.error(err)
         }
+    },
+    'click .rightClickReset'() {
+        sigSettings.init(undefined)
+        relationSettings.init(undefined)
+        generalSettings.init(undefined)
+        refreshGraph()
+        applyCurrentLayout()
     },
     'click #cssmenu li.has-sub>a'(event) {
         $(event.target).removeAttr('href')
@@ -133,5 +156,6 @@ Template.rightClickMenu.events({
 })
 
 Template.rightClickMenu.onRendered(() => {
+    Session.set('theme-updated',false)
     $('#optionsMenu').hide()
 })

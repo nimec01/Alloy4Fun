@@ -8,10 +8,10 @@ sigSettings = (function sigSettings() {
      * Initialize signature settings structures.
      */
     function init(settings) {
-        nodeColors = settings.nodeColors || [{ type: 'univ', color: '#2ECC40' }]
-        nodeShapes = settings.nodeShapes || [{ type: 'univ', shape: 'ellipse' }]
-        nodeBorders = settings.nodeBorders || [{ type: 'univ', border: 'solid' }]
-        nodeVisibility = settings.nodeVisibility || [{ type: 'univ', visibility: false }, { type: 'Int', visibility: true }]
+        nodeColors = (settings && settings.nodeColors) || [{ type: 'univ', color: '#2ECC40' }]
+        nodeShapes = (settings && settings.nodeShapes) || [{ type: 'univ', shape: 'ellipse' }]
+        nodeBorders = (settings && settings.nodeBorders) || [{ type: 'univ', border: 'solid' }]
+        nodeVisibility = (settings && settings.nodeVisibility) || [{ type: 'univ', visibility: false }, { type: 'Int', visibility: true }]
     }
 
     /**
@@ -187,8 +187,8 @@ sigSettings = (function sigSettings() {
                 return nodeVisibility[i].visibility
             }
         }
-        nodeVisibility.push({ type: sig, visibility: true })
-        return true
+        nodeVisibility.push({ type: sig, visibility: false })
+        return false
     }
 
     /**

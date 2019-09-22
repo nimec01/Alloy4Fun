@@ -3,7 +3,7 @@
         <div id='cssmenu'>
             {{#each getRightClickLabel in getRightClickLabels}}
             <ul>
-                <li class="has-sub"><a class="changeAtomColor" href='#'>Change color of {{getRightClickLabel}}</a>
+                <li class="has-sub"><a class="changeAtomColor {{showElemProps}}" href='#'>Change color of {{getRightClickLabel}}</a>
                     <ul>
                         <li>
                             <select elm="{{getRightClickLabel}}" class="changeAtomColorPicker" >
@@ -50,7 +50,7 @@
                         </li>
                     </ul>
                 </li>
-                <li class="has-sub">
+                <li class="has-sub {{showElemProps}}">
                     <a class="changeAtomBorder" href='#'>Change stroke of {{getRightClickLabel}}</a>
                     <ul>
                         <li>
@@ -67,11 +67,14 @@
                 <li class="{{showRelProps}}">
                     <a elm="{{getRightClickLabel}}" class="showAsAttribute" href='#'>Show {{getRightClickLabel}} as attribute</a>
                 </li>                
-                <li class="">
-                    <a elm="{{getRightClickLabel}}" class="hideAtom" href='#'>Hide {{getRightClickLabel}}</a>
+                <li class=" {{showElemProps}}">
+                    <a elm="{{getRightClickLabel}}" class="hideAtom" href='#'>{{hideAtomLabel}} {{getRightClickLabel}}</a>
                 </li>
                 <li class="{{showSigProps}} {{showProjectionProp}}">
                     <a elm="{{getRightClickLabel}}" class="rightClickProject" href='#'>Project over {{getRightClickLabel}}</a>
+                </li>
+                <li class="{{showGeneralProps}}">
+                    <a class="rightClickReset" href='#'>Reset theme</a>
                 </li>
             </ul>
             {{/each}}
