@@ -1,11 +1,12 @@
 <template name="rightClickMenu">
     <div id="optionsMenu">
         <div id='cssmenu'>
+            {{#each getRightClickLabel in getRightClickLabels}}
             <ul>
                 <li class="has-sub"><a id="changeAtomColor" href='#'>Change color of {{getRightClickLabel}}</a>
                     <ul>
                         <li>
-                            <select class="changeAtomColorPicker" >
+                            <select elm="{{getRightClickLabel}}" class="changeAtomColorPicker" >
                                 <option value="inherit">Inherit</option>
                                 <option value="#001f3f">Navy</option>
                                 <option value="#0074D9">Blue</option>
@@ -32,7 +33,7 @@
                     <a id="changeAtomShape" href='#'>Change shape of {{getRightClickLabel}}</a>
                     <ul>
                         <li>
-                            <select class="changeAtomShapePicker" >
+                            <select elm="{{getRightClickLabel}}" class="changeAtomShapePicker" >
                                 <option value="inherit">Inherit</option>
                                 <option value="rectangle">Rectangle</option>
                                 <option value="roundrectangle">Round Rectangle</option>
@@ -50,10 +51,10 @@
                     </ul>
                 </li>
                 <li class="has-sub">
-                    <a id="changeAtomBorder" href='#'>Change stroke style of {{getRightClickLabel}}</a>
+                    <a id="changeAtomBorder" href='#'>Change stroke of {{getRightClickLabel}}</a>
                     <ul>
                         <li>
-                            <select class="changeAtomBorderPicker" >
+                            <select elm="{{getRightClickLabel}}" class="changeAtomBorderPicker" >
                                 <option value="inherit">Inherit</option>
                                 <option value="solid">Solid</option>
                                 <option value="dotted">Dotted</option>
@@ -63,16 +64,17 @@
                         </li>
                     </ul>
                 </li>                
-                <li class="has-sub {{showRelProps}}">
-                    <a id="showAsAttribute" href='#'>Show {{getRightClickLabel}} as attribute</a>
+                <li class="{{showRelProps}}">
+                    <a elm="{{getRightClickLabel}}" id="showAsAttribute" href='#'>Show {{getRightClickLabel}} as attribute</a>
                 </li>                
-                <li class="has-sub">
-                    <a id="hideAtom" href='#'>Hide {{getRightClickLabel}}</a>
+                <li class="">
+                    <a elm="{{getRightClickLabel}}" id="hideAtom" href='#'>Hide {{getRightClickLabel}}</a>
                 </li>
-                <li class="has-sub {{showSigProps}} {{showProjectionProp}}">
-                    <a id="rightClickProject" href='#'>Project over {{getRightClickLabel}}</a>
+                <li class="{{showSigProps}} {{showProjectionProp}}">
+                    <a elm="{{getRightClickLabel}}" id="rightClickProject" href='#'>Project over {{getRightClickLabel}}</a>
                 </li>
             </ul>
+            {{/each}}
         </div>
     </div>
 </template>

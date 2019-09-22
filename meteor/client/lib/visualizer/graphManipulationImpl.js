@@ -318,7 +318,7 @@ initGraphViewer = function (element) {
             left: evt.originalEvent.screenX + 1 + 300 > $(window).width() ? evt.originalEvent.offsetX + 1 - 300 : evt.originalEvent.offsetX + 1
         }).fadeIn('slow')
         Session.set('rightClickRel', undefined)
-        Session.set('rightClickSig', evt.cyTarget.data().type)
+        Session.set('rightClickSig', [evt.cyTarget.data().type].concat(evt.cyTarget.data().subsetSigs))
         updateRightClickContent()
         return false
     })
@@ -338,7 +338,7 @@ initGraphViewer = function (element) {
             left: evt.originalEvent.screenX + 1 + 300 > $(window).width() ? evt.originalEvent.offsetX + 1 - 300 : evt.originalEvent.offsetX + 1
         }).fadeIn('slow')
         Session.set('rightClickSig', undefined)
-        Session.set('rightClickRel', evt.cyTarget.data().relation)
+        Session.set('rightClickRel', [evt.cyTarget.data().relation])
         updateRightClickContent()
         return false
     })

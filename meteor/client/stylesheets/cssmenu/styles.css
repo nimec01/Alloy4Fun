@@ -14,6 +14,9 @@
   -moz-box-sizing: border-box;
   box-sizing: border-box;
 }
+#cssmenu ul {
+  border-bottom: 1px solid grey;
+}
 #cssmenu {
   width: 300px;
   font-family: inherit;

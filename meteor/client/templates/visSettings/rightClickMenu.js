@@ -7,7 +7,7 @@ Template.rightClickMenu.helpers({
     /**
      * The target of the right click menu, may be a sig or a relation.
      */
-    getRightClickLabel() {
+    getRightClickLabels() {
         let target = Session.get('rightClickSig')
         if (!target) target = Session.get('rightClickRel')
         return target
@@ -37,15 +37,14 @@ Template.rightClickMenu.helpers({
  * atom, with the current state of each property.
  */
 export function updateRightClickContent() {
-    let selected = Session.get('rightClickSig')
-    if (selected) {
-        $('.changeAtomColorPicker').val(sigSettings.getAtomColor(selected))
-        $('.changeAtomShapePicker').val(sigSettings.getAtomShape(selected))
-        $('.changeAtomBorderPicker').val(sigSettings.getAtomBorder(selected))
+    const elem = event.target.getAttribute("elm")
+    if (Session.get('rightClickSig')) {
+        $('.changeAtomColorPicker').val(sigSettings.getAtomColor(elem))
+        $('.changeAtomShapePicker').val(sigSettings.getAtomShape(elem))
+        $('.changeAtomBorderPicker').val(sigSettings.getAtomBorder(elem))
     } else {
-        selected = Session.get('rightClickRel')
-        if (selected) {
-            $('.changeAtomColorPicker').val(relationSettings.getEdgeColor(selected))
+        if (Session.get('rightClickRel')) {
+            $('.changeAtomColorPicker').val(relationSettings.getEdgeColor(elem))
         }
     }
     themeChanged()
@@ -53,56 +52,69 @@ export function updateRightClickContent() {
 
 Template.rightClickMenu.events({
     'change .changeAtomColorPicker'(event) {
-        let selected = Session.get('rightClickSig')
-        if (selected) {
-            sigSettings.updateAtomColor(selected, event.target.value)
-        } else {
-            selected = Session.get('rightClickRel')
-            relationSettings.updateEdgeColor(selected, event.target.value)
+        const elem = event.target.getAttribute("elm")
+        if (Session.get('rightClickSig')) {
+            sigSettings.updateAtomColor(elem, event.target.value)
+        } else if (Session.get('rightClickrel')) {
+            relationSettings.updateEdgeColor(elem, event.target.value)
         }
         refreshGraph()
     },
     'change .changeAtomShapePicker'(event) {
-        const selected = Session.get('rightClickSig')
-        sigSettings.updateAtomShape(selected, event.target.value)
+        const elem = event.target.getAttribute("elm")
+        sigSettings.updateAtomShape(elem, event.target.value)
         refreshGraph()
     },
     'change .changeAtomBorderPicker'(event) {
-        let selected = Session.get('rightClickSig')
-        if (selected) {
-            sigSettings.updateAtomBorder(selected, event.target.value)
-        } else {
-            selected = Session.get('rightClickRel')
-            relationSettings.updateEdgeStyle(selected, event.target.value)
+        const elem = event.target.getAttribute("elm")
+        if (Session.get('rightClickSig')) {
+            sigSettings.updateAtomBorder(elem, event.target.value)
+        } else if (Session.get('rightClickRel')) {
+            relationSettings.updateEdgeStyle(elem, event.target.value)
         }
         refreshGraph()
     },
     'click #hideAtom'() {
-        let selected = Session.get('rightClickSig')
-        if (selected) {
-            const val = sigSettings.getInheritedAtomVisibility(selected)
-            sigSettings.updateAtomVisibility(selected, !val)
-        } else {
-            selected = Session.get('rightClickRel')
-            const val = relationSettings.isShowAsArcsOn(selected)
-            relationSettings.updateShowAsArcs(selected, !val)            
+        const elem = event.target.getAttribute("elm")
+        if (Session.get('rightClickSig')) {
+            const val = sigSettings.getInheritedAtomVisibility(elem)
+            sigSettings.updateAtomVisibility(elem, !val)
+        } else if (Session.get('rightClickRel')) {
+            const val = relationSettings.isShowAsArcsOn(elem)
+            relationSettings.updateShowAsArcs(elem, !val)            
         }
         refreshGraph()
         applyCurrentLayout()
     },
     'click #showAsAttribute'() {
-        let selected = Session.get('rightClickRel')
-        const val = relationSettings.isShowAsAttributesOn(selected)
-        relationSettings.updateShowAsAttributes(selected, !val)
+        const elem = event.target.getAttribute("elm")
+        const val = relationSettings.isShowAsAttributesOn(elem)
+        relationSettings.updateShowAsAttributes(elem, !val)
         refreshGraph()
     },
     'click #rightClickProject'() {
-        const selected = Session.get('rightClickSig')
+        const elem = event.target.getAttribute("elm")
         try {
-            if (currentlyProjectedSigs.indexOf(selected) == -1) addSigToProjection(selected)
-            else removeSigFromProjection(selected)
+            if (currentlyProjectedSigs.indexOf(elem) == -1) addSigToProjection(elem)
+            else removeSigFromProjection(elem)
         } catch (err) {
             console.error(err)
+        }
+    },
+    'click #cssmenu li.has-sub>a'(event) {
+        $(event.target).removeAttr('href')
+        const element = $(event.target).parent('li')
+        if (element.hasClass('open')) {
+            element.removeClass('open')
+            element.find('li').removeClass('open')
+            element.find('ul').slideUp(200)
+        } else {
+            element.addClass('open')
+            element.children('ul').slideDown(200)
+            element.siblings('li').children('ul').slideUp(200)
+            element.siblings('li').removeClass('open')
+            element.siblings('li').find('li').removeClass('open')
+            element.siblings('li').find('ul').slideUp(200)
         }
     }
 })

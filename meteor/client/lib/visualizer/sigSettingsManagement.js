@@ -1,5 +1,4 @@
 sigSettings = (function sigSettings() {
-    let nodeLabels = []
     let nodeColors = [{ type: 'univ', color: '#2ECC40' }]
     let nodeShapes = [{ type: 'univ', shape: 'ellipse' }]
     let nodeBorders = [{ type: 'univ', border: 'solid' }]
@@ -9,7 +8,6 @@ sigSettings = (function sigSettings() {
      * Initialize signature settings structures.
      */
     function init(settings) {
-        nodeLabels = settings.nodeLabels || []
         nodeColors = settings.nodeColors || [{ type: 'univ', color: '#2ECC40' }]
         nodeShapes = settings.nodeShapes || [{ type: 'univ', shape: 'ellipse' }]
         nodeBorders = settings.nodeBorders || [{ type: 'univ', border: 'solid' }]
@@ -20,30 +18,13 @@ sigSettings = (function sigSettings() {
      * Export signature settings structures as object.
      */
     function data() {
-        const data = { nodeLabels,
+        const data = {
             nodeColors,
             nodeShapes,
             nodeBorders,
             nodeBorders,
             nodeVisibility }
         return data
-    }
-
-    /**
-     * Retrieves the atom label property of a sig, initializing to the sig label if
-     * undefined.
-     *
-     * @param {String} sig the sig for which to get the property
-     * @returns {String} the value assigned to the property
-     */
-    function getAtomLabel(sig) {
-        for (let i = 0; i < nodeLabels.length; i++) {
-            if (nodeLabels[i].type === sig) {
-                return nodeLabels[i].label
-            }
-        }
-        nodeLabels.push({ type: sig, label: sig })
-        return sig
     }
 
     /**
@@ -206,8 +187,8 @@ sigSettings = (function sigSettings() {
                 return nodeVisibility[i].visibility
             }
         }
-        nodeVisibility.push({ type: sig, visibility: 'inherit' })
-        return 'inherit'
+        nodeVisibility.push({ type: sig, visibility: true })
+        return true
     }
 
     /**
@@ -249,7 +230,6 @@ sigSettings = (function sigSettings() {
         getAtomBorder,
         getAtomShape,
         getAtomColor,
-        getAtomLabel,
         getInheritedAtomVisibility,
         getInheritedAtomBorder,
         getInheritedAtomShape,
