@@ -168,15 +168,9 @@ Template.alloyEditor.helpers({
         return `${window.location.origin}/${id}`
     },
 
-    nextEnabled() {
-        const m = Session.get('maxInstance')
-        return (m > 0) ? '' : 'disabled'
-    },
-
     prevEnabled() {
-        const m = Session.get('maxInstance')
         const state = currentState()
-        return (state != 0 && m > 0) ? '' : 'disabled'
+        return (state != 0) ? '' : 'disabled'
     },
 
     nextShape() {

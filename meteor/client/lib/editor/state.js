@@ -72,6 +72,7 @@ export function instShared() {
 export function storeInstances(allInstances) {
     const instanceIndex = Session.get('currentInstance')
     const maxInstanceNumber = Session.get('maxInstance')
+    console.log(allInstances)
     if (allInstances.alloy_error || allInstances[0].cnt == 0) {
         instances = allInstances
         Session.set('currentInstance', 0)
