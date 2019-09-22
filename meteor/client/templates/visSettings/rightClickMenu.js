@@ -20,6 +20,10 @@ Template.rightClickMenu.helpers({
         return Session.get('rightClickSig') ? '' : 'hidden'
     },
 
+    showRelProps() {
+        return Session.get('rightClickRel') ? '' : 'hidden'
+    },
+
     /**
      * Whether to show projection theme options.
      */
@@ -85,6 +89,12 @@ Template.rightClickMenu.events({
         }
         refreshGraph()
         applyCurrentLayout()
+    },
+    'click #showAsAttribute'() {
+        let selected = Session.get('rightClickRel')
+        const val = relationSettings.isShowAsAttributesOn(selected)
+        relationSettings.updateShowAsAttributes(selected, !val)
+        refreshGraph()
     },
     'click #rightClickProject'() {
         const selected = Session.get('rightClickSig')
