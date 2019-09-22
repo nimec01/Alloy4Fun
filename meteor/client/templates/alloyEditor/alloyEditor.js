@@ -93,6 +93,7 @@ Template.alloyEditor.helpers({
     showInstance() {
         const m = Session.get('maxInstance')
         const s = Session.get('from-instance')
+        console.log(m)
         return (s || m > 0 || (m > 0 && (m !== 1 || !isUnsatInstance(0)))) ? '' : 'hidden'
     },
 

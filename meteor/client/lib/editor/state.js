@@ -75,8 +75,8 @@ export function storeInstances(allInstances) {
     if (allInstances.alloy_error || allInstances[0].cnt == 0) {
         instances = allInstances
         Session.set('currentInstance', 0)
-        Session.set('maxInstance', allInstances.length)
-    } else {
+        Session.set('maxInstance', allInstances[0].unsat?-1:allInstances.length)
+    } else { // a continuation batch of instances
         instances = instances.concat(allInstances)
         Session.set('maxInstance', maxInstanceNumber + allInstances.length)
     }
@@ -146,9 +146,11 @@ export function setCurrentState(st) {
 }
 
 export function lastState() {
-    if (instances.length == 0)
+    if (!instances || instances.length == 0)
         return -1
     const instanceIndex = Session.get('currentInstance')
+    if (!instances[instanceIndex].instance)
+        return -1
     return instances[instanceIndex].instance.length
 }
 
