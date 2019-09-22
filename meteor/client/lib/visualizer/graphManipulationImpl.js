@@ -21,8 +21,6 @@ updateGraph = function (instance,v) {
 applyThemeSettings = function () {
     // In case of label change.
     refreshGraph()
-    // Add types, subsets and relations to selection area on settings tab.
-    generalSettings.updateElementSelectionContent()
     // Backup of whole instance. Helpful for projection.
     allNodes = cy.nodes()
     // Apply same projections as on previous instances.
@@ -284,8 +282,6 @@ initGraphViewer = function (element) {
     cy.on('cxttap', function(evt){
       var evtTarget = evt.cyTarget;    
       if( evtTarget === cy ){
-        // close side panel
-        $('.settings-panel').removeClass('open')
         // Place right click options menu on mouse position and display it
         $('#optionsMenu').css({
             // overlap cytoscape canvas
@@ -305,8 +301,6 @@ initGraphViewer = function (element) {
 
     // right click event on cytoscape's node
     cy.on('cxttap', 'node', {}, (evt) => {
-        // close side panel
-        $('.settings-panel').removeClass('open')
         // Place right click options menu on mouse position and display it
         $('#optionsMenu').css({
             // overlap cytoscape canvas
@@ -325,8 +319,6 @@ initGraphViewer = function (element) {
 
     // right click event on cytoscape's node
     cy.on('cxttap', 'edge', {}, (evt) => {
-        // close side panel
-        $('.settings-panel').removeClass('open')
         // Place right click options menu on mouse position and display it
         $('#optionsMenu').css({
             // overlap cytoscape canvas
@@ -375,8 +367,6 @@ initGraphViewer = function (element) {
     cy.on('tap', (event) => {
         // hide right click menu
         $('#optionsMenu').hide()
-        // close side panel
-        $('.settings-panel').removeClass('open')
     })
 
     cy.on('render', (event) => {

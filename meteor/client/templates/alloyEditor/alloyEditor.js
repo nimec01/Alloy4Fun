@@ -275,7 +275,6 @@ Template.alloyEditor.onRendered(() => {
                 storeInstances([model.instance.graph])
                 updateGraph(getCurrentInstance())
                 applyPositions()
-                generalSettings.updateElementSelectionContent()
                 cy.zoom(model.instance.graph.zoom)
                 cy.pan(model.instance.graph.pan)
             }
