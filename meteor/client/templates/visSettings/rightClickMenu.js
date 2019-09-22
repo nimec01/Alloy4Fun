@@ -37,14 +37,27 @@ Template.rightClickMenu.helpers({
  * atom, with the current state of each property.
  */
 export function updateRightClickContent() {
-    const elem = event.target.getAttribute("elm")
-    if (Session.get('rightClickSig')) {
-        $('.changeAtomColorPicker').val(sigSettings.getAtomColor(elem))
-        $('.changeAtomShapePicker').val(sigSettings.getAtomShape(elem))
-        $('.changeAtomBorderPicker').val(sigSettings.getAtomBorder(elem))
+    let selected = Session.get('rightClickSig')
+    if (selected) {
+        $('.changeAtomColorPicker').each(function() {
+            console.log($(this).val())
+            $(this).val(sigSettings.getAtomColor($(this).attr("elm")))
+        })
+        $('.changeAtomShapePicker').each(function() {
+            console.log($(this).val())
+            $(this).val(sigSettings.getAtomShape($(this).attr("elm")))
+        })
+        $('.changeAtomBorderPicker').each(function() {
+            console.log($(this).val())
+            $(this).val(sigSettings.getAtomBorder($(this).attr("elm")))
+        })
     } else {
-        if (Session.get('rightClickRel')) {
-            $('.changeAtomColorPicker').val(relationSettings.getEdgeColor(elem))
+        selected = Session.get('rightClickRel')
+        if (selected) {
+            $('.changeAtomColorPicker').each(function() {
+                console.log($(this).val())
+                $(this).val(relationSettings.getEdgeColor($(this).attr("elm")))
+            })
         }
     }
     themeChanged()

@@ -3,7 +3,7 @@
         <div id='cssmenu'>
             {{#each getRightClickLabel in getRightClickLabels}}
             <ul>
-                <li class="has-sub"><a id="changeAtomColor" href='#'>Change color of {{getRightClickLabel}}</a>
+                <li class="has-sub"><a class="changeAtomColor" href='#'>Change color of {{getRightClickLabel}}</a>
                     <ul>
                         <li>
                             <select elm="{{getRightClickLabel}}" class="changeAtomColorPicker" >
@@ -30,7 +30,7 @@
                     </ul>
                 </li>
                 <li class="has-sub {{showSigProps}}">
-                    <a id="changeAtomShape" href='#'>Change shape of {{getRightClickLabel}}</a>
+                    <a class="changeAtomShape" href='#'>Change shape of {{getRightClickLabel}}</a>
                     <ul>
                         <li>
                             <select elm="{{getRightClickLabel}}" class="changeAtomShapePicker" >
@@ -51,7 +51,7 @@
                     </ul>
                 </li>
                 <li class="has-sub">
-                    <a id="changeAtomBorder" href='#'>Change stroke of {{getRightClickLabel}}</a>
+                    <a class="changeAtomBorder" href='#'>Change stroke of {{getRightClickLabel}}</a>
                     <ul>
                         <li>
                             <select elm="{{getRightClickLabel}}" class="changeAtomBorderPicker" >
@@ -65,13 +65,13 @@
                     </ul>
                 </li>                
                 <li class="{{showRelProps}}">
-                    <a elm="{{getRightClickLabel}}" id="showAsAttribute" href='#'>Show {{getRightClickLabel}} as attribute</a>
+                    <a elm="{{getRightClickLabel}}" class="showAsAttribute" href='#'>Show {{getRightClickLabel}} as attribute</a>
                 </li>                
                 <li class="">
-                    <a elm="{{getRightClickLabel}}" id="hideAtom" href='#'>Hide {{getRightClickLabel}}</a>
+                    <a elm="{{getRightClickLabel}}" class="hideAtom" href='#'>Hide {{getRightClickLabel}}</a>
                 </li>
                 <li class="{{showSigProps}} {{showProjectionProp}}">
-                    <a elm="{{getRightClickLabel}}" id="rightClickProject" href='#'>Project over {{getRightClickLabel}}</a>
+                    <a elm="{{getRightClickLabel}}" class="rightClickProject" href='#'>Project over {{getRightClickLabel}}</a>
                 </li>
             </ul>
             {{/each}}

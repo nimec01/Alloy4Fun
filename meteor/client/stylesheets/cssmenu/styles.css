@@ -32,7 +32,7 @@
   float: right;
 }
 #cssmenu > ul > li > a {
-  padding: 16px 22px;
+  padding: 12px 22px;
   cursor: pointer;
   z-index: 2;
   font-size: 16px;
