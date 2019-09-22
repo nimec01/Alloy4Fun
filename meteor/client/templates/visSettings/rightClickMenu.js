@@ -74,10 +74,17 @@ Template.rightClickMenu.events({
         refreshGraph()
     },
     'click #hideAtom'() {
-        const selected = Session.get('rightClickSig')
-        const val = sigSettings.getInheritedAtomVisibility(selected)
-        sigSettings.updateAtomVisibility(selected, !val)
+        let selected = Session.get('rightClickSig')
+        if (selected) {
+            const val = sigSettings.getInheritedAtomVisibility(selected)
+            sigSettings.updateAtomVisibility(selected, !val)
+        } else {
+            selected = Session.get('rightClickRel')
+            const val = relationSettings.isShowAsArcsOn(selected)
+            relationSettings.updateShowAsArcs(selected, !val)            
+        }
         refreshGraph()
+        applyCurrentLayout()
     },
     'click #rightClickProject'() {
         const selected = Session.get('rightClickSig')
