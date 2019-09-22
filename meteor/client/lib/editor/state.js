@@ -153,7 +153,6 @@ export function lastState() {
 }
 
 export function prevState() {
-    console.log("ping")
     const stateIndex = Session.get('currentState')
     if (stateIndex > 0)
         Session.set('currentState',stateIndex-1)

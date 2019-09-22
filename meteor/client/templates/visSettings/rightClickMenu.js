@@ -68,6 +68,12 @@ Template.rightClickMenu.events({
         sigSettings.updateAtomBorder(selected, event.target.value)
         refreshGraph()
     },
+    'click #hideAtom'() {
+        const selected = Session.get('rightClickSig')
+        const val = sigSettings.getInheritedAtomVisibility(selected)
+        sigSettings.updateAtomVisibility(selected, !val)
+        refreshGraph()
+    },
     'click #rightClickProject'() {
         const selected = Session.get('rightClickSig')
         try {
