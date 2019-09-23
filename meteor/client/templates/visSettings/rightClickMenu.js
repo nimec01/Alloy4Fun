@@ -1,6 +1,6 @@
-import { themeChanged } from '../../lib/editor/state'
+import { themeChanged,getCurrentInstance } from '../../lib/editor/state'
 import { removeSigFromProjection,
-    addSigToProjection } from '../../lib/visualizer/projection'
+    addSigToProjection,newInstanceSetup } from '../../lib/visualizer/projection'
 
 
 Template.rightClickMenu.helpers({
@@ -43,7 +43,13 @@ Template.rightClickMenu.helpers({
      * Whether to show projection theme options.
      */
     showProjectionProp() {
-        return Session.get('from-instance') ? 'hidden' : ''
+        Session.get('frame-updated')
+        return (currentlyProjectedSigs.length != 0 || Session.get('from-instance')) ? 'hidden' : ''
+    },
+
+    isProjected() {
+        Session.get('frame-updated')
+        return (currentlyProjectedSigs.length == 0) ? 'hidden' : ''
     },
 
     hideAtomLabel(event) {
@@ -172,11 +178,22 @@ Template.rightClickMenu.events({
             console.error(err)
         }
     },
+    'click .rightClickResetProject'() {
+        currentlyProjectedSigs = []
+        currentFramePosition = {}
+        Session.set('theme-changed', !Session.get('theme-changed'))
+        updateGraph(getCurrentInstance())
+        refreshGraph()
+        applyCurrentLayout()
+    },
     'click .rightClickReset'() {
         sigSettings.init(undefined)
         relationSettings.init(undefined)
         generalSettings.init(undefined)
+        currentlyProjectedSigs = []
+        currentFramePosition = {}
         Session.set('theme-changed', !Session.get('theme-changed'))
+        updateGraph(getCurrentInstance())
         refreshGraph()
         applyCurrentLayout()
     },

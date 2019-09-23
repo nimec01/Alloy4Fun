@@ -11,17 +11,8 @@ updateGraph = function (instance,v) {
     cy.add(atomElements)
     cy.add(getEdges(instance))
     cy.resize()
-    // Apply same theme settings as previous instance.
-    applyThemeSettings()
     // Draw data according to the selected layout.
     if (!v) applyCurrentLayout()
-}
-
-applyThemeSettings = function () {
-    // In case of label change.
-    refreshGraph()
-    // Backup of whole instance. Helpful for projection.
-    allNodes = cy.nodes()
 }
 
 // Get atom information received from server ready to upload to cytoscape object.

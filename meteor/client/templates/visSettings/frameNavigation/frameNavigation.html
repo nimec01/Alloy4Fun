@@ -1,12 +1,12 @@
 <template name="frameNavigation">
     <div class="frame-navigation row">
-        <button id="previousFrame" class="cbutton">
+        <button id="previousFrame" class="cbutton" {{prevFrameEnabled}}>
     	    <i class="cbutton__icon fa fa-fw fa-step-backward auto-margin"></i>
 	    </button>
         <select class="framePickerTarget">
         </select>
         <p class="current-frame"></p>
-        <button id="nextFrame" class="cbutton">
+        <button id="nextFrame" class="cbutton" {{nextFrameEnabled}}>
     	    <i class="cbutton__icon fa fa-fw fa-step-forward auto-margin"></i>
 	    </button>
     </div>

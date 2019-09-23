@@ -18,7 +18,7 @@ import { getCommandIndex,
     getCommandLabel,
     resetState,
     currentState } from './state'
-import { resetPositions } from '../visualizer/projection'
+import { resetPositions,newInstanceSetup } from '../visualizer/projection'
 
 /**
  * Execute the model through the selected command. Will call the Alloy API.
@@ -56,6 +56,7 @@ export function nextInstance() {
         } else {
             resetPositions()
             updateGraph(ni)
+            newInstanceSetup()
             instChanged()
         }
     }
@@ -69,8 +70,9 @@ export function prevInstance() {
     if (typeof ni !== 'undefined') {
         resetPositions()
         updateGraph(ni)
+        newInstanceSetup()
+        instChanged()
     }
-    instChanged()
 }
 
 /**

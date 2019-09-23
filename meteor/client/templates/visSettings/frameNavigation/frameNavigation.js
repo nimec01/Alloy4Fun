@@ -3,35 +3,38 @@ import { currentFramePositionToString,
     project } from '../../../lib/visualizer/projection'
 
 Template.frameNavigation.helpers({
+    prevFrameEnabled() {
+        Session.get('frame-updated')
+        if (!$('.framePickerTarget')[0]) return 'disabled'
+        const type = $('.framePickerTarget')[0].value
+        return (currentFramePosition[type] == 0) ? 'disabled' : ''
+    },
+
+    nextFrameEnabled() {
+        Session.get('frame-updated')
+        if (!$('.framePickerTarget')[0]) return 'disabled'
+        const type = $('.framePickerTarget')[0].value
+        return (currentFramePosition[type] == lastFrame(type)) ? 'disabled' : ''
+    }
 
 })
 
 Template.frameNavigation.events({
     'click #nextFrame'() {
-        if ($('#nextFrame > button').is(':disabled')) return
-
         const type = $('.framePickerTarget')[0].value
         currentFramePosition[type]++
-        if (currentFramePosition[type] == lastFrame(type)) {
-            $('#nextFrame').prop('disabled', true)
-        }
-        $('#previousFrame').prop('disabled', false)
         $('.current-frame').html(currentFramePositionToString())
         savePositions()
         project()
+        Session.set('frame-updated',!Session.get('frame-updated'))
     },
     'click #previousFrame'() {
-        if ($('#previousFrame > button').is(':disabled')) return
-
         const type = $('.framePickerTarget')[0].value
         currentFramePosition[type]--
-        if (currentFramePosition[type] == 0) {
-            $('#previousFrame').prop('disabled', true)
-        }
-        $('#nextFrame').prop('disabled', false)
         $('.current-frame').html(currentFramePositionToString())
         savePositions()
         project()
+        Session.set('frame-updated',!Session.get('frame-updated'))
     },
     'change .framePickerTarget'(event) {
         const selectedSig = event.target.value

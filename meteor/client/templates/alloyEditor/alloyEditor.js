@@ -197,7 +197,6 @@ Template.alloyEditor.helpers({
         if (typeof cy === 'undefined') return 'hidden'
         return (cy.nodes(':visible').length == 0) ? '' : 'hidden'
     }
-
 })
 
 Template.alloyEditor.events({
@@ -232,6 +231,7 @@ Template.alloyEditor.onRendered(() => {
     Session.set('model-updated', false)
     Session.set('inst-updated', false)
     Session.set('inst-shared', false)
+    Session.set('frame-updated', false)
     Session.set('currentInstance', 0)
     Session.set('currentState', 0)
     Session.set('maxInstance', -1)

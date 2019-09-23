@@ -23,6 +23,7 @@ function processProjection(err, projection) {
 
 // projects a new signature, updates elements accordingly
 export function addSigToProjection(newType) {
+    if (allNodes.length === 0) allNodes = cy.nodes()
     const atoms = lastFrame(newType)
     if (currentlyProjectedSigs.indexOf(newType) == -1) {
         currentlyProjectedSigs.push(newType)
@@ -33,12 +34,10 @@ export function addSigToProjection(newType) {
             .text(newType))
         if (atoms >= 0) { currentFramePosition[newType] = 0 }
     } else throw `${newType} already being projected.`
-    if (atoms >= 1) $('#nextFrame').prop('disabled', false)
-    else { $('#nextFrame').prop('disabled', true) }
-    $('#previousFrame').prop('disabled', true)
     $('.current-frame').html(currentFramePositionToString())
     $('.framePickerTarget').val(newType)
     project()
+    Session.set('frame-updated',!Session.get('frame-updated'))
 }
 
 // removes a projected signature, updates elements accordingly
@@ -58,6 +57,7 @@ export function removeSigFromProjection(type) {
         $('.current-frame').html(currentFramePositionToString())
         project()
     }
+    Session.set('frame-updated',!Session.get('frame-updated'))
 }
 
 // applies the current projected information to a new instance, same projected
@@ -70,8 +70,6 @@ export function newInstanceSetup() {
         allNodes = cy.nodes()
         project()
         const atoms = lastFrame($('.framePickerTarget')[0].value)
-        if (atoms >= 1) { $('#nextFrame').prop('disabled', false) } else { $('#nextFrame').prop('disabled', true) }
-        $('#previousFrame').prop('disabled', true)
         $('.frame-navigation > select').prop('disabled', false)
     } else {
         $('.frame-navigation').hide()
@@ -85,8 +83,6 @@ export function staticProjection() {
         .attr('value', currentlyProjectedSigs[0])
         .text(currentlyProjectedSigs[0]))
     $('.current-frame').html(currentFramePositionToString())
-    $('#nextFrame').prop('disabled', true)
-    $('#previousFrame').prop('disabled', true)
     $('.frame-navigation').show()
     $('.frame-navigation > select').prop('disabled', true)
 }
