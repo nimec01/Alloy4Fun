@@ -182,6 +182,7 @@ Template.rightClickMenu.events({
         currentlyProjectedSigs = []
         currentFramePosition = {}
         Session.set('theme-changed', !Session.get('theme-changed'))
+        Session.set('frame-updated',!Session.get('frame-updated'))
         updateGraph(getCurrentInstance())
         refreshGraph()
         applyCurrentLayout()
@@ -192,6 +193,7 @@ Template.rightClickMenu.events({
         generalSettings.init(undefined)
         currentlyProjectedSigs = []
         currentFramePosition = {}
+        Session.set('frame-updated',!Session.get('frame-updated'))
         Session.set('theme-changed', !Session.get('theme-changed'))
         updateGraph(getCurrentInstance())
         refreshGraph()

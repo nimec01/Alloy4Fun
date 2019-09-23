@@ -29,13 +29,11 @@ export function addSigToProjection(newType) {
     if (currentlyProjectedSigs.indexOf(newType) == -1) {
         currentlyProjectedSigs.push(newType)
         currentlyProjectedSigs.sort()
-        $('.frame-navigation').show()
         $('.frame-navigation > select').append($('<option></option>')
             .attr('value', newType)
             .text(newType))
         if (atoms >= 0) { currentFramePosition[newType] = 0 }
     } else throw `${newType} already being projected.`
-    $('.current-frame').html(currentFramePositionToString())
     $('.framePickerTarget').val(newType)
     project()
     Session.set('frame-updated',!Session.get('frame-updated'))
@@ -51,11 +49,9 @@ export function removeSigFromProjection(type) {
         $(`.frame-navigation > select option[value = '${type}']`).remove()
     }
     if (currentlyProjectedSigs.length == 0) {
-        $('.frame-navigation').hide()
         const instance = getCurrentInstance()
         if (instance) updateGraph(instance)
     } else {
-        $('.current-frame').html(currentFramePositionToString())
         project()
     }
     Session.set('frame-updated',!Session.get('frame-updated'))
@@ -67,13 +63,10 @@ export function newInstanceSetup() {
     currentFramePosition = {}
     if (currentlyProjectedSigs.length != 0) {
         for (const key in currentlyProjectedSigs) { currentFramePosition[currentlyProjectedSigs[key]] = 0 }
-        $('.current-frame').html(currentFramePositionToString())
         allNodes = cy.nodes()
         project()
         const atoms = lastFrame($('.framePickerTarget')[0].value)
         $('.frame-navigation > select').prop('disabled', false)
-    } else {
-        $('.frame-navigation').hide()
     }
 }
 
@@ -83,8 +76,6 @@ export function staticProjection() {
     $('.frame-navigation > select').append($('<option></option>')
         .attr('value', currentlyProjectedSigs[0])
         .text(currentlyProjectedSigs[0]))
-    $('.current-frame').html(currentFramePositionToString())
-    $('.frame-navigation').show()
     $('.frame-navigation > select').prop('disabled', true)
 }
 
@@ -111,9 +102,3 @@ export function resetPositions() {
     nodePositions = {}
 }
 
-// calculates the label to be present as the current frame, type+index
-export function currentFramePositionToString() {
-    const position = []
-    for (const key in currentFramePosition) position.push(key + currentFramePosition[key])
-    return position.toString()
-}
