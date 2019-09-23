@@ -10,7 +10,6 @@ updateGraph = function (instance,v) {
     const atomElements = getAtoms(instance) 
     cy.add(atomElements)
     cy.add(getEdges(instance))
-    Session.set('empty-instance', atomElements.length == 0)
     cy.resize()
     // Apply same theme settings as previous instance.
     applyThemeSettings()

@@ -41,6 +41,7 @@ export function modelExecuted() {
  * Updates the state when the instance has been changed.
  */
 export function instChanged() {
+    Session.set('inst-updated',!Session.get('inst-updated'))
     Session.set('inst-shared', false)
 }
 
@@ -72,7 +73,6 @@ export function instShared() {
 export function storeInstances(allInstances) {
     const instanceIndex = Session.get('currentInstance')
     const maxInstanceNumber = Session.get('maxInstance')
-    console.log(allInstances)
     if (allInstances.alloy_error || allInstances[0].cnt == 0) {
         instances = allInstances
         Session.set('currentInstance', 0)
@@ -91,10 +91,12 @@ export function storeInstances(allInstances) {
 export function getCurrentInstance() {
     const instanceIndex = Session.get('currentInstance')
     const stateIndex = Session.get('currentState')
+    if (!instances[instanceIndex]) return undefined
     return instances[instanceIndex].instance[stateIndex]
 }
 
 export function getInstances() {
+    if (!instances) return undefined
     const instanceIndex = Session.get('currentInstance')
     const stateIndex = Session.get('currentState')
     return instances[instanceIndex]

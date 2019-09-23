@@ -12,11 +12,12 @@ nodePositions = {}
 
 // will call the projection API for the current projections/frames
 export function project() {
-    Meteor.call('getProjection', getCurrentInstance().sessionId, currentFramePosition, Session.get('currentInstance'), processProjection)
+    Meteor.call('getProjection', Session.get('last_id'), currentFramePosition, Session.get('currentInstance'), processProjection)
 }
 
 // processes a frame for projected instance from API response
 function processProjection(err, projection) {
+    console.log(projection)
     if (err) return displayError(err)
     frame = projection[0]
     // process atoms and subsets

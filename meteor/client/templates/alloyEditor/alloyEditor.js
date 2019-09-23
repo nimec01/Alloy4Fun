@@ -5,7 +5,7 @@ import { shareModel, shareInstance } from '../../lib/editor/genUrl'
 import { executeModel, nextInstance, prevInstance } from '../../lib/editor/executeModel'
 import { downloadTree } from '../../lib/editor/downloadTree'
 import { copyToClipboard } from '../../lib/editor/clipboard'
-import { cmdChanged, isUnsatInstance, prevState, nextState, lastState, currentState, setCurrentState, storeInstances, getCurrentInstance } from '../../lib/editor/state'
+import { cmdChanged, isUnsatInstance, prevState, nextState, lastState, currentState, setCurrentState, storeInstances, getCurrentInstance, getInstances } from '../../lib/editor/state'
 import { staticProjection, savePositions, applyPositions } from '../../lib/visualizer/projection'
 
 Template.alloyEditor.helpers({
@@ -45,7 +45,7 @@ Template.alloyEditor.helpers({
      * already shared and the model is not empty.
      */
     shareModelEnabled() {
-        const enab = !Session.get('model-shared') && !Session.get('empty-model')
+        const enab = !Session.get('model-shared')
         return enab ? '' : 'disabled'
     },
 
@@ -54,7 +54,7 @@ Template.alloyEditor.helpers({
      * model is not empty.
      */
     showModelLinks() {
-        const enab = Session.get('model-shared') && !Session.get('empty-model')
+        const enab = Session.get('model-shared')
         return enab
     },
 
@@ -169,20 +169,33 @@ Template.alloyEditor.helpers({
     },
 
     prevEnabled() {
+        Session.get('inst-updated')
         const state = currentState()
         return (state != 0) ? '' : 'disabled'
     },
 
     nextShape() {
-        const m = Session.get('maxInstance') // this is to trigger when exec
+        Session.get('inst-updated')
         const state = currentState()
         const last = lastState()
         return (state == last - 1) ? 'fa-undo' : 'fa-arrow-right'
     },
 
     currentTrace() {
+        Session.get('inst-updated')
         const state = currentState()
         return state || 0
+    },
+
+    isVariableModel() {
+        Session.get('inst-updated')
+        return (getInstances() && getInstances().static) ? 'hidden' : ''
+    },
+
+    isEmptyInstance() {
+        Session.get('inst-updated')
+        if (typeof cy === 'undefined') return 'hidden'
+        return (cy.nodes(':visible').length == 0) ? '' : 'hidden'
     }
 
 })
@@ -216,8 +229,8 @@ Template.alloyEditor.events({
 })
 
 Template.alloyEditor.onRendered(() => {
-    Session.set('empty-model', true)
     Session.set('model-updated', false)
+    Session.set('inst-updated', false)
     Session.set('inst-shared', false)
     Session.set('currentInstance', 0)
     Session.set('currentState', 0)
