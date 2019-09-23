@@ -278,7 +278,8 @@ Template.alloyEditor.onRendered(() => {
             Session.set('log-class', 'log-info')
             initGraphViewer('instance')
             // load graph JSON data
-            if (cy && model.instance.graph.instance[0].atoms.length > 0) {
+            console.log(model.instance.graph)
+            if (cy && model.instance.graph.instance[0].types) {
                 storeInstances([model.instance.graph])
                 updateGraph(getCurrentInstance())
                 applyPositions()
