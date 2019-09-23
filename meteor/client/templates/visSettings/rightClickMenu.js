@@ -47,7 +47,11 @@ Template.rightClickMenu.helpers({
     },
 
     hideAtomLabel(event) {
-        return 'Show'
+        Session.get('theme-changed')
+        if (sigSettings.getAtomVisibility(event))
+            return sigSettings.getAtomVisibility(event) ? 'Show' : 'Hide'
+        else 
+            return relationSettings.isShowAsArcsOn(event) ? 'Hide' : 'Show'
     }
 })
 
@@ -119,6 +123,7 @@ Template.rightClickMenu.events({
             const val = relationSettings.isShowAsArcsOn(elem)
             relationSettings.updateShowAsArcs(elem, !val)            
         }
+        Session.set('theme-changed', !Session.get('theme-changed'))
         refreshGraph()
         applyCurrentLayout()
     },
@@ -126,6 +131,7 @@ Template.rightClickMenu.events({
         const elem = event.target.getAttribute("elm")
         const val = relationSettings.isShowAsAttributesOn(elem)
         relationSettings.updateShowAsAttributes(elem, !val)
+        Session.set('theme-changed', !Session.get('theme-changed'))
         refreshGraph()
     },
     'click .rightClickProject'() {

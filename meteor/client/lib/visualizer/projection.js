@@ -21,7 +21,6 @@ function processProjection(err, projection) {
     updateGraph(projection[0],false)
 }
 
-
 // projects a new signature, updates elements accordingly
 export function addSigToProjection(newType) {
     const atoms = lastFrame(newType)
