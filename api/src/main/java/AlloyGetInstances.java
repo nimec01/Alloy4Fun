@@ -164,6 +164,7 @@ public class AlloyGetInstances {
 		instanceJSON.add("check", cmd.check);
 		instanceJSON.add("cmd_n", cmd.label);
 		instanceJSON.add("cnt", cnt);
+		instanceJSON.add("static", answer.getMaxTrace() < 0);
 
 		if (answer.satisfiable()) {
 			instanceJSON.add("loop", answer.getLoopState());
@@ -171,25 +172,10 @@ public class AlloyGetInstances {
 			JsonArrayBuilder traceJSON = Json.createArrayBuilder();
 
 			try {
-				Instance sol = answer.debugExtractKInstance();
-
 				for (int i = 0; i < answer.getTraceLength(); i++) {
 					JsonObjectBuilder stateJSON = Json.createObjectBuilder();
 					
 					JsonArrayBuilder atomsJSON = Json.createArrayBuilder();
-					
-//					JsonObjectBuilder intsJSON = Json.createObjectBuilder();
-//					intsJSON.add("type", Sig.SIGINT.toString());
-//					intsJSON.add("isSubsetSig", false);
-//					intsJSON.add("isPrimSig", true);
-//					intsJSON.add("parent", Sig.SIGINT.parent.label);
-//					JsonArrayBuilder instancesJSON = Json.createArrayBuilder();
-//					for (IndexedEntry<TupleSet> e : sol.intTuples()) {
-//						Object atom = e.value().iterator().next().atom(0);
-//						instancesJSON.add(atom.toString());
-//					}
-//					intsJSON.add("values", instancesJSON);
-//					atomsJSON.add(intsJSON);
 					
 					JsonArrayBuilder fieldsJSON = Json.createArrayBuilder();
 	
