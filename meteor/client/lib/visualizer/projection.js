@@ -17,65 +17,10 @@ export function project() {
 
 // processes a frame for projected instance from API response
 function processProjection(err, projection) {
-    console.log(projection)
     if (err) return displayError(err)
-    frame = projection[0]
-    // process atoms and subsets
-    cy.nodes().remove()
-    allNodes.forEach((node) => {
-        for (const i in frame.atoms) {
-            if (node.data().id == frame.atoms[i]) {
-                // for each atom, check relations on frame's atom_rels
-                for (let ar = 0; ar < frame.atom_rels.length; ar++) {
-                    if (frame.atom_rels[ar].atom == node.data().number) {
-                        // the atom has relations
-                        // create the array, or replace by empty
-                        node.data().subsetSigs = []
-                        // add relations to subset sigs
-                        for (let r = 0; r < frame.atom_rels[ar].relations.length; r++) {
-                            node.data().subsetSigs.push(frame.atom_rels[ar].relations[r])
-                            generalSettings.addSubSig(`${frame.atom_rels[ar].relations[r]}`, node.data().type)
-                        }
-                        break
-                    }
-                }
-                // add nodes that are present in frame
-                cy.add(node)
-            }
-        }
-    })
-    // process relations
-    cy.edges().remove()
-    const edges = getProjectionEdges(frame.relations)
-    cy.add(edges)
-    // apply the layout (being applied twice)
-    applyCurrentLayout()
-    // recover node positions
-    applyPositions()
+    updateGraph(projection[0],false)
 }
 
-function getProjectionEdges(relations) {
-    const result = []
-    relations.forEach((relation) => {
-        if (relation.relation != 'Next' && relation.relation != 'First') {
-            for (let i = 0; i < relation.tuples.length; i += relation.arity) {
-                let tuple = []
-                for (let j = i; j < relation.arity + i; j++) tuple.push(relation.tuples[j])
-                result.push({
-                    group: 'edges',
-                    selectable: true,
-                    data: {
-                        relation: relation.relation,
-                        source: tuple[0],
-                        target: tuple[tuple.length - 1],
-                        atoms: tuple.slice(0)
-                    }
-                })
-            }
-        }
-    })
-    return result
-}
 
 // projects a new signature, updates elements accordingly
 export function addSigToProjection(newType) {

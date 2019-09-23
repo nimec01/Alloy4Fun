@@ -217,12 +217,7 @@ relationSettings = (function relationSettings() {
     }
 
     function calculateNodeLabel(nodeEle) {
-        // if built-in type, just return the value
-        if (nodeEle.data().type == 'String' || nodeEle.data().type == 'Int') 
-            return l = nodeEle.data().number
-        // otherwise, type + value
-        else
-            return nodeEle.data().type + nodeEle.data().number
+        return l = nodeEle.data().id
     }
 
     return {

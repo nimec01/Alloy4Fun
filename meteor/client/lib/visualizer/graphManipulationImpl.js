@@ -22,108 +22,87 @@ applyThemeSettings = function () {
     refreshGraph()
     // Backup of whole instance. Helpful for projection.
     allNodes = cy.nodes()
-    // Apply same projections as on previous instances.
-    newInstanceSetup()
 }
 
 // Get atom information received from server ready to upload to cytoscape object.
 getAtoms = function (instance) {
     const atoms = []
     generalSettings.resetHierarchy()
-    if (instance.atoms) {
-        instance.atoms.forEach((sig) => {
-            // built-in sigs
-            if (sig.type == 'String' || sig.type == 'Int') {
-                const tp = sig.type
-                generalSettings.addPrimSig(tp, sig.parent)
-                sig.values.forEach((atom) => {
-                    atoms.push(
-                        {
-                            group: 'nodes',
-                            classes: 'multiline-manual',
-                            data: {
-                                number: atom,
-                                id: atom,
-                                type: tp,
-                                subsetSigs: []
-                            }
+    instance.types.forEach((sig) => {
+        // built-in sigs
+        if (sig.name == 'String' || sig.name == 'Int') {
+            const tp = sig.name
+            generalSettings.addPrimSig(tp, sig.parent)
+            sig.atoms.forEach((atom) => {
+                atoms.push(
+                    {
+                        group: 'nodes',
+                        classes: 'multiline-manual',
+                        data: {
+                            id: atom,
+                            type: tp,
+                            subsetSigs: []
                         }
-                    )
-                })
-            // module sigs
-            } else if (sig.type.toLowerCase().indexOf('this/') > -1) {
-                const tp = sig.type.split('/')[1]
-                const pa = sig.parent.indexOf('/') > -1 ? sig.parent.split('/')[1] : sig.parent
-                // prim sig
-                if (sig.isPrimSig) {
-                    generalSettings.addPrimSig(tp, pa)
-                    sig.values.forEach((atom) => {
-                        atoms.push(
-                            {
-                                group: 'nodes',
-                                classes: 'multiline-manual',
-                                data: {
-                                    number: atom.split('$')[1],
-                                    id: atom,
-                                    type: tp,
-                                    subsetSigs: []
-                                }
-                            }
-                        )
-                    })
-                // sub sig
-                } else {
-                    sig.values.forEach((atom) => {
-                        for (let i = 0; i < atoms.length; i++) {
-                            if (atoms[i].data.id == atom) {
-                                let paren = atoms[i].data.type
-                                paren = paren.indexOf('/') > -1 ? paren.split('/')[1] : paren
-                                const canon = `${tp}:${paren}`
-                                if (!generalSettings.hasSubsetSig(canon)) {
-                                    generalSettings.addSubSig(canon, paren)
-                                }
-                            atoms[i].data.subsetSigs.push(canon)
-                            }
+                    }
+                )
+            })
+        // module sigs
+        } else {
+            const tp = sig.name.indexOf('/') > -1 ? sig.name.split('/')[1] : sig.name
+            const pa = sig.parent.indexOf('/') > -1 ? sig.parent.split('/')[1] : sig.parent
+            generalSettings.addPrimSig(tp, pa)
+            sig.atoms.forEach((atom) => {
+                atoms.push(
+                    {
+                        group: 'nodes',
+                        classes: 'multiline-manual',
+                        data: {
+                            id: atom,
+                            type: tp,
+                            subsetSigs: []
                         }
-                    })
-                }
+                    }
+                )
+            })
+        }
+    })
 
-                return atoms
+    instance.sets.forEach((set) => {
+        set.atoms.forEach((atom) => {
+            const tp = set.name.indexOf('/') > -1 ? set.name.split('/')[1] : set.name
+            for (let i = 0; i < atoms.length; i++) {
+                if (atoms[i].data.id == atom) {
+                    let paren = atoms[i].data.type
+                    paren = paren.indexOf('/') > -1 ? paren.split('/')[1] : paren
+                    const canon = `${tp}:${paren}`
+                    if (!generalSettings.hasSubsetSig(canon)) {
+                        generalSettings.addSubSig(canon, paren)
+                    }
+                atoms[i].data.subsetSigs.push(canon)
+                }
             }
         })
-    }
+    })
 
-    for (const skolem in instance.skolem) {
-        for (const atom in atoms) {
-            if (atoms[atom].data.id == instance.skolem[skolem]) {
-                atoms[atom].data.skolem = skolem
-            }
-        }
-    }
     return atoms
 }
 
 getEdges = function (instance) {
     const result = []
-    if (instance.fields) {
-        instance.fields.forEach((field) => {
-            if (field.type.indexOf('this/') != -1) {
-                field.values.forEach((relation) => {
-                    const { label } = field
-                    result.push({
-                        group: 'edges',
-                        selectable: true,
-                        data: {
-                            relation: label,
-                            source: relation[0],
-                            target: relation[relation.length - 1],
-                            atoms: relation
-                        }
-                    })
-                })
-            }
+    instance.rels.forEach((field) => {
+        field.atoms.forEach((relation) => {
+            result.push({
+                group: 'edges',
+                selectable: true,
+                data: {
+                    relation: field.name,
+                    source: relation[0],
+                    target: relation[relation.length - 1],
+                    atoms: relation
+                }
+            })
         })
-    }
+    })
     return result
 }
 
@@ -171,11 +150,8 @@ initGraphViewer = function (element) {
 
                         // relations as attributes labels
                         let attributes = relationSettings.getAttributeLabel(ele)
-            
-                        // skolem variable labels
-                        const skolems = typeof ele.data().skolem !== 'undefined' ? `\n${ele.data().skolem}` : ''
 
-                        return `${l}${subsigs}\n${attributes}\n${skolems}`
+                        return `${l}${subsigs}\n${attributes}`
                     },
                     'border-style'(ele) {
                         let val
