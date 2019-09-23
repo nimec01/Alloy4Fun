@@ -19,6 +19,7 @@ export function project() {
 function processProjection(err, projection) {
     if (err) return displayError(err)
     updateGraph(projection[0],false)
+    applyPositions()
 }
 
 // projects a new signature, updates elements accordingly

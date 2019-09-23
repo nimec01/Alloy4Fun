@@ -121,6 +121,7 @@ function handleExecuteModel(err, result) {
             resetPositions()
             resetState()
             updateGraph(result.instance[currentState()])
+            newInstanceSetup()
         }
     }
 }
