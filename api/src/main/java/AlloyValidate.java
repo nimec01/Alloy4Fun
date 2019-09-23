@@ -12,7 +12,7 @@ import org.json.JSONObject;
 
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.Err;
-import edu.mit.csail.sdg.alloy4compiler.parser.CompUtil;
+import edu.mit.csail.sdg.parser.CompUtil;
 
 /**
  * The post body should contain a JSON object with the following structure:

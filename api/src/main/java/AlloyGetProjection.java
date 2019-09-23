@@ -15,7 +15,6 @@ import javax.ws.rs.core.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import edu.mit.csail.sdg.alloy4compiler.translator.A4Solution;
 import edu.mit.csail.sdg.alloy4viz.AlloyAtom;
 import edu.mit.csail.sdg.alloy4viz.AlloyInstance;
 import edu.mit.csail.sdg.alloy4viz.AlloyProjection;
@@ -26,6 +25,7 @@ import edu.mit.csail.sdg.alloy4viz.AlloyType;
 import edu.mit.csail.sdg.alloy4viz.StaticInstanceReader;
 import edu.mit.csail.sdg.alloy4viz.StaticProjector;
 import edu.mit.csail.sdg.alloy4viz.VizState;
+import edu.mit.csail.sdg.translator.A4Solution;
 
 @Path("/getProjection")
 public class AlloyGetProjection {
@@ -61,7 +61,7 @@ public class AlloyGetProjection {
 			
 			AlloyProjection currentProjection = new AlloyProjection(map);
 			AlloyInstance projected = StaticProjector.project(myInstance, currentProjection);
-
+			System.out.println(projected.toString());
 			jsonResponseBuilder.add(projectedInstance2JSON(projected));
 			
 			res = jsonResponseBuilder.build().toString();
@@ -125,7 +125,7 @@ public class AlloyGetProjection {
 			jsonRelationsBuilder.add(relationJsonBuilder);
 		}
 		projectionsJSON.add("relations", jsonRelationsBuilder);
-		
+		System.out.println(projectionsJSON.toString());
 		return projectionsJSON;
 	}
 	

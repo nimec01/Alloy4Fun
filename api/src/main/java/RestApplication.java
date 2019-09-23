@@ -1,8 +1,8 @@
 import javax.ws.rs.core.Application;
 
 import edu.mit.csail.sdg.alloy4.Err;
-import edu.mit.csail.sdg.alloy4compiler.ast.Command;
-import edu.mit.csail.sdg.alloy4compiler.translator.A4Solution;
+import edu.mit.csail.sdg.ast.Command;
+import edu.mit.csail.sdg.translator.A4Solution;
 
 import java.util.HashMap;
 import java.util.Map;
