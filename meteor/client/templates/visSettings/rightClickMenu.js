@@ -52,6 +52,16 @@ Template.rightClickMenu.helpers({
             return sigSettings.getAtomVisibility(event) ? 'Show' : 'Hide'
         else 
             return relationSettings.isShowAsArcsOn(event) ? 'Hide' : 'Show'
+    },
+
+    getAllHiddenAtoms() {
+        Session.get('theme-changed')
+        return sigSettings.getAllHiddenAtoms()
+    },
+
+    getAllHiddenRels() {
+        Session.get('theme-changed')
+        return relationSettings.getAllHiddenRels()
     }
 })
 
@@ -122,6 +132,25 @@ Template.rightClickMenu.events({
         } else if (Session.get('rightClickRel')) {
             const val = relationSettings.isShowAsArcsOn(elem)
             relationSettings.updateShowAsArcs(elem, !val)            
+        } else { // how to distinguish? comes from right-click on background
+            const val = sigSettings.getInheritedAtomVisibility(elem)
+            sigSettings.updateAtomVisibility(elem, !val)
+        }
+        Session.set('theme-changed', !Session.get('theme-changed'))
+        refreshGraph()
+        applyCurrentLayout()
+    },
+    'click .hideRel'() {
+        const elem = event.target.getAttribute("elm")
+        if (Session.get('rightClickSig')) {
+            const val = sigSettings.getInheritedAtomVisibility(elem)
+            sigSettings.updateAtomVisibility(elem, !val)
+        } else if (Session.get('rightClickRel')) {
+            const val = relationSettings.isShowAsArcsOn(elem)
+            relationSettings.updateShowAsArcs(elem, !val)            
+        } else {
+            const val = relationSettings.isShowAsArcsOn(elem)
+            relationSettings.updateShowAsArcs(elem, !val)            
         }
         Session.set('theme-changed', !Session.get('theme-changed'))
         refreshGraph()
@@ -147,6 +176,7 @@ Template.rightClickMenu.events({
         sigSettings.init(undefined)
         relationSettings.init(undefined)
         generalSettings.init(undefined)
+        Session.set('theme-changed', !Session.get('theme-changed'))
         refreshGraph()
         applyCurrentLayout()
     },

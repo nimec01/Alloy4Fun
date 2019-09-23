@@ -220,6 +220,17 @@ relationSettings = (function relationSettings() {
         return l = nodeEle.data().id
     }
 
+    function getAllHiddenRels() {
+        const res = []
+        for (let i = 0; i < showAsArcs.length; i++) {
+            if (!showAsArcs[i].showAsArcs) {
+                res.push(showAsArcs[i].relation)
+            }
+        }
+        return res
+    }
+
+
     return {
         init,
         data,
@@ -233,6 +244,7 @@ relationSettings = (function relationSettings() {
         updateEdgeStyle,
         updateEdgeColor,
         updateShowAsAttributes,
-        updateShowAsArcs
+        updateShowAsArcs,
+        getAllHiddenRels
     }
 }())

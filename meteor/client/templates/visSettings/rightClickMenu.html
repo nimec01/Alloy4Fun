@@ -88,6 +88,16 @@
                         </li>
                     </ul>
                 </li>
+                {{#each hidden in getAllHiddenAtoms}}
+                <li class=" {{showGeneralProps}}">
+                    <a elm="{{hidden}}" class="hideAtom" href='#'>Show {{hidden}}</a>
+                </li>
+                {{/each}}
+                {{#each hidden in getAllHiddenRels}}
+                <li class=" {{showGeneralProps}}">
+                    <a elm="{{hidden}}" class="hideRel" href='#'>Show {{hidden}}</a>
+                </li>
+                {{/each}}
                 <li class="{{showGeneralProps}}">
                     <a class="rightClickReset" href='#'>Reset theme</a>
                 </li>

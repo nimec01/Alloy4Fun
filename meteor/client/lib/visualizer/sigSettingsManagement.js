@@ -223,6 +223,16 @@ sigSettings = (function sigSettings() {
         }
     }
 
+    function getAllHiddenAtoms() {
+        const res = []
+        for (let i = 0; i < nodeVisibility.length; i++) {
+            if (nodeVisibility[i].visibility) {
+                res.push(nodeVisibility[i].type)
+            }
+        }
+        return res
+    }
+
     return {
         init,
         data,
@@ -237,6 +247,7 @@ sigSettings = (function sigSettings() {
         updateAtomVisibility,
         updateAtomBorder,
         updateAtomShape,
-        updateAtomColor
+        updateAtomColor,
+        getAllHiddenAtoms
     }
 }())
