@@ -11,7 +11,7 @@ Template.frameNavigation.helpers({
 
     nextFrameEnabled() {
         Session.get('frame-updated')
-        if (!$('.framePickerTarget')[0]) return 'disabled'
+        if (currentlyProjectedSigs.length == 0) return 'disabled'
         const type = $('.framePickerTarget')[0].value
         return (currentFramePosition[type] == lastFrame(type)) ? 'disabled' : ''
     },

@@ -1,14 +1,13 @@
 import cytoscape from 'cytoscape'
 import { updateRightClickContent } from '../../templates/visSettings/rightClickMenu'
-import { instChanged } from '../editor/state'
-import { newInstanceSetup } from './projection'
+import { instChanged,getInstances } from '../editor/state'
+import { newInstanceSetup, savePositions } from './projection'
 
 updateGraph = function (instance,v) {
     // Remove previous nodes and edges.
     cy.remove(cy.elements())
     // Add new ones.
-    const atomElements = getAtoms(instance) 
-    cy.add(atomElements)
+    cy.add(getAtoms(instance))
     cy.add(getEdges(instance))
     cy.resize()
     // Draw data according to the selected layout.
@@ -16,10 +15,10 @@ updateGraph = function (instance,v) {
 }
 
 // Get atom information received from server ready to upload to cytoscape object.
-getAtoms = function (instance) {
+getAtoms = function (inst) {
     const atoms = []
     generalSettings.resetHierarchy()
-    instance.types.forEach((sig) => {
+    inst.types.forEach((sig) => {
         // built-in sigs
         if (sig.name == 'String' || sig.name == 'Int') {
             const tp = sig.name
@@ -58,7 +57,7 @@ getAtoms = function (instance) {
         }
     })
 
-    instance.sets.forEach((set) => {
+    inst.sets.forEach((set) => {
         set.atoms.forEach((atom) => {
             const tp = set.name.indexOf('/') > -1 ? set.name.split('/')[1] : set.name
             for (let i = 0; i < atoms.length; i++) {
@@ -78,9 +77,9 @@ getAtoms = function (instance) {
     return atoms
 }
 
-getEdges = function (instance) {
+getEdges = function (inst) {
     const result = []
-    instance.rels.forEach((field) => {
+    inst.rels.forEach((field) => {
         field.atoms.forEach((relation) => {
             result.push({
                 group: 'edges',
@@ -338,4 +337,20 @@ initGraphViewer = function (element) {
     cy.on('render', (event) => {
         instChanged()
     })
+}
+
+applyCurrentLayout = function () {
+    const tmp = cy.elements()
+    if (getInstances().instance) {
+        getInstances().instance.forEach(x => {
+            cy.add(getAtoms(x))
+            cy.add(getEdges(x))
+        })
+    }
+    // remove the hidden elements so that they are not affected by the layout
+    const hds = cy.elements((element, i) => !i.visible())
+    cy.remove(hds)
+    cy.layout(layouts[generalSettings.getLayout()])
+    savePositions() 
+    cy.remove(cy.elements().subtract(tmp))
 }
