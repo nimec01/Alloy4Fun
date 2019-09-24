@@ -1,5 +1,5 @@
 import { displayError } from '../editor/feedback'
-import { getCurrentInstance } from '../editor/state'
+import { getCurrentState } from '../editor/state'
 
 // the list of types currently projected
 currentlyProjectedSigs = []
@@ -49,7 +49,7 @@ export function removeSigFromProjection(type) {
         $(`.frame-navigation > select option[value = '${type}']`).remove()
     }
     if (currentlyProjectedSigs.length == 0) {
-        const instance = getCurrentInstance()
+        const instance = getCurrentState()
         if (instance) updateGraph(instance)
     } else {
         project()

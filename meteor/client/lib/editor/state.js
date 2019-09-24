@@ -18,7 +18,6 @@ export function modelChanged() {
     Session.set('currentInstance', 0)
     Session.set('currentState', 0)
     Session.set('maxInstance', -1)
-    Session.set('instances', [])
 }
 
 /**
@@ -88,17 +87,16 @@ export function storeInstances(allInstances) {
  *
  * @returns the current stored instance.
  */
-export function getCurrentInstance() {
+export function getCurrentState() {
     const instanceIndex = Session.get('currentInstance')
     const stateIndex = Session.get('currentState')
     if (!instances[instanceIndex]) return undefined
     return instances[instanceIndex].instance[stateIndex]
 }
 
-export function getInstances() {
+export function getCurrentTrace() {
     if (!instances) return undefined
     const instanceIndex = Session.get('currentInstance')
-    const stateIndex = Session.get('currentState')
     return instances[instanceIndex]
 }
 
@@ -136,7 +134,7 @@ export function nextState() {
         Session.set('currentState',instances[instanceIndex].loop)
     else
         Session.set('currentState',stateIndex+1)
-    return getCurrentInstance()
+    return getCurrentState()
 }
 
 export function resetState() {
@@ -164,7 +162,7 @@ export function prevState() {
     const stateIndex = Session.get('currentState')
     if (stateIndex > 0)
         Session.set('currentState',stateIndex-1)
-    return getCurrentInstance()
+    return getCurrentState()
 }
 
 /**

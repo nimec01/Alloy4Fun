@@ -1,7 +1,7 @@
 import cytoscape from 'cytoscape'
 import { updateRightClickContent } from '../../templates/visSettings/rightClickMenu'
-import { instChanged,getInstances } from '../editor/state'
-import { newInstanceSetup, savePositions } from './projection'
+import { instChanged,getCurrentTrace } from '../editor/state'
+import { savePositions } from './projection'
 
 updateGraph = function (instance,v) {
     // Remove previous nodes and edges.
@@ -10,6 +10,7 @@ updateGraph = function (instance,v) {
     cy.add(getAtoms(instance))
     cy.add(getEdges(instance))
     cy.resize()
+    refreshGraph()
     // Draw data according to the selected layout.
     if (!v) applyCurrentLayout()
 }
@@ -96,7 +97,7 @@ getEdges = function (inst) {
     return result
 }
 
-// Selecting an element on the cytoscape canvas recalculates its label. Useful after editing labels
+// Selecting an element on the cytoscape canvas recalculates its label.
 refreshGraph = function () {
     const selected = cy.$(':selected')
     cy.elements().select().unselect()
@@ -244,6 +245,7 @@ initGraphViewer = function (element) {
 
     })
 
+    // right click event on cytoscape's background
     cy.on('cxttap', function(evt){
       var evtTarget = evt.cyTarget;    
       if( evtTarget === cy ){
@@ -300,35 +302,6 @@ initGraphViewer = function (element) {
         return false
     })
 
-    // left click event on cytoscape canvas
-    cy.on('tap', (event) => {
-        const evtTarget = event.cyTarget
-
-        // If clicked background (not a node or edge)
-        if (evtTarget === cy) {
-            $('.relation-settings').slideUp()
-            $('.atom-settings').slideUp()
-            $('.general-settings').slideDown()
-        } else {
-            // Clicked a node
-            if (evtTarget.isNode()) {
-                Session.set('selectedSig', evtTarget.data().type)
-                $('.general-settings').slideUp()
-                $('.relation-settings').slideUp()
-                $('.atom-settings').slideDown()
-                // Redisplay options hidden by subsetsig selection
-                $('.projection-settings').show()
-                $('.hide-nodes-settings').show()
-            } else {
-                // Clicked an edge
-                Session.set('selectedRelation', evtTarget.data().relation)
-                $('.general-settings').slideUp()
-                $('.atom-settings').slideUp()
-                $('.relation-settings').slideDown()
-            }
-        }
-    })
-
     cy.on('tap', (event) => {
         // hide right click menu
         $('#optionsMenu').hide()
@@ -339,10 +312,18 @@ initGraphViewer = function (element) {
     })
 }
 
+/**
+ * Applies the currently selected layout to the current instance.
+ * Hidden elements are ignored. If a trace, all atoms (and relations)
+ * from the complete trace are considered.
+ * Should only be called once by trace.
+ */
 applyCurrentLayout = function () {
+    // backup the models from the current state
     const tmp = cy.elements()
-    if (getInstances().instance) {
-        getInstances().instance.forEach(x => {
+    // collect elements from all other states of the trace
+    if (getCurrentTrace().instance) {
+        getCurrentTrace().instance.forEach(x => {
             cy.add(getAtoms(x))
             cy.add(getEdges(x))
         })
@@ -350,7 +331,10 @@ applyCurrentLayout = function () {
     // remove the hidden elements so that they are not affected by the layout
     const hds = cy.elements((element, i) => !i.visible())
     cy.remove(hds)
+    // actually calculate the layout
     cy.layout(layouts[generalSettings.getLayout()])
+    // save the position of all elements
     savePositions() 
+    // keep only the original ones
     cy.remove(cy.elements().subtract(tmp))
 }

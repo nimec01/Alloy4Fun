@@ -5,7 +5,9 @@ import { shareModel, shareInstance } from '../../lib/editor/genUrl'
 import { executeModel, nextInstance, prevInstance } from '../../lib/editor/executeModel'
 import { downloadTree } from '../../lib/editor/downloadTree'
 import { copyToClipboard } from '../../lib/editor/clipboard'
-import { cmdChanged, isUnsatInstance, prevState, nextState, lastState, currentState, setCurrentState, storeInstances, getCurrentInstance, getInstances } from '../../lib/editor/state'
+import { cmdChanged, isUnsatInstance, prevState, nextState, 
+    lastState, currentState, setCurrentState, storeInstances, 
+    getCurrentState, getCurrentTrace } from '../../lib/editor/state'
 import { staticProjection, savePositions, applyPositions } from '../../lib/visualizer/projection'
 
 Template.alloyEditor.helpers({
@@ -189,7 +191,7 @@ Template.alloyEditor.helpers({
 
     isVariableModel() {
         Session.get('inst-updated')
-        return (getInstances() && getInstances().static) ? 'hidden' : ''
+        return (getCurrentTrace() && getCurrentTrace().static) ? 'hidden' : ''
     },
 
     isEmptyInstance() {
@@ -280,7 +282,7 @@ Template.alloyEditor.onRendered(() => {
             // load graph JSON data
             if (cy && model.instance.graph.instance[0].types) {
                 storeInstances([model.instance.graph])
-                updateGraph(getCurrentInstance())
+                updateGraph(getCurrentState())
                 applyPositions()
                 cy.zoom(model.instance.graph.zoom)
                 cy.pan(model.instance.graph.pan)

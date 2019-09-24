@@ -9,7 +9,7 @@ import { modelShared,
     getCommandIndex,
     instShared,
     currentState,
-    getInstances } from './state'
+    getCurrentTrace } from './state'
 import { savePositions } from '../visualizer/projection'
 
 /**
@@ -44,7 +44,7 @@ export function shareInstance() {
         currentlyProjectedSigs,
         nodePositions
     }
-    Meteor.call('storeInstance', Session.get('last_id'), getCommandIndex(), getInstances(), themeData, handleShareInstance)
+    Meteor.call('storeInstance', Session.get('last_id'), getCommandIndex(), getCurrentTrace(), themeData, handleShareInstance)
 }
 
 /**

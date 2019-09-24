@@ -1,4 +1,4 @@
-import { themeChanged,getCurrentInstance } from '../../lib/editor/state'
+import { themeChanged,getCurrentState } from '../../lib/editor/state'
 import { removeSigFromProjection,
     addSigToProjection,newInstanceSetup } from '../../lib/visualizer/projection'
 
@@ -183,8 +183,7 @@ Template.rightClickMenu.events({
         currentFramePosition = {}
         Session.set('theme-changed', !Session.get('theme-changed'))
         Session.set('frame-updated',!Session.get('frame-updated'))
-        updateGraph(getCurrentInstance())
-        refreshGraph()
+        updateGraph(getCurrentState())
         applyCurrentLayout()
     },
     'click .rightClickReset'() {
@@ -195,8 +194,7 @@ Template.rightClickMenu.events({
         currentFramePosition = {}
         Session.set('frame-updated',!Session.get('frame-updated'))
         Session.set('theme-changed', !Session.get('theme-changed'))
-        updateGraph(getCurrentInstance())
-        refreshGraph()
+        updateGraph(getCurrentState())
         applyCurrentLayout()
     },
     'click #cssmenu li.has-sub>a'(event) {
