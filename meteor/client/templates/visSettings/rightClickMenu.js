@@ -183,8 +183,7 @@ Template.rightClickMenu.events({
         currentFramePosition = {}
         Session.set('theme-changed', !Session.get('theme-changed'))
         Session.set('frame-updated',!Session.get('frame-updated'))
-        updateGraph(getCurrentState())
-        applyCurrentLayout()
+        updateGraph(getCurrentState(),false)
     },
     'click .rightClickReset'() {
         sigSettings.init(undefined)
@@ -194,8 +193,7 @@ Template.rightClickMenu.events({
         currentFramePosition = {}
         Session.set('frame-updated',!Session.get('frame-updated'))
         Session.set('theme-changed', !Session.get('theme-changed'))
-        updateGraph(getCurrentState())
-        applyCurrentLayout()
+        updateGraph(getCurrentState(),false)
     },
     'click #cssmenu li.has-sub>a'(event) {
         $(event.target).removeAttr('href')
