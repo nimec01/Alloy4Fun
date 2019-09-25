@@ -90,7 +90,9 @@ function handleExecuteModel(err, result) {
     }
     Session.set('last_id', result.newModelId) // update the last_id for next derivations
 
-    result = result.instances
+    if (result.instances)
+        result = result.instances
+
     storeInstances(result)
     if (Array.isArray(result)) result = result[0]
 

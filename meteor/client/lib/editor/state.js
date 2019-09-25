@@ -75,7 +75,7 @@ export function storeInstances(allInstances) {
     if (allInstances.alloy_error || allInstances[0].cnt == 0) {
         instances = allInstances
         Session.set('currentInstance', 0)
-        Session.set('maxInstance', allInstances[0].unsat?-1:allInstances.length)
+        Session.set('maxInstance', (allInstances[0] && !allInstances[0].unsat)?allInstances.length:-1)
     } else { // a continuation batch of instances
         instances = instances.concat(allInstances)
         Session.set('maxInstance', maxInstanceNumber + allInstances.length)
@@ -109,7 +109,9 @@ export function getNextInstance() {
     const instanceIndex = Session.get('currentInstance')
     const stateIndex = Session.get('currentState')
     Session.set('currentInstance', instanceIndex + 1)
-    if (instances[instanceIndex + 1].unsat)
+    if (!instances[instanceIndex + 1])
+        return undefined
+    else if (instances[instanceIndex + 1].unsat)
         return instances[instanceIndex + 1]
     else 
         return instances[instanceIndex + 1].instance[stateIndex]
@@ -153,7 +155,7 @@ export function lastState() {
     if (!instances || instances.length == 0)
         return -1
     const instanceIndex = Session.get('currentInstance')
-    if (!instances[instanceIndex].instance)
+    if (!instances[instanceIndex] || !instances[instanceIndex].instance)
         return -1
     return instances[instanceIndex].instance.length
 }
