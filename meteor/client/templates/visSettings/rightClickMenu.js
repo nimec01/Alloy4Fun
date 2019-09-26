@@ -106,7 +106,7 @@ Template.rightClickMenu.events({
         const elem = event.target.getAttribute("elm")
         if (Session.get('rightClickSig')) {
             sigSettings.updateAtomColor(elem, event.target.value)
-        } else if (Session.get('rightClickrel')) {
+        } else if (Session.get('rightClickRel')) {
             relationSettings.updateEdgeColor(elem, event.target.value)
         }
         refreshGraph()
