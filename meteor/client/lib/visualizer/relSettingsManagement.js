@@ -207,7 +207,7 @@ relationSettings = (function relationSettings() {
                 tuple.slice(1).forEach(atom => {
                     temp += calculateNodeLabel(cy.nodes(`[id='${atom}']`)[0]) + '\u2192'
                 })
-                temp = temp.substring(0,temp.length-2) + ','
+                temp = temp.substring(0,temp.length-1) + ','
             })
             atts += `${key}: ${temp.substring(0,temp.length-1)}\n`
         }
