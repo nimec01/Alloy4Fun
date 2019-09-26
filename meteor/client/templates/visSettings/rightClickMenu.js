@@ -143,8 +143,7 @@ Template.rightClickMenu.events({
             sigSettings.updateAtomVisibility(elem, !val)
         }
         Session.set('theme-changed', !Session.get('theme-changed'))
-        refreshGraph()
-        applyCurrentLayout()
+        updateGraph(getCurrentState(),false)
     },
     'click .hideRel'() {
         const elem = event.target.getAttribute("elm")
