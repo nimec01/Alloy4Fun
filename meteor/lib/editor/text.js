@@ -41,7 +41,7 @@ function extractSecrets(code) {
     const tag = secretTag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const pgs = paragraphKeywords
     const pgd = `(?:(?:var|one|abstract|lone|some)\\s+)*${pgs}`
-    const exp = `(${tag}\\s*?\\n\\s*(?:(?:\\/\\*(?:.|\\n)*?\\*\\/\\s*)|(?:\\/\\/.*\\n))*?\\s*(?:${pgd})(?:.|\\n)*?)(?:${tag}\\s*?\\n\\s*)?(?:(?:(?:\\/\\*(?:.|\\n)*?\\*\\/\\s*)|(?:\\/\\/.*\\n))*?\\s*(?:${pgd})\\s|$)`
+    const exp = `(${tag}\\s*?\\n\\s*(?:(?:\\/\\*(?:.|\\n)*?\\*\\/\\s*)|(?:\\/\\/.*\\n)|(?:--.*\\n))*?\\s*(?:${pgd})(?:.|\\n)*?)(?:${tag}\\s*?\\n\\s*)?(?:(?:(?:\\/\\*(?:.|\\n)*?\\*\\/\\s*)|(?:\\/\\/.*\\n)|(?:--.*\\n))*?\\s*(?:${pgd})\\s|$)`
     while (s = code.match(RegExp(exp))) {
         i = code.indexOf(s[0])
         public_code += code.substr(0, i)
@@ -72,7 +72,10 @@ function getCommandsFromCode(code) {
     // To avoid commands that are in comment, comments must be eliminated
     // before parse
     code = code.replace(/\/\/(.*)(\n)/g, '')
+    code = code.replace(/--(.*)(\n)/g, '')
+    code = code.replace(/\/\*((.|\n)*)\*\//g, '')
     let matches = pattern.exec(code)
+    console.log(matches)
 
     while (matches != null) {
         const pre = matches[0].includes('run') ? 'run ' : 'check '
