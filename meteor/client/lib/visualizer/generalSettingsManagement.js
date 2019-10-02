@@ -90,7 +90,7 @@ generalSettings = (function generalSettings() {
         for (const i in metaSubsetSigs) {
             if (metaSubsetSigs[i].type === sigType) return metaSubsetSigs[i].parent
         }
-        return 'univ'
+        throw null
     }
 
     /**

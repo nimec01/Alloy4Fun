@@ -7,6 +7,7 @@ updateGraph = function (instance,v) {
     // Remove previous nodes and edges.
     cy.remove(cy.elements())
     // Add new ones.
+    generalSettings.resetHierarchy()
     cy.add(getAtoms(instance))
     cy.add(getEdges(instance))
     cy.resize()
@@ -18,7 +19,6 @@ updateGraph = function (instance,v) {
 // Get atom information received from server ready to upload to cytoscape object.
 getAtoms = function (inst) {
     const atoms = []
-    generalSettings.resetHierarchy()
     inst.types.forEach((sig) => {
         // built-in sigs
         if (sig.name == 'String' || sig.name == 'Int') {
@@ -68,7 +68,7 @@ getAtoms = function (inst) {
                     if (!generalSettings.hasSubsetSig(canon)) {
                         generalSettings.addSubSig(canon, paren)
                     }
-                atoms[i].data.subsetSigs.push(canon)
+                    atoms[i].data.subsetSigs.push(canon)
                 }
             }
         })

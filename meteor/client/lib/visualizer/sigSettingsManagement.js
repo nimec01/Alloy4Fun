@@ -11,7 +11,7 @@ sigSettings = (function sigSettings() {
         nodeColors = (settings && settings.nodeColors) || [{ type: 'univ', color: '#2ECC40' }]
         nodeShapes = (settings && settings.nodeShapes) || [{ type: 'univ', shape: 'ellipse' }]
         nodeBorders = (settings && settings.nodeBorders) || [{ type: 'univ', border: 'solid' }]
-        nodeVisibility = (settings && settings.nodeVisibility) || [{ type: 'univ', visibility: false }, { type: 'Int', visibility: true }]
+        nodeVisibility = (settings && settings.nodeVisibility) || [{ type: 'univ', visibility: false }, { type: 'Int', visibility: true }, { type: 'seq/Int', visibility: true }]
     }
 
     /**
