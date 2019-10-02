@@ -2,7 +2,7 @@ sigSettings = (function sigSettings() {
     let nodeColors = [{ type: 'univ', color: '#2ECC40' }]
     let nodeShapes = [{ type: 'univ', shape: 'ellipse' }]
     let nodeBorders = [{ type: 'univ', border: 'solid' }]
-    let nodeVisibility = [{ type: 'univ', visibility: false }, { type: 'Int', visibility: true }]
+    let nodeVisibility = [{ type: 'univ', visibility: false }, { type: 'Int', visibility: true }, { type: 'seq/Int', visibility: true }]
 
     /**
      * Initialize signature settings structures.

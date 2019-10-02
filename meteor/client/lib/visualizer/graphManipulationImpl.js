@@ -39,8 +39,8 @@ getAtoms = function (inst) {
             })
         // module sigs
         } else {
-            const tp = sig.name.indexOf('/') > -1 ? sig.name.split('/')[1] : sig.name
-            const pa = sig.parent.indexOf('/') > -1 ? sig.parent.split('/')[1] : sig.parent
+            const tp = sig.name
+            const pa = sig.parent
             generalSettings.addPrimSig(tp, pa)
             sig.atoms.forEach((atom) => {
                 atoms.push(
@@ -60,11 +60,10 @@ getAtoms = function (inst) {
 
     inst.sets.forEach((set) => {
         set.atoms.forEach((atom) => {
-            const tp = set.name.indexOf('/') > -1 ? set.name.split('/')[1] : set.name
+            const tp = set.name
             for (let i = 0; i < atoms.length; i++) {
                 if (atoms[i].data.id == atom) {
                     let paren = atoms[i].data.type
-                    paren = paren.indexOf('/') > -1 ? paren.split('/')[1] : paren
                     const canon = `${tp}:${paren}`
                     if (!generalSettings.hasSubsetSig(canon)) {
                         generalSettings.addSubSig(canon, paren)
