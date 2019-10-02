@@ -157,6 +157,7 @@ initGraphViewer = function (element) {
                         return val
                     },
                     visibility(ele) {
+                        if (ele === 'seq/Int') return 'hidden' // needed for retro-compatibilty with FOL models
                         let val1 = true
                         if (ele.data().subsetSigs.length > 0) {
                             // only hide if all subsigs want to hide
