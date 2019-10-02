@@ -1,6 +1,5 @@
 import { themeChanged,getCurrentState } from '../../lib/editor/state'
-import { removeSigFromProjection,
-    addSigToProjection,newInstanceSetup } from '../../lib/visualizer/projection'
+import { addSigToProjection,newInstanceSetup } from '../../lib/visualizer/projection'
 
 
 Template.rightClickMenu.helpers({
@@ -171,8 +170,7 @@ Template.rightClickMenu.events({
     'click .rightClickProject'() {
         const elem = event.target.getAttribute("elm")
         try {
-            if (currentlyProjectedSigs.indexOf(elem) == -1) addSigToProjection(elem)
-            else removeSigFromProjection(elem)
+            addSigToProjection(elem)
             $('#optionsMenu').hide()
         } catch (err) {
             console.error(err)
@@ -181,6 +179,7 @@ Template.rightClickMenu.events({
     'click .rightClickResetProject'() {
         currentlyProjectedSigs = []
         currentFramePosition = {}
+        $(`.frame-navigation > select`).empty()
         Session.set('theme-changed', !Session.get('theme-changed'))
         Session.set('frame-updated',!Session.get('frame-updated'))
         updateGraph(getCurrentState(),false)
@@ -191,6 +190,7 @@ Template.rightClickMenu.events({
         generalSettings.init(undefined)
         currentlyProjectedSigs = []
         currentFramePosition = {}
+        $(`.frame-navigation > select`).empty()
         Session.set('frame-updated',!Session.get('frame-updated'))
         Session.set('theme-changed', !Session.get('theme-changed'))
         updateGraph(getCurrentState(),false)
