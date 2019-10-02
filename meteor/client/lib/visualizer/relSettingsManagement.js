@@ -43,7 +43,7 @@ relationSettings = (function relationSettings() {
             let naryLabel = ''
             for (let i = 1; i < relEle.data().atoms.length-1; i++) {
                 // get the id the atom 
-                const currentLabel = calculateNodeLabel(cy.nodes(`[id='${relEle.data().atoms[i]}']`)[0])
+                const currentLabel = relEle.data().atoms[i]
                 naryLabel += currentLabel
                 naryLabel += ','
             }
@@ -206,7 +206,7 @@ relationSettings = (function relationSettings() {
             let temp = ''
             aux[key].forEach(tuple => {
                 tuple.slice(1).forEach(atom => {
-                    temp += calculateNodeLabel(cy.nodes(`[id='${atom}']`)[0]) + '\u2192'
+                    temp += atom + '\u2192'
                 })
                 temp = temp.substring(0,temp.length-1) + ','
             })
@@ -215,10 +215,6 @@ relationSettings = (function relationSettings() {
 
         return atts
     
-    }
-
-    function calculateNodeLabel(nodeEle) {
-        return l = nodeEle.data().id
     }
 
     function getAllHiddenRels() {
@@ -238,7 +234,6 @@ relationSettings = (function relationSettings() {
         getEdgeStyle,
         getEdgeColor,
         getEdgeLabel,
-        calculateNodeLabel,
         isShowAsAttributesOn,
         isShowAsArcsOn,
         getAttributeLabel,

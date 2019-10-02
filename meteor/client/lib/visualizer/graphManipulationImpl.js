@@ -8,7 +8,8 @@ updateGraph = function (instance,v) {
     cy.remove(cy.elements())
     // Add new ones.
     generalSettings.resetHierarchy()
-    cy.add(getAtoms(instance))
+    allNodes = getAtoms(instance)
+    cy.add(allNodes)
     cy.add(getEdges(instance))
     cy.resize()
     refreshGraph()
@@ -133,7 +134,7 @@ initGraphViewer = function (element) {
                         return val
                     },
                     label(ele) {
-                        let l = relationSettings.calculateNodeLabel(ele)
+                        let l = ele.data().id
                     
                         // subsig labels
                         const subsigs = ele.data().subsetSigs.length > 0 ? `\n(${ele.data().subsetSigs.map(x => x.split(':')[0])})` : ''
