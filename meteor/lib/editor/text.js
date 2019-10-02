@@ -75,7 +75,6 @@ function getCommandsFromCode(code) {
     code = code.replace(/--(.*)(\n)/g, '')
     code = code.replace(/\/\*((.|\n)*)\*\//g, '')
     let matches = pattern.exec(code)
-    console.log(matches)
 
     while (matches != null) {
         const pre = matches[0].includes('run') ? 'run ' : 'check '

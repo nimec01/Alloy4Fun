@@ -186,15 +186,16 @@ relationSettings = (function relationSettings() {
      *
      * @param {Object} nodeEle the cytoscape node element
      */
-    function getAttributeLabel(nodeEle) {
+    function getAttributeLabel(instance,nodeEle) {
 
         const aux = {}
         // retrieve all outgoing edges
-        nodeEle.outgoers().forEach((edge) => {    
+            getEdges(instance).forEach(edge => {
             // if show as attribute, add tuple to map for later processing
-            if (edge.data().relation && isShowAsAttributesOn(edge.data().relation)) {
-                if (!aux[edge.data().relation]) aux[edge.data().relation] = []
-                aux[edge.data().relation].push(edge.data().atoms)
+            if (edge.data.source === nodeEle.data().id)
+            if (edge.data.relation && isShowAsAttributesOn(edge.data.relation)) {
+                if (!aux[edge.data.relation]) aux[edge.data.relation] = []
+                aux[edge.data.relation].push(edge.data.atoms)
             }
         })
 

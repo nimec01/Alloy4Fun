@@ -1,6 +1,6 @@
 import cytoscape from 'cytoscape'
 import { updateRightClickContent } from '../../templates/visSettings/rightClickMenu'
-import { instChanged,getCurrentTrace } from '../editor/state'
+import { instChanged,getCurrentTrace,getCurrentState } from '../editor/state'
 import { savePositions } from './projection'
 
 updateGraph = function (instance,v) {
@@ -140,8 +140,7 @@ initGraphViewer = function (element) {
                         const subsigs = ele.data().subsetSigs.length > 0 ? `\n(${ele.data().subsetSigs.map(x => x.split(':')[0])})` : ''
 
                         // relations as attributes labels
-                        let attributes = relationSettings.getAttributeLabel(ele)
-
+                        let attributes = relationSettings.getAttributeLabel(getCurrentState(),ele)
                         return `${l}${subsigs}\n${attributes}`
                     },
                     'border-style'(ele) {
