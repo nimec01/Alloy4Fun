@@ -173,6 +173,7 @@ Template.rightClickMenu.events({
         try {
             if (currentlyProjectedSigs.indexOf(elem) == -1) addSigToProjection(elem)
             else removeSigFromProjection(elem)
+            $('#optionsMenu').hide()
         } catch (err) {
             console.error(err)
         }
