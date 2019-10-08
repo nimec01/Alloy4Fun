@@ -70,6 +70,31 @@ check check2
 `
         chai.assert.sameMembers(getCommandsFromCode(code), ["check check2"])
 
+        code = `
+//SECRET 
+pred a {}
+run run1 for 5
+//SECRET 
+pred b {}
+`
+        chai.assert.sameMembers(getCommandsFromCode(code), ["run run1"])
+
+        code = `
+/* Every person is a student. */
+pred inv1 {
+
+}
+
+run run1 {}
+
+/* There are no teachers. */
+pred inv2 {
+
+}
+`
+        chai.assert.sameMembers(getCommandsFromCode(code), ["run run1"])
+
+
     });
 });
 

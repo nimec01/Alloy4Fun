@@ -73,7 +73,7 @@ function getCommandsFromCode(code) {
     // before parse
     code = code.replace(/\/\/(.*)(\n)/g, '')
     code = code.replace(/--(.*)(\n)/g, '')
-    code = code.replace(/\/\*((.|\n)*)\*\//g, '')
+    code = code.replace(/\/\*((.|\n)*?)\*\//g, '')
     let matches = pattern.exec(code)
 
     while (matches != null) {
