@@ -269,7 +269,6 @@ Template.alloyEditor.onRendered(() => {
             generalSettings.init(themeData.generalSettings)
             currentFramePosition = themeData.currentFramePosition
             currentlyProjectedSigs = themeData.currentlyProjectedSigs
-            nodePositions = themeData.nodePositions
             if (currentlyProjectedSigs.length !== 0) staticProjection()
         }
 
@@ -283,6 +282,7 @@ Template.alloyEditor.onRendered(() => {
             if (cy && model.instance.graph.instance[0].types) {
                 storeInstances([model.instance.graph])
                 updateGraph(getCurrentState())
+                nodePositions = themeData.nodePositions
                 applyPositions()
                 cy.zoom(model.instance.graph.zoom)
                 cy.pan(model.instance.graph.pan)
