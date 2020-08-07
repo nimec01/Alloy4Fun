@@ -1,70 +1,30 @@
 sigSettings = (function sigSettings() {
-    let nodeLabels = []
     let nodeColors = [{ type: 'univ', color: '#2ECC40' }]
     let nodeShapes = [{ type: 'univ', shape: 'ellipse' }]
     let nodeBorders = [{ type: 'univ', border: 'solid' }]
-    let unconnectedNodes = [{ type: 'univ', unconnectedNodes: false }]
-    let displayNodesNumber = [{ type: 'univ', displayNodesNumber: true }]
-    let nodeVisibility = [{ type: 'univ', visibility: false }]
+    let nodeVisibility = [{ type: 'univ', visibility: false }, { type: 'Int', visibility: true }, { type: 'seq/Int', visibility: true }]
 
     /**
      * Initialize signature settings structures.
      */
     function init(settings) {
-        nodeLabels = settings.nodeLabels || []
-        nodeColors = settings.nodeColors || [{ type: 'univ', color: '#2ECC40' }]
-        nodeShapes = settings.nodeShapes || [{ type: 'univ', shape: 'ellipse' }]
-        nodeBorders = settings.nodeBorders || [{ type: 'univ', border: 'solid' }]
-        unconnectedNodes = settings.unconnectedNodes || [{ type: 'univ', unconnectedNodes: false }]
-        displayNodesNumber = settings.displayNodesNumber || [{ type: 'univ', displayNodesNumber: true }]
-        nodeVisibility = settings.nodeVisibility || [{ type: 'univ', visibility: false }]
+        nodeColors = (settings && settings.nodeColors) || [{ type: 'univ', color: '#2ECC40' }]
+        nodeShapes = (settings && settings.nodeShapes) || [{ type: 'univ', shape: 'ellipse' }]
+        nodeBorders = (settings && settings.nodeBorders) || [{ type: 'univ', border: 'solid' }]
+        nodeVisibility = (settings && settings.nodeVisibility) || [{ type: 'univ', visibility: false }, { type: 'Int', visibility: true }, { type: 'seq/Int', visibility: true }]
     }
 
     /**
      * Export signature settings structures as object.
      */
     function data() {
-        const data = { nodeLabels,
+        const data = {
             nodeColors,
             nodeShapes,
             nodeBorders,
             nodeBorders,
-            unconnectedNodes,
-            displayNodesNumber,
             nodeVisibility }
         return data
-    }
-
-    /**
-     * Retrieves the atom label property of a sig, initializing to the sig label if
-     * undefined.
-     *
-     * @param {String} sig the sig for which to get the property
-     * @returns {String} the value assigned to the property
-     */
-    function getAtomLabel(sig) {
-        for (let i = 0; i < nodeLabels.length; i++) {
-            if (nodeLabels[i].type === sig) {
-                return nodeLabels[i].label
-            }
-        }
-        nodeLabels.push({ type: sig, label: sig })
-        return sig
-    }
-
-    /**
-     * Updates the atom label property of a sig. Assumes already initialized.
-     *
-     * @param {String} sig the sig for which to update the property
-     * @param {String} newVal the new value for the property
-     */
-    function updateAtomLabel(sig, newVal) {
-        for (let i = 0; i < nodeLabels.length; i++) {
-            if (nodeLabels[i].type === sig) {
-                nodeLabels[i].label = newVal
-                return
-            }
-        }
     }
 
     /**
@@ -227,8 +187,8 @@ sigSettings = (function sigSettings() {
                 return nodeVisibility[i].visibility
             }
         }
-        nodeVisibility.push({ type: sig, visibility: 'inherit' })
-        return 'inherit'
+        nodeVisibility.push({ type: sig, visibility: false })
+        return false
     }
 
     /**
@@ -263,105 +223,14 @@ sigSettings = (function sigSettings() {
         }
     }
 
-    /**
-     * Retrieves the hide unconnected nodes property of a sig, initializing it to
-     * inherit if undefined.
-     *
-     * @param {String} sig the sig for which to get the property
-     * @returns {String} the value assigned to the property
-     */
-    function getHideUnconnectedNodes(sig) {
-        for (let i = 0; i < unconnectedNodes.length; i++) {
-            if (unconnectedNodes[i].type === sig) {
-                return unconnectedNodes[i].unconnectedNodes
+    function getAllHiddenAtoms() {
+        const res = []
+        for (let i = 0; i < nodeVisibility.length; i++) {
+            if (nodeVisibility[i].visibility) {
+                res.push(nodeVisibility[i].type)
             }
         }
-        unconnectedNodes.push({ type: sig, unconnectedNodes: 'inherit' })
-        return 'inherit'
-    }
-
-    /**
-     * Recursively gets the inherited hide unconnected nodes property of a sig.
-     *
-     * @param {String} sig the signature for which to get the property
-     * @returns {String} the inherited property
-     */
-    function getInheritedHideUnconnectedNodes(sig) {
-        let cur = sig
-        let hideUnconnectedNodes = getHideUnconnectedNodes(cur)
-        while (hideUnconnectedNodes === 'inherit') {
-            const parent = generalSettings.getSigParent(cur)
-            hideUnconnectedNodes = getHideUnconnectedNodes(parent)
-            cur = parent
-        }
-
-        return hideUnconnectedNodes
-    }
-
-    /**
-     * Updates the hide unconnected nodes property of a sig. Assumes already
-     * initialized.
-     *
-     * @param {String} sig the sig for which to update the property
-     * @param {String} newVal the new value for the property
-     */
-    function updateHideUnconnectedNodes(sig, newVal) {
-        for (let i = 0; i < unconnectedNodes.length; i++) {
-            if (unconnectedNodes[i].type === sig) {
-                unconnectedNodes[i].unconnectedNodes = newVal
-                return
-            }
-        }
-    }
-
-    /**
-     * Retrieves the display node number property of a sig, initializing it to
-     * inherit if undefined.
-     *
-     * @param {String} sig the sig for which to get the property
-     * @returns {String} the value assigned to the property
-     */
-    function getDisplayNodesNumber(sig) {
-        for (let i = 0; i < displayNodesNumber.length; i++) {
-            if (displayNodesNumber[i].type === sig) {
-                return displayNodesNumber[i].displayNodesNumber
-            }
-        }
-        displayNodesNumber.push({ type: sig, displayNodesNumber: 'inherit' })
-        return 'inherit'
-    }
-
-    /**
-     * Recursively gets the inherited display node numbers property of a sig.
-     *
-     * @param {String} sig the signature for which to get the property
-     * @returns {String} the inherited property
-     */
-    function getInheritedDisplayNodesNumber(sig) {
-        let cur = sig
-        let display = getDisplayNodesNumber(cur)
-        while (display === 'inherit') {
-            const parent = generalSettings.getSigParent(cur)
-            display = getDisplayNodesNumber(parent)
-            cur = parent
-        }
-        return display
-    }
-
-    /**
-     * Updates the display node numbers property of a sig. Assumes already
-     * initialized.
-     *
-     * @param {String} sig the sig for which to update the property
-     * @param {String} newVal the new value for the property
-     */
-    function updateDisplayNodesNumber(sig, newVal) {
-        for (let i = 0; i < displayNodesNumber.length; i++) {
-            if (displayNodesNumber[i].type === sig) {
-                displayNodesNumber[i].displayNodesNumber = newVal
-                return
-            }
-        }
+        return res
     }
 
     return {
@@ -371,21 +240,14 @@ sigSettings = (function sigSettings() {
         getAtomBorder,
         getAtomShape,
         getAtomColor,
-        getAtomLabel,
-        getHideUnconnectedNodes,
-        getDisplayNodesNumber,
         getInheritedAtomVisibility,
         getInheritedAtomBorder,
         getInheritedAtomShape,
         getInheritedAtomColor,
-        getInheritedDisplayNodesNumber,
-        getInheritedHideUnconnectedNodes,
         updateAtomVisibility,
         updateAtomBorder,
-        updateDisplayNodesNumber,
         updateAtomShape,
         updateAtomColor,
-        updateAtomLabel,
-        updateHideUnconnectedNodes
+        getAllHiddenAtoms
     }
 }())

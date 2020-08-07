@@ -15,8 +15,10 @@ import { getCommandIndex,
     getPreviousInstance,
     instChanged,
     isUnsatInstance,
-    getCommandLabel } from './state'
-import { resetPositions } from '../visualizer/projection'
+    getCommandLabel,
+    resetState,
+    currentState } from './state'
+import { resetPositions,newInstanceSetup } from '../visualizer/projection'
 
 /**
  * Execute the model through the selected command. Will call the Alloy API.
@@ -28,8 +30,8 @@ export function executeModel() {
 
     // execute command
     else {
+        modelExecuted()
         const model = textEditor.getValue()
-        Session.set('maxInstance', 0) // this is needed so that the visualizer is shown by the helper before the handler is executed
         Meteor.call('getInstances', model, commandIndex, Session.get('from_private'), Session.get('last_id'), handleExecuteModel)
     }
 }
@@ -54,6 +56,7 @@ export function nextInstance() {
         } else {
             resetPositions()
             updateGraph(ni)
+            newInstanceSetup()
             instChanged()
         }
     }
@@ -67,8 +70,9 @@ export function prevInstance() {
     if (typeof ni !== 'undefined') {
         resetPositions()
         updateGraph(ni)
+        newInstanceSetup()
+        instChanged()
     }
-    instChanged()
 }
 
 /**
@@ -86,7 +90,9 @@ function handleExecuteModel(err, result) {
     }
     Session.set('last_id', result.newModelId) // update the last_id for next derivations
 
-    result = result.instances
+    if (result.instances)
+        result = result.instances
+
     storeInstances(result)
     if (Array.isArray(result)) result = result[0]
 
@@ -115,8 +121,9 @@ function handleExecuteModel(err, result) {
             Session.set('log-class', result.check ? 'log-wrong' : 'log-complete')
             initGraphViewer('instance')
             resetPositions()
-            updateGraph(result)
+            resetState()
+            updateGraph(result.instance[currentState()])
+            newInstanceSetup()
         }
     }
-    modelExecuted()
 }

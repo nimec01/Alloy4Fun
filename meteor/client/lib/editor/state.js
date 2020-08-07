@@ -16,8 +16,8 @@ export function modelChanged() {
     Session.set('log-message', '')
     Session.set('log-class', '')
     Session.set('currentInstance', 0)
+    Session.set('currentState', 0)
     Session.set('maxInstance', -1)
-    Session.set('instances', [])
 }
 
 /**
@@ -40,6 +40,7 @@ export function modelExecuted() {
  * Updates the state when the instance has been changed.
  */
 export function instChanged() {
+    Session.set('inst-updated',!Session.get('inst-updated'))
     Session.set('inst-shared', false)
 }
 
@@ -74,8 +75,8 @@ export function storeInstances(allInstances) {
     if (allInstances.alloy_error || allInstances[0].cnt == 0) {
         instances = allInstances
         Session.set('currentInstance', 0)
-        Session.set('maxInstance', allInstances.length)
-    } else {
+        Session.set('maxInstance', (allInstances[0] && !allInstances[0].unsat)?allInstances.length:-1)
+    } else { // a continuation batch of instances
         instances = instances.concat(allInstances)
         Session.set('maxInstance', maxInstanceNumber + allInstances.length)
     }
@@ -86,7 +87,15 @@ export function storeInstances(allInstances) {
  *
  * @returns the current stored instance.
  */
-export function getCurrentInstance() {
+export function getCurrentState() {
+    const instanceIndex = Session.get('currentInstance')
+    const stateIndex = Session.get('currentState')
+    if (!instances[instanceIndex]) return undefined
+    return instances[instanceIndex].instance[stateIndex]
+}
+
+export function getCurrentTrace() {
+    if (!instances) return undefined
     const instanceIndex = Session.get('currentInstance')
     return instances[instanceIndex]
 }
@@ -98,8 +107,14 @@ export function getCurrentInstance() {
  */
 export function getNextInstance() {
     const instanceIndex = Session.get('currentInstance')
+    const stateIndex = Session.get('currentState')
     Session.set('currentInstance', instanceIndex + 1)
-    return instances[instanceIndex + 1]
+    if (!instances[instanceIndex + 1])
+        return undefined
+    else if (instances[instanceIndex + 1].unsat)
+        return instances[instanceIndex + 1]
+    else 
+        return instances[instanceIndex + 1].instance[stateIndex]
 }
 
 /**
@@ -109,8 +124,47 @@ export function getNextInstance() {
  */
 export function getPreviousInstance() {
     const instanceIndex = Session.get('currentInstance')
+    const stateIndex = Session.get('currentState')
     Session.set('currentInstance', instanceIndex - 1)
-    return instances[instanceIndex - 1]
+    return instances[instanceIndex - 1].instance[stateIndex]
+}
+
+export function nextState() {
+    const stateIndex = Session.get('currentState')
+    const instanceIndex = Session.get('currentInstance')
+    if (stateIndex + 1 == instances[instanceIndex].instance.length)
+        Session.set('currentState',instances[instanceIndex].loop)
+    else
+        Session.set('currentState',stateIndex+1)
+    return getCurrentState()
+}
+
+export function resetState() {
+    Session.set('currentState',0)
+}
+
+export function currentState() {
+    return Session.get('currentState')
+}
+
+export function setCurrentState(st) {
+    Session.set('currentState',st) 
+}
+
+export function lastState() {
+    if (!instances || instances.length == 0)
+        return -1
+    const instanceIndex = Session.get('currentInstance')
+    if (!instances[instanceIndex] || !instances[instanceIndex].instance)
+        return -1
+    return instances[instanceIndex].instance.length
+}
+
+export function prevState() {
+    const stateIndex = Session.get('currentState')
+    if (stateIndex > 0)
+        Session.set('currentState',stateIndex-1)
+    return getCurrentState()
 }
 
 /**

@@ -1,5 +1,4 @@
 relationSettings = (function relationSettings() {
-    let edgeLabels = []
     let edgeColors = []
     let edgeStyles = []
     let showAsArcs = []
@@ -9,18 +8,17 @@ relationSettings = (function relationSettings() {
      * Initialize relation settings structures.
      */
     function init(settings) {
-        edgeLabels = settings.edgeLabels || []
-        edgeColors = settings.edgeColors || []
-        edgeStyles = settings.edgeStyles || []
-        showAsArcs = settings.showAsArcs || []
-        showAsAttributes = settings.showAsAttributes || []
+        edgeColors = (settings && settings.edgeColors) || []
+        edgeStyles = (settings && settings.edgeStyles) || []
+        showAsArcs = (settings && settings.showAsArcs) || []
+        showAsAttributes = (settings && settings.showAsAttributes) || []
     }
 
     /**
      * Export relation settings structures as object.
      */
     function data() {
-        const data = { edgeLabels,
+        const data = {
             edgeColors,
             edgeStyles,
             showAsAttributes,
@@ -35,30 +33,23 @@ relationSettings = (function relationSettings() {
      *
      * @param {String} rel the relation for which to get the property
      * @returns {String} the value assigned to the property
-     */
-    function getEdgeLabel(rel) {
-        for (let i = 0; i < edgeLabels.length; i++) {
-            if (edgeLabels[i].relation === rel) {
-                return edgeLabels[i].label
-            }
-        }
-        edgeLabels.push({ relation: rel, label: rel })
-        return rel
-    }
-
-    /**
-     * Updates the edge label property of a relation. Assumes already initialized.
      *
-     * @param {String} rel the relation for which to update the property
-     * @param {String} newVal the new value for the property
+     * TODO: doc outdated
      */
-    function updateEdgeLabel(rel, newVal) {
-        for (let i = 0; i < edgeLabels.length; i++) {
-            if (edgeLabels[i].relation === rel) {
-                edgeLabels[i].label = newVal
-                return
+    function getEdgeLabel(relEle) {
+        let relLabel = relEle.data().relation
+
+        if (relEle.data().atoms.length > 2) {
+            let naryLabel = ''
+            for (let i = 1; i < relEle.data().atoms.length-1; i++) {
+                // get the id the atom 
+                const currentLabel = relEle.data().atoms[i]
+                naryLabel += currentLabel
+                naryLabel += ','
             }
+            relLabel = `${relLabel} [${naryLabel.substring(0, naryLabel.length - 1)}]`
         }
+        return relLabel
     }
 
     /**
@@ -191,31 +182,51 @@ relationSettings = (function relationSettings() {
     }
 
     /**
-     * Propagates the show as attribues relations into the nodes attribute field.
+     * Calculates the label that shows relations as attributes for a given node.
+     *
+     * @param {Object} nodeEle the cytoscape node element
      */
-    function propagateAttributes() {
-        showAsAttributes.forEach((item) => {
-            rel = item.relation
-            val = item.showAsAttributes
-            cy.nodes().forEach((n) => {
-                n.data().attributes = []
-            })
-            const edges = cy.edges(`[relation='${rel}']`)
-            if (val) {
-                const aux = {}
-                for (let i = 0; i < edges.length; i++) {
-                    if (!aux[edges[i].source().data().id])aux[edges[i].source().data().id] = []
-                    aux[edges[i].source().data().id].push(edges[i].data().labelExt === ''
-                        ? edges[i].target().data().label
-                        : `${edges[i].data().updatedLabelExt}->${edges[i].target().data().label}${edges[i].target().data().number}`)
-                }
-                for (const key in aux) {
-                    if (!cy.nodes(`[id='${key}']`)[0].data().attributes)cy.nodes(`[id='${key}']`)[0].data().attributes = []
-                    cy.nodes(`[id='${key}']`)[0].data().attributes[rel] = aux[key]
-                }
+    function getAttributeLabel(instance,nodeEle) {
+
+        const aux = {}
+        // retrieve all outgoing edges
+            getEdges(instance).forEach(edge => {
+            // if show as attribute, add tuple to map for later processing
+            if (edge.data.source === nodeEle.data().id)
+            if (edge.data.relation && isShowAsAttributesOn(edge.data.relation)) {
+                if (!aux[edge.data.relation]) aux[edge.data.relation] = []
+                aux[edge.data.relation].push(edge.data.atoms)
             }
         })
+
+        // construct the actual label
+        let atts = ''
+
+        for (const key in aux) {
+            let temp = ''
+            aux[key].forEach(tuple => {
+                tuple.slice(1).forEach(atom => {
+                    temp += atom + '\u2192'
+                })
+                temp = temp.substring(0,temp.length-1) + ','
+            })
+            atts += `${key}: ${temp.substring(0,temp.length-1)}\n`
+        }
+
+        return atts
+    
     }
+
+    function getAllHiddenRels() {
+        const res = []
+        for (let i = 0; i < showAsArcs.length; i++) {
+            if (!showAsArcs[i].showAsArcs) {
+                res.push(showAsArcs[i].relation)
+            }
+        }
+        return res
+    }
+
 
     return {
         init,
@@ -225,11 +236,11 @@ relationSettings = (function relationSettings() {
         getEdgeLabel,
         isShowAsAttributesOn,
         isShowAsArcsOn,
-        propagateAttributes,
+        getAttributeLabel,
         updateEdgeStyle,
         updateEdgeColor,
-        updateEdgeLabel,
         updateShowAsAttributes,
-        updateShowAsArcs
+        updateShowAsArcs,
+        getAllHiddenRels
     }
 }())

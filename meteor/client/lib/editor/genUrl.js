@@ -7,7 +7,10 @@
 import { displayError } from './feedback'
 import { modelShared,
     getCommandIndex,
-    instShared } from './state'
+    instShared,
+    currentState,
+    getCurrentTrace } from './state'
+import { savePositions } from '../visualizer/projection'
 
 /**
  * Store and share the current model and generate the sharing URLs.
@@ -18,7 +21,8 @@ export function shareModel() {
         relationSettings: relationSettings.data(),
         generalSettings: generalSettings.data(),
         currentFramePosition,
-        currentlyProjectedSigs
+        currentlyProjectedSigs,
+        nodePositions
     }
 
     const modelToShare = textEditor.getValue()
@@ -30,14 +34,17 @@ export function shareModel() {
  * respective model is already stored due to the execution.
  */
 export function shareInstance() {
+    savePositions()
     const themeData = {
         sigSettings: sigSettings.data(),
         relationSettings: relationSettings.data(),
         generalSettings: generalSettings.data(),
+        currentState: currentState(),
         currentFramePosition,
-        currentlyProjectedSigs
+        currentlyProjectedSigs,
+        nodePositions
     }
-    Meteor.call('storeInstance', Session.get('last_id'), getCommandIndex(), cy.json(), themeData, handleShareInstance)
+    Meteor.call('storeInstance', Session.get('last_id'), getCommandIndex(), getCurrentTrace(), themeData, handleShareInstance)
 }
 
 /**

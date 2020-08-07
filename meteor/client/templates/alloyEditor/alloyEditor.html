@@ -110,9 +110,18 @@
                 <!-- Instance Viewer -->
                 <div class="col-lg-8 col-lg-offset-0 col-xs-10 col-xs-offset-1" {{showInstance}}>
                     <div id="instanceViewer" class="instanceViewer col-xs-12">
+                        <button id="prevTrace" class="cbutton {{isVariableModel}}" {{prevEnabled}}>
+                            <i class="cbutton__icon fa fa-fw fa-arrow-left auto-margin"></i>
+                        </button>
+                        <button id="nextTrace" class="cbutton {{isVariableModel}}">
+                            <i class="cbutton__icon fa fa-fw {{nextShape}} auto-margin"></i>
+                        </button>
+                        <div id="currentTrace" class="{{isVariableModel}}">{{currentTrace}}</div>
+                        <div style="clear: both;"></div>
                         {{> frameNavigation}}
+                        <div class="empty-instance {{isEmptyInstance}}">EMPTY INSTANCE</div>
                         <div id="instance"></div>
-                        {{> visSettings}}
+                        {{> rightClickMenu}}
                     </div>
                 </div>
 
@@ -170,6 +179,8 @@
                 <div class="container">
                     <div id="information" class="text-center col-xs-12">
                         <p>To get started check out these <a target="_blank" href="https://github.com/haslab/Alloy4Fun/wiki/Examples">examples</a>. More information about Alloy is available at <a target="_blank" href="http://alloytools.org">AlloyTools</a>. </p>
+                        <p>Privacy Policy: Alloy4Fun logs all user interactions, including code and options, which may be analyzed and made public for research purposes. Do not share confidential information. However, Alloy4Fun does not collect any personally identifiable information.
+                        </p>
                     </div>
                 </div>
                 <div class="container">

@@ -1,7 +1,8 @@
 import javax.ws.rs.core.Application;
 
-import edu.mit.csail.sdg.translator.A4Solution;
+import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.ast.Command;
+import edu.mit.csail.sdg.translator.A4Solution;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -50,7 +51,7 @@ public class RestApplication extends Application {
 		return cmd.get(str);
 	}
 
-	public static void next(String str) {
+	public static void next(String str) throws Err {
 		answers.get(str).add(getSol(str).next());
 		count.put(str,count.get(str)+1);
 	}

@@ -15,7 +15,6 @@ Meteor.methods({
       */
     storeInstance(modelId, command, instance, themeData) {
         Model.update({ _id: modelId }, { $set: { theme: themeData } })
-
         return Instance.insert({
             model_id: modelId,
             cmd_i: command,

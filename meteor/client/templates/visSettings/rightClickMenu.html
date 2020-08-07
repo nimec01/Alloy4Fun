@@ -1,11 +1,12 @@
 <template name="rightClickMenu">
     <div id="optionsMenu">
         <div id='cssmenu'>
+            {{#each getRightClickLabel in getRightClickLabels}}
             <ul>
-                <li class="has-sub"><a id ="changeAtomColor" href='#'>Change color of {{getRightClickLabel}}</a>
+                <li class="has-sub"><a class="changeAtomColor {{showElemProps}}" href='#'>Change color of {{getRightClickLabel}}</a>
                     <ul>
                         <li>
-                            <select class="changeAtomColorPicker" >
+                            <select elm="{{getRightClickLabel}}" class="changeAtomColorPicker" >
                                 <option value="inherit">Inherit</option>
                                 <option value="#001f3f">Navy</option>
                                 <option value="#0074D9">Blue</option>
@@ -29,10 +30,10 @@
                     </ul>
                 </li>
                 <li class="has-sub {{showSigProps}}">
-                    <a id="changeAtomShape" href='#'>Change shape of {{getRightClickLabel}}</a>
+                    <a class="changeAtomShape" href='#'>Change shape of {{getRightClickLabel}}</a>
                     <ul>
                         <li>
-                            <select class="changeAtomShapePicker" >
+                            <select elm="{{getRightClickLabel}}" class="changeAtomShapePicker" >
                                 <option value="inherit">Inherit</option>
                                 <option value="rectangle">Rectangle</option>
                                 <option value="roundrectangle">Round Rectangle</option>
@@ -49,8 +50,62 @@
                         </li>
                     </ul>
                 </li>
-                <li class="has-sub {{showSigProps}} {{showProjectionProp}}"><a id ="rightClickProject" href='#'>Project over {{getRightClickLabel}}</a></li>
+                <li class="has-sub {{showElemProps}}">
+                    <a class="changeAtomBorder" href='#'>Change stroke of {{getRightClickLabel}}</a>
+                    <ul>
+                        <li>
+                            <select elm="{{getRightClickLabel}}" class="changeAtomBorderPicker" >
+                                <option value="inherit">Inherit</option>
+                                <option value="solid">Solid</option>
+                                <option value="dotted">Dotted</option>
+                                <option value="dashed">Dashed</option>
+                                <option class="{{showSigProps}}" value="double">Double</option>
+                            </select>
+                        </li>
+                    </ul>
+                </li>                
+                <li class="{{showRelProps}}">
+                    <a elm="{{getRightClickLabel}}" class="showAsAttribute" href='#'>Show {{getRightClickLabel}} as attribute</a>
+                </li>                
+                <li class=" {{showElemProps}}">
+                    <a elm="{{getRightClickLabel}}" class="hideAtom" href='#'>{{hideAtomLabel getRightClickLabel}} {{getRightClickLabel}}</a>
+                </li>
+                <li class="{{showSigProps}} {{showProjectionProp}}">
+                    <a elm="{{getRightClickLabel}}" class="rightClickProject" href='#'>Project over {{getRightClickLabel}}</a>
+                </li>
+                <li class="has-sub {{showGeneralProps}}">
+                    <a class="changeLayout" href='#'>Change layout</a>
+                    <ul>
+                        <li>
+                            <select class="changeLayoutPicker">
+                                <option value="breadthfirst">Breadthfirst</option>
+                                <option value="random">Random</option>
+                                <option value="grid">Grid</option>
+                                <option value="circle">Circle</option>
+                                <option value="cocentric">Cocentric</option>
+                                <option value="cose">Cose</option>
+                            </select>
+                        </li>
+                    </ul>
+                </li>
+                {{#each hidden in getAllHiddenAtoms}}
+                <li class=" {{showGeneralProps}}">
+                    <a elm="{{hidden}}" class="hideAtom" href='#'>Show {{hidden}}</a>
+                </li>
+                {{/each}}
+                {{#each hidden in getAllHiddenRels}}
+                <li class=" {{showGeneralProps}}">
+                    <a elm="{{hidden}}" class="hideRel" href='#'>Show {{hidden}}</a>
+                </li>
+                {{/each}}
+                <li class="{{showGeneralProps}} {{isProjected}}">
+                    <a class="rightClickResetProject" href='#'>Reset projection</a>
+                </li>
+                <li class="{{showGeneralProps}}">
+                    <a class="rightClickReset" href='#'>Reset theme</a>
+                </li>
             </ul>
+            {{/each}}
         </div>
     </div>
 </template>

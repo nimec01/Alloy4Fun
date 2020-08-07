@@ -11,7 +11,7 @@ import { paragraphKeywords, secretTag } from '../../lib/editor/text'
 export { defineAlloyMode }
 
 function defineAlloyMode() {
-    const keywords = `${paragraphKeywords}|one|lone|none|some|abstract|all|iff|but|else|extends|set|implies|module|open|and|disj|for|in|no|or|as|Int|String|sum|exactly|iden|let|not|univ`
+    const keywords = `${paragraphKeywords}|one|lone|none|some|abstract|all|iff|but|else|extends|set|implies|module|open|and|disj|for|in|no|or|as|Int|String|sum|exactly|iden|let|not|univ|var|Time|always|historically|eventually|once|after|before|until|since|releases|triggered`
     const tag = secretTag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     CodeMirror.defineSimpleMode('alloy', {
         start: [{
@@ -30,7 +30,7 @@ function defineAlloyMode() {
             token: 'comment',
             next: 'comment' // Jump to comment mode.
         }, {
-            regex: /(\+\+ )|=>|<=>|\+\+|=<|->|>=|\|\||<:|:>|&&|!=|\+|-|&|\.|~|\*|\^|!|#/,
+            regex: /(\+\+ )|=>|<=>|\+\+|=<|->|>=|\|\||<:|:>|&&|!=|\+|-|&|\.|~|\*|\^|!|#|\'/,
             token: 'operator'
         }, {
             // Line comment.

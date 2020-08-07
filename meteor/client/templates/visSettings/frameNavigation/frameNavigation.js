@@ -1,50 +1,54 @@
-import { currentFramePositionToString,
-    savePositions,
+import {savePositions,
     project } from '../../../lib/visualizer/projection'
 
 Template.frameNavigation.helpers({
+    prevFrameEnabled() {
+        Session.get('frame-updated')
+        if (!$('.framePickerTarget')[0]) return 'disabled'
+        const type = $('.framePickerTarget')[0].value
+        return (currentFramePosition[type] == 0) ? 'disabled' : ''
+    },
+
+    nextFrameEnabled() {
+        Session.get('frame-updated')
+        if (currentlyProjectedSigs.length == 0) return 'disabled'
+        const type = $('.framePickerTarget')[0].value
+        return (currentFramePosition[type] == lastFrame(type)) ? 'disabled' : ''
+    },
+
+    showFrameNavigation() {
+        Session.get('frame-updated')
+        return currentlyProjectedSigs.length != 0 ? '' : 'hidden'
+    },
+
+    currentFrame() {
+        Session.get('frame-updated')
+        const position = []
+        for (const key in currentFramePosition) position.push(key + currentFramePosition[key])
+        return position.toString()
+    }
 
 })
 
 Template.frameNavigation.events({
     'click #nextFrame'() {
-        if ($('#nextFrame > button').is(':disabled')) return
-
         const type = $('.framePickerTarget')[0].value
         currentFramePosition[type]++
-        if (currentFramePosition[type] == lastFrame(type)) {
-            $('#nextFrame').prop('disabled', true)
-        }
-        $('#previousFrame').prop('disabled', false)
-        $('.current-frame').html(currentFramePositionToString())
         savePositions()
         project()
+        Session.set('frame-updated',!Session.get('frame-updated'))
     },
     'click #previousFrame'() {
-        if ($('#previousFrame > button').is(':disabled')) return
-
         const type = $('.framePickerTarget')[0].value
         currentFramePosition[type]--
-        if (currentFramePosition[type] == 0) {
-            $('#previousFrame').prop('disabled', true)
-        }
-        $('#nextFrame').prop('disabled', false)
-        $('.current-frame').html(currentFramePositionToString())
         savePositions()
         project()
+        Session.set('frame-updated',!Session.get('frame-updated'))
     },
     'change .framePickerTarget'(event) {
         const selectedSig = event.target.value
         const currentAtom = currentFramePosition[selectedSig]
-        $('#nextFrame').prop('disabled', false)
-        $('#previousFrame').prop('disabled', false)
-        if (currentAtom == lastFrame(selectedSig))$('#nextFrame').prop('disabled', true)
-        if (currentAtom == 0)$('#previousFrame').prop('disabled', true)
     }
-})
-
-Template.frameNavigation.onRendered(() => {
-    $('.frame-navigation').hide()
 })
 
 // retrieves the last index of atoms of a given type, used for frame navigation

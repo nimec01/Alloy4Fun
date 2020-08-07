@@ -5,8 +5,10 @@ import { shareModel, shareInstance } from '../../lib/editor/genUrl'
 import { executeModel, nextInstance, prevInstance } from '../../lib/editor/executeModel'
 import { downloadTree } from '../../lib/editor/downloadTree'
 import { copyToClipboard } from '../../lib/editor/clipboard'
-import { cmdChanged, isUnsatInstance } from '../../lib/editor/state'
-import { staticProjection } from '../../lib/visualizer/projection'
+import { cmdChanged, isUnsatInstance, prevState, nextState, 
+    lastState, currentState, setCurrentState, storeInstances, 
+    getCurrentState, getCurrentTrace } from '../../lib/editor/state'
+import { staticProjection, savePositions, applyPositions } from '../../lib/visualizer/projection'
 
 Template.alloyEditor.helpers({
     /**
@@ -45,7 +47,7 @@ Template.alloyEditor.helpers({
      * already shared and the model is not empty.
      */
     shareModelEnabled() {
-        const enab = !Session.get('model-shared') && !Session.get('empty-model')
+        const enab = !Session.get('model-shared')
         return enab ? '' : 'disabled'
     },
 
@@ -54,7 +56,7 @@ Template.alloyEditor.helpers({
      * model is not empty.
      */
     showModelLinks() {
-        const enab = Session.get('model-shared') && !Session.get('empty-model')
+        const enab = Session.get('model-shared')
         return enab
     },
 
@@ -93,7 +95,7 @@ Template.alloyEditor.helpers({
     showInstance() {
         const m = Session.get('maxInstance')
         const s = Session.get('from-instance')
-        return (s || m === 0 || (m > 0 && (m !== 1 || !isUnsatInstance(0)))) ? '' : 'hidden'
+        return (s || m > 0 || (m > 0 && (m !== 1 || !isUnsatInstance(0)))) ? '' : 'hidden'
     },
 
     /**
@@ -166,8 +168,37 @@ Template.alloyEditor.helpers({
     instanceURL() {
         const id = Session.get('inst-url')
         return `${window.location.origin}/${id}`
-    }
+    },
 
+    prevEnabled() {
+        Session.get('inst-updated')
+        const state = currentState()
+        return (state != 0) ? '' : 'disabled'
+    },
+
+    nextShape() {
+        Session.get('inst-updated')
+        const state = currentState()
+        const last = lastState()
+        return (state == last - 1) ? 'fa-undo' : 'fa-arrow-right'
+    },
+
+    currentTrace() {
+        Session.get('inst-updated')
+        const state = currentState()
+        return state || 0
+    },
+
+    isVariableModel() {
+        Session.get('inst-updated')
+        return (getCurrentTrace() && getCurrentTrace().static) ? 'hidden' : ''
+    },
+
+    isEmptyInstance() {
+        Session.get('inst-updated')
+        if (typeof cy === 'undefined') return 'hidden'
+        return (cy.nodes(':visible').length == 0) ? '' : 'hidden'
+    }
 })
 
 Template.alloyEditor.events({
@@ -181,6 +212,16 @@ Template.alloyEditor.events({
     'click #genUrl > button': shareModel,
     'click #prev > button': prevInstance,
     'click #next > button': nextInstance,
+    'click #nextTrace'() {       
+        savePositions() 
+        updateGraph(nextState(),true)
+        applyPositions()
+    },
+    'click #prevTrace'() {
+        savePositions()
+        updateGraph(prevState(),true)
+        applyPositions()
+    },
     'click #genInstanceUrl > button': shareInstance,
     'click #downloadTree > button': downloadTree,
     'click .clipboardbutton'(evt) {
@@ -189,10 +230,12 @@ Template.alloyEditor.events({
 })
 
 Template.alloyEditor.onRendered(() => {
-    Session.set('empty-model', true)
     Session.set('model-updated', false)
+    Session.set('inst-updated', false)
     Session.set('inst-shared', false)
+    Session.set('frame-updated', false)
     Session.set('currentInstance', 0)
+    Session.set('currentState', 0)
     Session.set('maxInstance', -1)
     Session.set('commands', [])
     Session.set('local-secrets', false)
@@ -220,6 +263,7 @@ Template.alloyEditor.onRendered(() => {
         // retrieve the shared theme
         const themeData = model.theme
         if (themeData) {
+            setCurrentState(themeData.currentState)
             sigSettings.init(themeData.sigSettings)
             relationSettings.init(themeData.relationSettings)
             generalSettings.init(themeData.generalSettings)
@@ -233,12 +277,13 @@ Template.alloyEditor.onRendered(() => {
             Session.set('from-instance', true)
             Session.set('log-message', 'Static shared instance. Execute model to iterate.')
             Session.set('log-class', 'log-info')
-            Session.set('empty-instance', typeof model.instance.graph.elements.nodes === 'undefined')
             initGraphViewer('instance')
             // load graph JSON data
-            if (cy && model.instance.graph.elements.nodes) {
-                cy.add(model.instance.graph.elements)
-                generalSettings.updateElementSelectionContent()
+            if (cy && model.instance.graph.instance[0].types) {
+                storeInstances([model.instance.graph])
+                updateGraph(getCurrentState())
+                nodePositions = themeData.nodePositions
+                applyPositions()
                 cy.zoom(model.instance.graph.zoom)
                 cy.pan(model.instance.graph.pan)
             }
@@ -248,8 +293,6 @@ Template.alloyEditor.onRendered(() => {
     }
     // add click effects to buttons
     buttonsEffects()
-    // and right click menu
-    styleRightClickMenu()
 })
 
 /**
@@ -307,31 +350,4 @@ function buttonsEffects() {
             })
         })
     })
-}
-
-/**
- * Add styles to the right click menu.
- */
-function styleRightClickMenu() {
-    (function ($) {
-        $(document).ready(() => {
-            $('#cssmenu li.active').addClass('open').children('ul').show()
-            $('#cssmenu li.has-sub>a').on('click', function () {
-                $(this).removeAttr('href')
-                const element = $(this).parent('li')
-                if (element.hasClass('open')) {
-                    element.removeClass('open')
-                    element.find('li').removeClass('open')
-                    element.find('ul').slideUp(200)
-                } else {
-                    element.addClass('open')
-                    element.children('ul').slideDown(200)
-                    element.siblings('li').children('ul').slideUp(200)
-                    element.siblings('li').removeClass('open')
-                    element.siblings('li').find('li').removeClass('open')
-                    element.siblings('li').find('ul').slideUp(200)
-                }
-            })
-        })
-    }(jQuery))
 }

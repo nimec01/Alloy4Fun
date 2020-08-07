@@ -1,166 +1,103 @@
 import cytoscape from 'cytoscape'
 import { updateRightClickContent } from '../../templates/visSettings/rightClickMenu'
-import { instChanged } from '../editor/state'
-import { newInstanceSetup } from './projection'
+import { instChanged,getCurrentTrace,getCurrentState } from '../editor/state'
+import { savePositions } from './projection'
 
-updateGraph = function (instance) {
+updateGraph = function (instance,v) {
     // Remove previous nodes and edges.
     cy.remove(cy.elements())
     // Add new ones.
-    const atomElements = getAtoms(instance)
-    cy.add(atomElements)
+    generalSettings.resetHierarchy()
+    allNodes = getAtoms(instance)
+    cy.add(allNodes)
     cy.add(getEdges(instance))
-    Session.set('empty-instance', atomElements.length == 0)
     cy.resize()
-    // Apply same theme settings as previous instance.
-    applyThemeSettings()
-    // Draw data according to the selected layout.
-    applyCurrentLayout()
-}
-
-applyThemeSettings = function () {
-    // Apply show as attributes option set on previous instances.
-    generalSettings.setOriginalAtomNamesValue(!!generalSettings.getUseOriginalAtomNames())
-
-    // In case of label change.
     refreshGraph()
-    // Add types, subsets and relations to selection area on settings tab.
-    generalSettings.updateElementSelectionContent()
-    // Backup of whole instance. Helpful for projection.
-    allNodes = cy.nodes()
-    // Apply same projections as on previous instances.
-    newInstanceSetup()
+    // Draw data according to the selected layout.
+    if (!v) applyCurrentLayout()
 }
-
 
 // Get atom information received from server ready to upload to cytoscape object.
-getAtoms = function (instance) {
+getAtoms = function (inst) {
     const atoms = []
-    generalSettings.resetHierarchy()
-    if (instance.atoms) {
-        instance.atoms.forEach((atom) => {
-            if (atom.type == 'String') {
-                generalSettings.addPrimSig(atom.type, atom.parent)
-                sigSettings.getAtomBorder(atom.type)
-                sigSettings.getAtomColor(atom.type)
-                sigSettings.getAtomShape(atom.type)
-                atom.values.forEach((value) => {
-                    const type = value.substr(1, value.length - 2)
-                    atoms.push(
-                        {
-                            group: 'nodes',
-                            classes: 'multiline-manual',
-                            data: {
-                                number: value,
-                                numberBackup: value,
-                                color: sigSettings.getAtomColor(type),
-                                shape: sigSettings.getAtomShape(type),
-                                id: value,
-                                type: 'String',
-                                label: value,
-                                dollar: '',
-                                border: sigSettings.getAtomBorder(type),
-                                subsetSigs: []
-                            }
+    inst.types.forEach((sig) => {
+        // built-in sigs
+        if (sig.name == 'String' || sig.name == 'Int') {
+            const tp = sig.name
+            generalSettings.addPrimSig(tp, sig.parent)
+            sig.atoms.forEach((atom) => {
+                atoms.push(
+                    {
+                        group: 'nodes',
+                        classes: 'multiline-manual',
+                        data: {
+                            id: atom,
+                            type: tp,
+                            subsetSigs: []
                         }
-                    )
-                    return atoms
-                })
-            } else if (atom.type.toLowerCase().indexOf('this/') > -1) {
-                if (atom.isPrimSig) {
-                    generalSettings.addPrimSig(atom.type.split('/')[1], atom.parent.indexOf('/') > -1 ? atom.parent.split('/')[1] : atom.parent)
-                    sigSettings.getAtomBorder(atom.type.split('/')[1])
-                    sigSettings.getAtomColor(atom.type.split('/')[1])
-                    sigSettings.getAtomShape(atom.type.split('/')[1])
+                    }
+                )
+            })
+        // module sigs
+        } else {
+            const tp = sig.name
+            const pa = sig.parent
+            generalSettings.addPrimSig(tp, pa)
+            sig.atoms.forEach((atom) => {
+                atoms.push(
+                    {
+                        group: 'nodes',
+                        classes: 'multiline-manual',
+                        data: {
+                            id: atom,
+                            type: tp,
+                            subsetSigs: []
+                        }
+                    }
+                )
+            })
+        }
+    })
 
-                    atom.values.forEach((value) => {
-                        if (value.indexOf('/') == -1) var type = value.split('$')[0]
-                        atoms.push(
-                            {
-                                group: 'nodes',
-                                classes: 'multiline-manual',
-                                data: {
-                                    number: value.split('$')[1],
-                                    numberBackup: value.split('$')[1],
-                                    color: sigSettings.getAtomColor(type),
-                                    shape: sigSettings.getAtomShape(type),
-                                    id: value,
-                                    type,
-                                    label: sigSettings.getAtomLabel(type),
-                                    dollar: '',
-                                    border: sigSettings.getAtomBorder(type),
-                                    subsetSigs: []
-                                }
-                            }
-                        )
-                        return atoms
-                    })
-                } else {
-                    atom.values.forEach((value) => {
-                        if (!generalSettings.hasSubsetSig(`${atom.type.split('/')[1]}:${value.split('$')[0]}`)) {
-                            const type = `${atom.type.split('/')[1]}:${value.split('$')[0]}`
-                            generalSettings.addSubSig(`${atom.type.split('/')[1]}:${value.split('$')[0]}`, value.split('$')[0])
-                            sigSettings.getAtomBorder(type)
-                            sigSettings.getAtomColor(type)
-                            sigSettings.getAtomShape(type)
-                            sigSettings.getAtomLabel(type)
-                            sigSettings.updateAtomLabel(type, atom.type.split('/')[1])
-                        }
-                        for (let i = 0; i < atoms.length; i++) {
-                            if (atoms[i].data.id == value) {
-                                atoms[i].data.subsetSigs.push(`${atom.type.split('/')[1]}:${value.split('$')[0]}`)
-                            }
-                        }
-                    })
+    inst.sets.forEach((set) => {
+        set.atoms.forEach((atom) => {
+            const tp = set.name
+            for (let i = 0; i < atoms.length; i++) {
+                if (atoms[i].data.id == atom) {
+                    let paren = atoms[i].data.type
+                    const canon = `${tp}:${paren}`
+                    if (!generalSettings.hasSubsetSig(canon)) {
+                        generalSettings.addSubSig(canon, paren)
+                    }
+                    atoms[i].data.subsetSigs.push(canon)
                 }
-
-                return atoms
             }
         })
-    }
+    })
 
-    for (const skolem in instance.skolem) {
-        for (const atom in atoms) {
-            if (atoms[atom].data.id == instance.skolem[skolem]) {
-                atoms[atom].data.skolem = skolem
-            }
-        }
-    }
     return atoms
 }
 
-getEdges = function (instance) {
+getEdges = function (inst) {
     const result = []
-    if (instance.fields) {
-        instance.fields.forEach((field) => {
-            if (field.type.indexOf('this/') != -1) {
-                field.values.forEach((relation) => {
-                    const { label } = field
-                    const labelExt = relation.slice(1, relation.length - 1).toString()
-                    result.push({
-                        group: 'edges',
-                        selectable: true,
-                        data: {
-                            relation: label,
-                            source: relation[0],
-                            target: relation[relation.length - 1],
-                            label: relationSettings.getEdgeLabel(label),
-                            color: relationSettings.getEdgeColor(label),
-                            // when relation's arity > 2, add remaining involved types to its label
-                            labelExt: field.arity > 2 ? labelExt : '',
-                            // useful when these types have their labels edited. "labelExt" is a backup of the original while "updatedLabelExt" reflects the current state of the world
-                            updatedLabelExt: field.arity > 2 ? labelExt : '',
-                            edgeStyle: relationSettings.getEdgeStyle(label)
-                        }
-                    })
-                })
-            }
+    inst.rels.forEach((field) => {
+        field.atoms.forEach((relation) => {
+            result.push({
+                group: 'edges',
+                selectable: true,
+                data: {
+                    relation: field.name,
+                    source: relation[0],
+                    target: relation[relation.length - 1],
+                    atoms: relation
+                }
+            })
         })
-    }
+    })
     return result
 }
 
-// Selecting an element on the cytoscape canvas recalculates its label. Useful after editing labels
+// Selecting an element on the cytoscape canvas recalculates its label.
 refreshGraph = function () {
     const selected = cy.$(':selected')
     cy.elements().select().unselect()
@@ -168,6 +105,9 @@ refreshGraph = function () {
 }
 
 initGraphViewer = function (element) {
+    // the element must be visible for the layout to be correctly 
+    // applied, but the template will only trigger after
+    document.getElementById(element).parentElement.parentElement.removeAttribute('hidden')
     cy = cytoscape({
         container: document.getElementById(element), // container to render in
         elements: [ // list of graph elements to start with
@@ -194,29 +134,14 @@ initGraphViewer = function (element) {
                         return val
                     },
                     label(ele) {
-                        let val
-                        if (ele.data().subsetSigs.length > 0) {
-                        // TODO: this randomly selects one of the subsigs (as does the AA)
-                            val = sigSettings.getInheritedDisplayNodesNumber(ele.data().subsetSigs[0])
-                        } else val = sigSettings.getInheritedDisplayNodesNumber(ele.data().type)
-                        let l
-                        // if string atom, do not pre-pend the sig label
-                        if (ele.data().label == 'String') l = ele.data().number
-                        // whether to show numbers on labels
-                        else { l = sigSettings.getAtomLabel(ele.data().type) + (val ? (ele.data().dollar + ele.data().number) : '') }
+                        let l = ele.data().id
+                    
                         // subsig labels
-                        const subsigs = ele.data().subsetSigs.length > 0 ? `\n(${ele.data().subsetSigs.map(sigSettings.getAtomLabel)})` : ''
+                        const subsigs = ele.data().subsetSigs.length > 0 ? `\n(${ele.data().subsetSigs.map(x => x.split(':')[0])})` : ''
 
                         // relations as attributes labels
-                        relationSettings.propagateAttributes()
-
-                        let attributes = ''
-                        for (const i in ele.data().attributes) attributes += `\n${cy.edges(`[relation='${i}']`)[0].data().label} : ${ele.data().attributes[i].toString()}`
-
-                        // skolem variable labels
-                        const skolems = typeof ele.data().skolem !== 'undefined' ? `\n${ele.data().skolem}` : ''
-
-                        return `${l}${subsigs}${attributes}${skolems}`
+                        let attributes = relationSettings.getAttributeLabel(getCurrentState(),ele)
+                        return `${l}${subsigs}\n${attributes}`
                     },
                     'border-style'(ele) {
                         let val
@@ -233,17 +158,16 @@ initGraphViewer = function (element) {
                         return val
                     },
                     visibility(ele) {
-                        let val1
-                        let val2
+                        if (ele.data().type === 'seq/Int') return 'hidden' // needed for retro-compatibilty with FOL models
+                        let val1 = true
                         if (ele.data().subsetSigs.length > 0) {
-                            val1 = sigSettings.getInheritedAtomVisibility(ele.data().subsetSigs[0])
-                            val2 = sigSettings.getInheritedHideUnconnectedNodes(ele.data().subsetSigs[0])
+                            // only hide if all subsigs want to hide
+                            ele.data().subsetSigs.forEach(ss =>
+                                val1 = val1 && sigSettings.getInheritedAtomVisibility(ss))
                         } else {
                             val1 = sigSettings.getInheritedAtomVisibility(ele.data().type)
-                            val2 = sigSettings.getInheritedHideUnconnectedNodes(ele.data().type)
                         }
-                        if (val2) val2 = ele.neighbourhood().length == 0
-                        return val1 || val2 ? 'hidden' : 'visible'
+                        return val1 ? 'hidden' : 'visible'
                     },
                     width: 'label',
                     height: 'label',
@@ -261,23 +185,15 @@ initGraphViewer = function (element) {
                 selector: 'edge',
                 style: {
                     width: 1,
-                    'line-color'(ele) { return relationSettings.getEdgeColor(ele.data().relation) },
-                    'target-arrow-color'(ele) { return relationSettings.getEdgeColor(ele.data().relation) },
+                    'line-color'(ele) { 
+                        return relationSettings.getEdgeColor(ele.data().relation) 
+                    },
+                    'target-arrow-color'(ele) { 
+                        return relationSettings.getEdgeColor(ele.data().relation) 
+                    },
                     'target-arrow-shape': 'triangle',
-                    label(ele) {
-                        if (ele.data().labelExt == '') return relationSettings.getEdgeLabel(ele.data().relation)
-
-                        let auxLabelExt = ele.data().labelExt
-                        const sigs = ele.data().labelExt.split(',')
-                        for (let i = 0; i < sigs.length; i++) {
-                            const currentLabel = cy.nodes(`[id='${sigs[i]}']`)[0].data().label + cy.nodes(`[id='${sigs[i]}']`)[0].data().dollar + cy.nodes(`[id='${sigs[i]}']`)[0].data().number
-                            auxLabelExt = auxLabelExt.replace(sigs[i], currentLabel)
-                        }
-                        ele.data().updatedLabelExt = auxLabelExt
-                        return `${ele.data().label}[${auxLabelExt}]`
-
-                        ele.data().updatedLabelExt = auxLabelExt
-                        return `${ele.data().label}[${auxLabelExt}]`
+                    'label'(ele) {
+                        return relationSettings.getEdgeLabel(ele)
                     },
                     'curve-style': 'bezier',
                     'text-valign': 'center',
@@ -329,10 +245,10 @@ initGraphViewer = function (element) {
 
     })
 
-    // right click event on cytoscape's node
-    cy.on('cxttap', 'node', {}, (evt) => {
-        // close side panel
-        $('.settings-panel').removeClass('open')
+    // right click event on cytoscape's background
+    cy.on('cxttap', function(evt){
+      var evtTarget = evt.cyTarget;    
+      if( evtTarget === cy ){
         // Place right click options menu on mouse position and display it
         $('#optionsMenu').css({
             // overlap cytoscape canvas
@@ -344,15 +260,32 @@ initGraphViewer = function (element) {
             left: evt.originalEvent.screenX + 1 + 300 > $(window).width() ? evt.originalEvent.offsetX + 1 - 300 : evt.originalEvent.offsetX + 1
         }).fadeIn('slow')
         Session.set('rightClickRel', undefined)
-        Session.set('rightClickSig', evt.cyTarget.data().type)
+        Session.set('rightClickSig', undefined)
+        updateRightClickContent()
+        return false
+      }
+    });
+
+    // right click event on cytoscape's node
+    cy.on('cxttap', 'node', {}, (evt) => {
+        // Place right click options menu on mouse position and display it
+        $('#optionsMenu').css({
+            // overlap cytoscape canvas
+            'z-index': 10,
+            position: 'absolute',
+            // +1 avoids recapturing right click event and opening browser's context menu.
+            top: evt.originalEvent.offsetY + 1,
+            // if the menu's width overflows page width, place it behind the cursor.
+            left: evt.originalEvent.screenX + 1 + 300 > $(window).width() ? evt.originalEvent.offsetX + 1 - 300 : evt.originalEvent.offsetX + 1
+        }).fadeIn('slow')
+        Session.set('rightClickRel', undefined)
+        Session.set('rightClickSig', [evt.cyTarget.data().type].concat(evt.cyTarget.data().subsetSigs))
         updateRightClickContent()
         return false
     })
 
     // right click event on cytoscape's node
     cy.on('cxttap', 'edge', {}, (evt) => {
-        // close side panel
-        $('.settings-panel').removeClass('open')
         // Place right click options menu on mouse position and display it
         $('#optionsMenu').css({
             // overlap cytoscape canvas
@@ -364,50 +297,44 @@ initGraphViewer = function (element) {
             left: evt.originalEvent.screenX + 1 + 300 > $(window).width() ? evt.originalEvent.offsetX + 1 - 300 : evt.originalEvent.offsetX + 1
         }).fadeIn('slow')
         Session.set('rightClickSig', undefined)
-        Session.set('rightClickRel', evt.cyTarget.data().relation)
+        Session.set('rightClickRel', [evt.cyTarget.data().relation])
         updateRightClickContent()
         return false
-    })
-
-    // left click event on cytoscape canvas
-    cy.on('tap', (event) => {
-        const evtTarget = event.cyTarget
-
-        // If clicked background (not a node or edge)
-        if (evtTarget === cy) {
-            $('.relation-settings').slideUp()
-            $('.atom-settings').slideUp()
-            $('.general-settings').slideDown()
-        } else {
-            // Clicked a node
-            if (evtTarget.isNode()) {
-                Session.set('selectedSig', evtTarget.data().type)
-                $('.general-settings').slideUp()
-                $('.relation-settings').slideUp()
-                $('.atom-settings').slideDown()
-                // Redisplay options hidden by subsetsig selection
-                $('.projection-settings').show()
-                $('.hide-unconnected-settings').show()
-                $('.hide-nodes-settings').show()
-                $('.number-nodes-settings').show()
-            } else {
-                // Clicked an edge
-                Session.set('selectedRelation', evtTarget.data().relation)
-                $('.general-settings').slideUp()
-                $('.atom-settings').slideUp()
-                $('.relation-settings').slideDown()
-            }
-        }
     })
 
     cy.on('tap', (event) => {
         // hide right click menu
         $('#optionsMenu').hide()
-        // close side panel
-        $('.settings-panel').removeClass('open')
     })
 
     cy.on('render', (event) => {
         instChanged()
     })
+}
+
+/**
+ * Applies the currently selected layout to the current instance.
+ * Hidden elements are ignored. If a trace, all atoms (and relations)
+ * from the complete trace are considered.
+ * Should only be called once by trace.
+ */
+applyCurrentLayout = function () {
+    // backup the models from the current state
+    const tmp = cy.elements()
+    // collect elements from all other states of the trace
+    if (getCurrentTrace().instance) {
+        getCurrentTrace().instance.forEach(x => {
+            cy.add(getAtoms(x))
+            cy.add(getEdges(x))
+        })
+    }
+    // remove the hidden elements so that they are not affected by the layout
+    const hds = cy.elements((element, i) => !i.visible())
+    cy.remove(hds)
+    // actually calculate the layout
+    cy.layout(layouts[generalSettings.getLayout()])
+    // save the position of all elements
+    savePositions() 
+    // keep only the original ones
+    cy.remove(cy.elements().subtract(tmp))
 }
