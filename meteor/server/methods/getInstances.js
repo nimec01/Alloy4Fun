@@ -35,7 +35,7 @@ Meteor.methods({
 
             // insert the new model
             const new_model_id = Model.insert(new_model)
-
+            
             // call webservice to get instances
             HTTP.call('POST', `${Meteor.settings.env.API_URL}/getInstances`, {
                 data: {
@@ -43,7 +43,7 @@ Meteor.methods({
                     numberOfInstances: Meteor.settings.env.MAX_INSTANCES,
                     commandIndex: commandIndex,
                     sessionId: new_model_id,
-                    parentId: currentModelId
+                    parentId: currentModelId?currentModelId:''
                 }
             }, (error, result) => {
                 if (error) reject(error)
