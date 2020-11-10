@@ -1,3 +1,4 @@
+package pt.haslab.alloy4fun;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -18,6 +19,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.Err;
@@ -35,24 +38,32 @@ import edu.mit.csail.sdg.parser.CompUtil;
 import edu.mit.csail.sdg.translator.A4Options;
 import edu.mit.csail.sdg.translator.A4Solution;
 import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
-import utils.InstancesRequest;
+import pt.haslab.alloy4fun.utils.InstancesRequest;
 
 @Path("/getInstances")
 public class AlloyGetInstances {
 
+	private static Logger LOGGER = LoggerFactory.getLogger(AlloyGetInstances.class);
+	private static int TIMEOUT = 600;
+	
 	@POST
 	@Produces("text/json")
 	public Response doGet(String body) throws IOException, Err {
 		InstancesRequest req = parseJSON(body);
+		LOGGER.info("Received request for session: "+req.sessionId);
+		LOGGER.debug("Parent session: "+req.parentId);
 		String res = "";
 		List<ErrorWarning> warnings = new ArrayList<ErrorWarning>();
 
-		// session opened, recover solution object
+		// session open, recover solution object
 		if (RestApplication.alive(req.sessionId)) { 
+			LOGGER.info("Found the current session alive ("+req.sessionId+").");
 			res = batchAdd(req,warnings);
 		}
 		// create new solving session
 		else {
+			LOGGER.info("Creating a new session, will live for "+TIMEOUT+"s (\"+req.parentId+\").");
+
 			A4Reporter rep = new A4Reporter() {
 				public void warning (ErrorWarning msg) {
 					warnings.add(msg);
@@ -69,18 +80,20 @@ public class AlloyGetInstances {
 	            bos.close();
 				world = CompUtil.parseEverything_fromFile(rep, null, tmpAls.getAbsolutePath());		
 			} catch (Err e) {
-				e.printStackTrace();
+				LOGGER.error("Alloy errored during model parsing.",e);
 				JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
 				instanceJSON.add("alloy_error", true);
 				instanceJSON.add("msg", e.msg);
 				instanceJSON.add("line", e.pos.y);
 				instanceJSON.add("column", e.pos.x);
+				LOGGER.info("Responding with error message.");
 				return Response.ok(instanceJSON.build().toString()).build();
-			} catch (Exception e) {
-				e.printStackTrace();
+			} catch (IOException e) {
+				LOGGER.error("IO error during model parsing.",e);
 				JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
 				instanceJSON.add("alloy_error", true);
 				instanceJSON.add("msg", e.getMessage());
+				LOGGER.info("Responding with error message.");
 				return Response.ok(instanceJSON.build().toString()).build();
 			}
 			
@@ -93,26 +106,26 @@ public class AlloyGetInstances {
 				RestApplication.add(req.sessionId,ans,command);
 
 				res = batchAdd(req,warnings);
-				
-				System.out.println("* Get instances response");
-				System.out.println(res);
 
+				// session will be closed after 10min
 				ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 				scheduler.schedule(new Runnable() {
 					public void run() {
 						RestApplication.remove(req.sessionId);
 					}
-				}, 600, TimeUnit.SECONDS);
+				}, TIMEOUT, TimeUnit.SECONDS);
 			} catch (Err e) {
-				e.printStackTrace();
+				LOGGER.error("Alloy errored during solving.",e);
 				JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
 				instanceJSON.add("alloy_error", true);
 				instanceJSON.add("msg", e.msg);
 				instanceJSON.add("line", e.pos.y);
 				instanceJSON.add("column", e.pos.x);
+				LOGGER.info("Responding with error message.");
 				return Response.ok(instanceJSON.build().toString()).build();
 			}
 		}
+		LOGGER.info("Responding with solutions.");
 		return Response.ok(res).build();
 	}
 
@@ -134,6 +147,11 @@ public class AlloyGetInstances {
 		return res;
 	}
 
+	/**
+	 * Parses the JSON instance requires.
+	 * @param body the request body
+	 * @return the parsed request
+	 */
 	static private InstancesRequest parseJSON(String body) {
 		JSONObject jo = new JSONObject(body);
 		InstancesRequest req = new InstancesRequest();
@@ -142,10 +160,20 @@ public class AlloyGetInstances {
 		req.numberOfInstances = jo.getInt("numberOfInstances");
 		req.commandIndex = jo.getInt("commandIndex");
 		req.sessionId = jo.getString("sessionId");
+		req.parentId = jo.getString("parentId");
 
 		return req;
 	}
 
+	/**
+	 * Converts an Alloy solution into JSON for the response. Also reports Alloy warning.
+	 * @param sessionId
+	 * @param answer
+	 * @param warns
+	 * @param cmd
+	 * @param cnt
+	 * @return
+	 */
 	static private JsonObject answerToJson(String sessionId, A4Solution answer, List<ErrorWarning> warns, Command cmd, int cnt) {
 		JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
 
@@ -176,13 +204,13 @@ public class AlloyGetInstances {
 					AlloyInstance instance = StaticInstanceReader.parseInstance(tempFile.getAbsoluteFile(),i);
 					traceJSON.add(instanceToJSONObject(instance));
 				}
-			} catch (Err er) {
+			} catch (Err e) {
+				LOGGER.error("Alloy errored during solution parsing.",e);
 				JsonObjectBuilder errorJSON = Json.createObjectBuilder();
-				errorJSON.add("err", String.format("Evaluator error occurred: %s", er));
+				errorJSON.add("err", String.format("Evaluator error occurred: %s", e));
 				return errorJSON.build();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				LOGGER.error("IO error during solution parsing.",e);
 			}
 			
 			instanceJSON.add("instance", traceJSON);
@@ -191,6 +219,11 @@ public class AlloyGetInstances {
 		return instanceJSON.build();
 	}
 
+	/**
+	 * Converts a particular Alloy instance into JSON.
+	 * @param instance the Alloy JSON
+	 * @return the JSON representation of the instance
+	 */
 	static JsonObjectBuilder instanceToJSONObject(AlloyInstance instance) {
 		
 		JsonObjectBuilder stateJSON = Json.createObjectBuilder();

@@ -1,3 +1,4 @@
+package pt.haslab.alloy4fun;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;

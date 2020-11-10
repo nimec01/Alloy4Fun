@@ -1,3 +1,4 @@
+package pt.haslab.alloy4fun;
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -13,7 +14,10 @@ import javax.ws.rs.core.Response;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4viz.AlloyAtom;
 import edu.mit.csail.sdg.alloy4viz.AlloyInstance;
 import edu.mit.csail.sdg.alloy4viz.AlloyProjection;
@@ -25,6 +29,8 @@ import edu.mit.csail.sdg.translator.A4Solution;
 
 @Path("/getProjection")
 public class AlloyGetProjection {
+	private static Logger LOGGER = LoggerFactory.getLogger(AlloyGetProjection.class);
+	
 	@POST
 	@Produces("text/json")
 	public Response doGet(String body) throws IOException {
@@ -35,7 +41,7 @@ public class AlloyGetProjection {
 			A4Solution sol = RestApplication.getSol(req.uuid,req.index);
 			File tempFile = File.createTempFile("a4f", "als");
 			tempFile.deleteOnExit();
-			System.out.println("Projecting "+req.type+" at "+req.index);
+			LOGGER.info("Projecting "+req.type+" at "+req.index);
 			sol.writeXML(tempFile.getAbsolutePath());
 			AlloyInstance myInstance = StaticInstanceReader.parseInstance(tempFile.getAbsoluteFile(),0);
 			
@@ -57,22 +63,21 @@ public class AlloyGetProjection {
 			
 			AlloyProjection currentProjection = new AlloyProjection(map);
 			AlloyInstance projected = StaticProjector.project(myInstance, currentProjection);
-			System.out.println(projected.toString());
+			LOGGER.debug(projected.toString());
 			jsonResponseBuilder.add(AlloyGetInstances.instanceToJSONObject(projected));
 			
 			res = jsonResponseBuilder.build().toString();
 			
 			
-		} catch (Exception e) {
-			e.printStackTrace();
-			res = "invalid uuid";
+		} catch (Err e) {
+			LOGGER.error("Alloy errored during solution parsing.",e);
 		}
 		
 
 		return Response.ok(res).build();
 	}
 	
-	private Request parseJSON(String body) throws Exception {
+	private Request parseJSON(String body) {
 
 		JSONObject jo = new JSONObject(body);
 		String uuid = jo.getString("sessionId");

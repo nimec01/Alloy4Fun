@@ -1,3 +1,4 @@
+package pt.haslab.alloy4fun;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.GET;

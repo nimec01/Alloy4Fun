@@ -1,4 +1,8 @@
+package pt.haslab.alloy4fun;
 import javax.ws.rs.core.Application;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.ast.Command;
@@ -14,6 +18,8 @@ import javax.ws.rs.ApplicationPath;
 @ApplicationPath("/")
 public class RestApplication extends Application {
 	
+	private static Logger LOGGER = LoggerFactory.getLogger(AlloyGetInstances.class);
+	
 	private static Map<String, List<A4Solution>> answers = new HashMap<String, List<A4Solution>>();
 	private static Map<String, Integer> count = new HashMap<String, Integer>();
 	private static Map<String, Command> cmd = new HashMap<String, Command>();
@@ -22,7 +28,10 @@ public class RestApplication extends Application {
 		answers.remove(str);
 		count.remove(str);
 		cmd.remove(str);
-		System.out.println("Removing session, now active: "+answers.size());
+		LOGGER.info("Closing session for "+str+", now active: "+answers.size());
+	    Runtime rt = Runtime.getRuntime();
+	    long usedMB = (rt.totalMemory() - rt.freeMemory()) / 1024 / 1024;
+		LOGGER.debug("Memory used: " + usedMB+"mb.");
 	}
 
 	public static void add(String str, A4Solution ans, Command cm) {
@@ -30,7 +39,10 @@ public class RestApplication extends Application {
 		answers.get(str).add(ans);
 		count.put(str,0);
 		cmd.put(str,cm);
-		System.out.println("Adding session, now active: "+answers.size());
+		LOGGER.info("Opening session for "+str+", now active: "+answers.size());
+	    Runtime rt = Runtime.getRuntime();
+	    long usedMB = (rt.totalMemory() - rt.freeMemory()) / 1024 / 1024;
+		LOGGER.debug("Memory used: " + usedMB+"mb.");
 	}
 
 	public static A4Solution getSol(String str) {
