@@ -55,6 +55,12 @@ public class AlloyGetInstances {
 		String res = "";
 		List<ErrorWarning> warnings = new ArrayList<ErrorWarning>();
 
+		// parent session open, close it
+		if (RestApplication.alive(req.parentId)) {
+			LOGGER.info("Found the parent session alive ("+req.parentId+").");
+			RestApplication.remove(req.parentId);
+		}
+
 		// session open, recover solution object
 		if (RestApplication.alive(req.sessionId)) { 
 			LOGGER.info("Found the current session alive ("+req.sessionId+").");
