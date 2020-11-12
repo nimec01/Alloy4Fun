@@ -68,7 +68,7 @@ public class AlloyGetInstances {
 		}
 		// create new solving session
 		else {
-			LOGGER.info("Creating a new session, will live for "+TIMEOUT+"s (\"+req.parentId+\").");
+			LOGGER.info("Creating a new session, will live for "+TIMEOUT+"s ("+req.parentId+").");
 
 			A4Reporter rep = new A4Reporter() {
 				public void warning (ErrorWarning msg) {
@@ -86,7 +86,7 @@ public class AlloyGetInstances {
 	            bos.close();
 				world = CompUtil.parseEverything_fromFile(rep, null, tmpAls.getAbsolutePath());		
 			} catch (Err e) {
-				LOGGER.error("Alloy errored during model parsing.",e);
+				LOGGER.info("Alloy errored during model parsing: "+e.getMessage());
 				JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
 				instanceJSON.add("alloy_error", true);
 				instanceJSON.add("msg", e.msg);
@@ -121,7 +121,7 @@ public class AlloyGetInstances {
 					}
 				}, TIMEOUT, TimeUnit.SECONDS);
 			} catch (Err e) {
-				LOGGER.error("Alloy errored during solving.",e);
+				LOGGER.info("Alloy errored during solving: ",e.getMessage());
 				JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
 				instanceJSON.add("alloy_error", true);
 				instanceJSON.add("msg", e.msg);
