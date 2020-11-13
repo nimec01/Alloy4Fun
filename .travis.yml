@@ -4,6 +4,7 @@ node_js:
 addons:
   chrome: stable
 before_script:
+  - bundle exec chromedriver-update 73.0.3683.68
   - cd meteor
   - curl https://install.meteor.com | /bin/sh
   - export PATH=$HOME/.meteor:$PATH
