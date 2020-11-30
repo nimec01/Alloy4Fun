@@ -32,7 +32,7 @@ public class RestApplication extends Application {
 	    Runtime rt = Runtime.getRuntime();
 	    long usedMB = (rt.totalMemory() - rt.freeMemory()) / 1024 / 1024;
 		LOGGER.debug("Memory used: " + usedMB+"mb.");
-		LOGGER.debug("Number of active threads: " + Thread.getAllStackTraces());
+		LOGGER.debug("Number of active threads: " + Thread.activeCount());
 	}
 
 	public static void add(String str, A4Solution ans, Command cm) {
@@ -44,7 +44,7 @@ public class RestApplication extends Application {
 	    Runtime rt = Runtime.getRuntime();
 	    long usedMB = (rt.totalMemory() - rt.freeMemory()) / 1024 / 1024;
 		LOGGER.debug("Memory used: " + usedMB+"mb.");
-		LOGGER.debug("Number of active threads: " + Thread.getAllStackTraces());
+		LOGGER.debug("Number of active threads: " + Thread.activeCount());
 	}
 
 	public static A4Solution getSol(String str) {
