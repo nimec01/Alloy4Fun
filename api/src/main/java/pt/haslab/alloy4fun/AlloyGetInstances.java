@@ -118,8 +118,10 @@ public class AlloyGetInstances {
 				scheduler.schedule(new Runnable() {
 					public void run() {
 						RestApplication.remove(req.sessionId);
+						scheduler.shutdownNow();
 					}
 				}, TIMEOUT, TimeUnit.SECONDS);
+
 			} catch (Err e) {
 				LOGGER.info("Alloy errored during solving: ",e.getMessage());
 				JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
