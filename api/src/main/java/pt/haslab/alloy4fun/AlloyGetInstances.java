@@ -3,9 +3,6 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +30,7 @@ import edu.mit.csail.sdg.alloy4viz.AlloyTuple;
 import edu.mit.csail.sdg.alloy4viz.AlloyType;
 import edu.mit.csail.sdg.alloy4viz.StaticInstanceReader;
 import edu.mit.csail.sdg.ast.Command;
+import edu.mit.csail.sdg.ast.Func;
 import edu.mit.csail.sdg.parser.CompModule;
 import edu.mit.csail.sdg.parser.CompUtil;
 import edu.mit.csail.sdg.translator.A4Options;
@@ -44,7 +42,6 @@ import pt.haslab.alloy4fun.utils.InstancesRequest;
 public class AlloyGetInstances {
 
 	private static Logger LOGGER = LoggerFactory.getLogger(AlloyGetInstances.class);
-	private static int TIMEOUT = 600;
 	
 	@POST
 	@Produces("text/json")
@@ -58,6 +55,7 @@ public class AlloyGetInstances {
 		// parent session open, close it
 		if (RestApplication.alive(req.parentId)) {
 			LOGGER.info("Found the parent session alive ("+req.parentId+").");
+			// TODO: this does not shutdown the timeout thread waiting to remove, thread will remain until timeout
 			RestApplication.remove(req.parentId);
 		}
 
@@ -68,7 +66,7 @@ public class AlloyGetInstances {
 		}
 		// create new solving session
 		else {
-			LOGGER.info("Creating a new session, will live for "+TIMEOUT+"s ("+req.parentId+").");
+			LOGGER.info("Creating a new session ("+req.parentId+").");
 
 			A4Reporter rep = new A4Reporter() {
 				public void warning (ErrorWarning msg) {
@@ -85,6 +83,7 @@ public class AlloyGetInstances {
 	            bos.flush();
 	            bos.close();
 				world = CompUtil.parseEverything_fromFile(rep, null, tmpAls.getAbsolutePath());		
+				tmpAls.deleteOnExit();
 			} catch (Err e) {
 				LOGGER.info("Alloy errored during model parsing: "+e.getMessage());
 				JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
@@ -109,18 +108,9 @@ public class AlloyGetInstances {
 			Command command = world.getAllCommands().get(req.commandIndex);
 			try {
 				A4Solution ans = TranslateAlloyToKodkod.execute_command(rep, world.getAllReachableSigs(), command, opt);
-				RestApplication.add(req.sessionId,ans,command);
+				RestApplication.add(req.sessionId,ans,command,world.getAllFunc());
 
 				res = batchAdd(req,warnings);
-
-				// session will be closed after 10min
-				ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-				scheduler.schedule(new Runnable() {
-					public void run() {
-						RestApplication.remove(req.sessionId);
-						scheduler.shutdownNow();
-					}
-				}, TIMEOUT, TimeUnit.SECONDS);
 
 			} catch (Err e) {
 				LOGGER.info("Alloy errored during solving: ",e.getMessage());
@@ -142,14 +132,15 @@ public class AlloyGetInstances {
 		A4Solution ans = RestApplication.getSol(req.sessionId);
 		Command cmd = RestApplication.getCommand(req.sessionId);
 		int cnt = RestApplication.getCnt(req.sessionId);
+		Iterable<Func> skolems = RestApplication.getSkolem(req.sessionId);
 		for (int n = 0; n < req.numberOfInstances && ans.satisfiable(); n++) {
-			solsArrayJSON.add(answerToJson(req.sessionId, ans, warnings, cmd, cnt));
+			solsArrayJSON.add(answerToJson(req.sessionId, ans, skolems, warnings, cmd, cnt));
 			RestApplication.next(req.sessionId);
 			ans = RestApplication.getSol(req.sessionId);
 			cnt = RestApplication.getCnt(req.sessionId);
 		}
 		if (!ans.satisfiable())
-			solsArrayJSON.add(answerToJson(req.sessionId, ans, warnings, cmd, cnt));
+			solsArrayJSON.add(answerToJson(req.sessionId, ans, skolems, warnings, cmd, cnt));
 		String res = solsArrayJSON.build().toString();
 
 		return res;
@@ -182,7 +173,7 @@ public class AlloyGetInstances {
 	 * @param cnt
 	 * @return
 	 */
-	static private JsonObject answerToJson(String sessionId, A4Solution answer, List<ErrorWarning> warns, Command cmd, int cnt) {
+	static private JsonObject answerToJson(String sessionId, A4Solution answer, Iterable<Func> skolems, List<ErrorWarning> warns, Command cmd, int cnt) {
 		JsonObjectBuilder instanceJSON = Json.createObjectBuilder();
 
 		if (warns.size() > 0) {
@@ -207,7 +198,7 @@ public class AlloyGetInstances {
 			try {
 				File tempFile = File.createTempFile("a4f", "als");
 				tempFile.deleteOnExit();
-				answer.writeXML(tempFile.getAbsolutePath());
+				answer.writeXML(tempFile.getAbsolutePath(),skolems);
 				for (int i = 0; i < answer.getTraceLength(); i++) {
 					AlloyInstance instance = StaticInstanceReader.parseInstance(tempFile.getAbsoluteFile(),i);
 					traceJSON.add(instanceToJSONObject(instance));
