@@ -99,6 +99,7 @@ getEdges = function (inst) {
             })
         })
     })
+    
     return result
 }
 
@@ -145,7 +146,7 @@ initGraphViewer = function (element) {
                         const subsigs = ele.data().subsetSigs.length > 0 ? `\n(${ele.data().subsetSigs.map(x => x.split(':')[0])})` : ''
 
                         // relations as attributes labels
-                        let attributes = relationSettings.getAttributeLabel(getCurrentState(),ele)
+                        let attributes = relationSettings.getAttributeLabel(ele)
                         return `${l}${subsigs}\n${attributes}`
                     },
                     'border-style'(ele) {
