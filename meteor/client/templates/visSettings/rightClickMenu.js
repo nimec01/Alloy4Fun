@@ -140,6 +140,7 @@ Template.rightClickMenu.events({
         }
         Session.set('theme-changed', !Session.get('theme-changed'))
         updateGraph(getCurrentState(),false)
+        newInstanceSetup()
     },
     'click .showAsAttribute'() {
         const elem = event.target.getAttribute("elm")
