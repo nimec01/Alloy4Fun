@@ -17,7 +17,8 @@ Template.alloyEditor.helpers({
      */
     execEnabled() {
         const commands = Session.get('commands')
-        const enab = Session.get('model-updated') && commands.length > 0
+        const running = Session.get('is_running')
+        const enab = !running && Session.get('model-updated') && commands.length > 0
         return enab ? '' : 'disabled'
     },
 
@@ -122,7 +123,12 @@ Template.alloyEditor.helpers({
         const cmds = Session.get('hidden_commands')
         const inherits = cmds ? cmds.length > 0 : false
         const hasLocal = Session.get('local-secrets')
+
         return inherits && !hasLocal
+    },
+
+    isRunning() {
+        return Session.get('is_running')
     },
 
     /**

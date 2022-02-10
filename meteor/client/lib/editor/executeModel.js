@@ -24,6 +24,7 @@ import { resetPositions,newInstanceSetup } from '../visualizer/projection'
  * Execute the model through the selected command. Will call the Alloy API.
  */
 export function executeModel() {
+    Session.set('is_running',true)
     const commandIndex = getCommandIndex()
     // no command to run
     if (commandIndex < 0) displayError('There are no commands to execute', '')
@@ -86,6 +87,7 @@ export function prevInstance() {
  *     meteor calls
  */
 function handleExecuteModel(err, result) {
+    Session.set('is_running',false)
     if (err) {
         maxInstanceNumber = -1
         return displayError(err)
