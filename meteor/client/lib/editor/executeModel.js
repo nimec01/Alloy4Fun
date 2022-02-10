@@ -58,6 +58,7 @@ export function nextInstance() {
             updateGraph(ni)
             newInstanceSetup()
             instChanged()
+            Meteor.call('navInstance', 0, Session.get('currentInstance'), Session.get('last_id'))
         }
     }
 }
@@ -72,6 +73,7 @@ export function prevInstance() {
         updateGraph(ni)
         newInstanceSetup()
         instChanged()
+        Meteor.call('navInstance', 1, Session.get('currentInstance'), Session.get('last_id'))
     }
 }
 
