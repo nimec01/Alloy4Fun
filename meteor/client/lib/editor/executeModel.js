@@ -5,9 +5,9 @@
  */
 
 import { displayError,
-    displayWarningMsg,
     displayInfoMsg,
-    displayErrorMsg } from './feedback'
+    markEditorError,
+    markEditorWarning} from './feedback'
 import { getCommandIndex,
     storeInstances,
     modelExecuted,
@@ -26,6 +26,7 @@ import { resetPositions,newInstanceSetup } from '../visualizer/projection'
 export function executeModel() {
     Session.set('is_running',true)
     const commandIndex = getCommandIndex()
+
     // no command to run
     if (commandIndex < 0) displayError('There are no commands to execute', '')
 
@@ -103,31 +104,42 @@ function handleExecuteModel(err, result) {
     // if there error returned by Alloy
     if (result.alloy_error) {
         let resmsg = result.msg
-        if (result.line) resmsg = `${resmsg} (${result.line}:${result.column})`
-        resmsg += '\n'
-        displayErrorMsg('There was a problem running the model!', `${resmsg}Please validate your model.`)
+        if (result.line) {
+            resmsg = `${resmsg} (${result.line}:${result.column})-(${result.line2}:${result.column2})`
+            markEditorError(result.line - 1, result.column - 1, result.line2 - 1, result.column2 - 1)
+        }
+        console.error(`There was a problem running the model!\n${resmsg}\nPlease validate your model.`)
+        Session.set('log-message', msg)
+        Session.set('log-class', 'log-error')
     }
     // else, show instance or unsat
     else {
         const command = getCommandLabel()
 
+        log_messages = []
+        log_classes = []
+
         if (result.warning_error) {
             let resmsg = result.msg
-            if (result.line) resmsg = `${resmsg} (${result.line}:${result.column})`
-            resmsg += '\n'
-            displayWarningMsg('There is a possible problem with the model!', resmsg)
+            if (result.line) resmsg = `${resmsg} (${result.line}:${result.column})-(${result.line2}:${result.column2})`
+            log_messages.push(`There is a possible problem with the model!\n${resmsg}\n`)
+            log_classes.push('log-warning')
+            markEditorWarning(result.line - 1, result.column - 1, result.line2 - 1, result.column2 - 1)
         }
         if (result.unsat) {
-            Session.set('log-message', result.check ? `No counter-examples. ${command} may be valid.` : `No instance found. ${command} may be inconsistent.`)
-            Session.set('log-class', result.check ? 'log-complete' : 'log-wrong')
+            log_messages.push(result.check ? `No counter-examples. ${command} may be valid.` : `No instance found. ${command} may be inconsistent.`)
+            log_classes.push(result.check ? 'log-complete' : 'log-wrong')
         } else {
-            Session.set('log-message', result.check ? `Counter-example found. ${command} is invalid.` : `Instance found. ${command} is consistent.`)
-            Session.set('log-class', result.check ? 'log-wrong' : 'log-complete')
+            log_messages.push(result.check ? `Counter-example found. ${command} is invalid.` : `Instance found. ${command} is consistent.`)
+            log_classes.push(result.check ? 'log-wrong' : 'log-complete')
             initGraphViewer('instance')
             resetPositions()
             resetState()
             updateGraph(result.instance[currentState()])
             newInstanceSetup()
         }
+
+        Session.set('log-message', log_messages)
+        Session.set('log-class', log_classes)
     }
 }

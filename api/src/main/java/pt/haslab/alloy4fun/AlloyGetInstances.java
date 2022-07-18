@@ -15,6 +15,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
+import edu.mit.csail.sdg.alloy4.Pos;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,6 +92,8 @@ public class AlloyGetInstances {
 				instanceJSON.add("msg", e.msg);
 				instanceJSON.add("line", e.pos.y);
 				instanceJSON.add("column", e.pos.x);
+				instanceJSON.add("line2", e.pos.y2);
+				instanceJSON.add("column2", e.pos.x2);
 				LOGGER.info("Responding with error message.");
 				return Response.ok(instanceJSON.build().toString()).build();
 			} catch (IOException e) {
@@ -119,6 +122,8 @@ public class AlloyGetInstances {
 				instanceJSON.add("msg", e.msg);
 				instanceJSON.add("line", e.pos.y);
 				instanceJSON.add("column", e.pos.x);
+				instanceJSON.add("line2", e.pos.y2);
+				instanceJSON.add("column2", e.pos.x2);
 				LOGGER.info("Responding with error message.");
 				return Response.ok(instanceJSON.build().toString()).build();
 			}
@@ -181,6 +186,8 @@ public class AlloyGetInstances {
 			instanceJSON.add("msg", warns.get(0).msg);
 			instanceJSON.add("line", warns.get(0).pos.y);
 			instanceJSON.add("column", warns.get(0).pos.x);
+			instanceJSON.add("line2", warns.get(0).pos.y2);
+			instanceJSON.add("column2", warns.get(0).pos.x2);
 		}
 
 		instanceJSON.add("sessionId", sessionId.toString());
