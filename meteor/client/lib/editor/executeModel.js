@@ -108,8 +108,9 @@ function handleExecuteModel(err, result) {
             resmsg = `${resmsg} (${result.line}:${result.column})-(${result.line2}:${result.column2})`
             markEditorError(result.line - 1, result.column - 1, result.line2 - 1, result.column2 - 1)
         }
-        console.error(`There was a problem running the model!\n${resmsg}\nPlease validate your model.`)
-        Session.set('log-message', msg)
+        resmsg = `There was a problem running the model!\n${resmsg}\nPlease validate your model.`
+        console.error(resmsg)
+        Session.set('log-message', resmsg)
         Session.set('log-class', 'log-error')
     }
     // else, show instance or unsat
