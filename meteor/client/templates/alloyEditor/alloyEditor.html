@@ -107,7 +107,9 @@
                 {{/if}}
 
                 <div class="col-lg-6 col-xs-10 col-xs-offset-1" id="log">
-                    <p class="{{logClass}}">{{logMessage}}</p>
+                    {{#each logs}}
+                        <p class="{{class}}">{{message}}</p>
+                    {{/each}}
                 </div>
 
                 <!-- Instance Viewer -->
