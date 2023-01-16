@@ -5,7 +5,6 @@
  */
 
 import { displayError,
-    displayInfoMsg,
     markEditorError,
     markEditorWarning} from './feedback'
 import { getCommandIndex,
@@ -19,6 +18,8 @@ import { getCommandIndex,
     resetState,
     currentState } from './state'
 import { resetPositions,newInstanceSetup } from '../visualizer/projection'
+
+const no_more_msg = 'No more satisfying instances!'
 
 /**
  * Execute the model through the selected command. Will call the Alloy API.
@@ -43,6 +44,15 @@ export function executeModel() {
  * instances if no more cached, unless already unsat. May call the Alloy API.
  */
 export function nextInstance() {
+    log_messages = Session.get('log-message')
+    log_classes = Session.get('log-class')
+    if (log_messages[log_messages.length-1] == no_more_msg) {
+        log_messages.pop()
+        log_classes.pop()
+        Session.set('log-message',log_messages)
+        Session.set('log-class',log_classes)
+    }
+
     const instanceIndex = Session.get('currentInstance')
     const maxInstanceNumber = Session.get('maxInstance')
     // no more local instances but still not unsat
@@ -54,7 +64,13 @@ export function nextInstance() {
     if (typeof ni !== 'undefined') {
         if (ni.unsat) {
             Session.set('currentInstance', instanceIndex)
-            displayInfoMsg('No more satisfying instances!', '')
+            log_messages = Session.get('log-message')
+            log_messages.push(no_more_msg)
+            Session.set('log-message',log_messages)
+
+            log_classes = Session.get('log-class')
+            log_classes.push('log-info')
+            Session.set('log-class',log_classes)
         } else {
             resetPositions()
             updateGraph(ni)
@@ -69,6 +85,16 @@ export function nextInstance() {
  * Show the previous instance for the executed command, always cached if any.
  */
 export function prevInstance() {
+    log_messages = Session.get('log-message')
+    log_classes = Session.get('log-class')
+    if (log_messages[log_messages.length-1] == no_more_msg) {
+        log_messages.pop()
+        log_classes.pop()
+        Session.set('log-message',log_messages)
+        Session.set('log-class',log_classes)
+    }
+
+
     const ni = getPreviousInstance()
     if (typeof ni !== 'undefined') {
         resetPositions()
@@ -108,7 +134,7 @@ function handleExecuteModel(err, result) {
             resmsg = `${resmsg} (${result.line}:${result.column})-(${result.line2}:${result.column2})`
             markEditorError(result.line - 1, result.column - 1, result.line2 - 1, result.column2 - 1)
         }
-        resmsg = `There was a problem running the model!\n${resmsg}\nPlease validate your model.`
+        resmsg = `There was a problem running the model!\n${resmsg}.`
         console.error(resmsg)
         Session.set('log-message', resmsg)
         Session.set('log-class', 'log-error')

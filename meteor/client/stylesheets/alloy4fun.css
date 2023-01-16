@@ -187,10 +187,8 @@ body {
 }
 
 #log{
-    margin-top:50px;
+    margin-top:10px;
 }
-
-
 
 .shapePickerTarget.settings {
     background: white !important;
@@ -316,7 +314,7 @@ body {
 }
 
 .log-info {
-    background-color: #009933;
+    background-color: #93ccea;
     font-weight: 700;
     color: white;
     width: auto;
