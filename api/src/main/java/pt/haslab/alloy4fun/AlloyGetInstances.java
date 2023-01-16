@@ -276,12 +276,12 @@ public class AlloyGetInstances {
     	return atomJSON;
 	}
 	
-	static private JsonObjectBuilder relToJSON(AlloyInstance answer, AlloyRelation signature) {
+	static private JsonObjectBuilder relToJSON(AlloyInstance answer, AlloyRelation rel) {
 		JsonObjectBuilder atomJSON = Json.createObjectBuilder();
-		atomJSON.add("name", signature.getName());
+		atomJSON.add("name", rel.getName());
 		
 		JsonArrayBuilder instancesJSON = Json.createArrayBuilder();
-		for (AlloyTuple atts : answer.relation2tuples(signature)) {
+		for (AlloyTuple atts : answer.relation2tuples(rel)) {
 			JsonArrayBuilder tuple = Json.createArrayBuilder();
 			for (AlloyAtom at : atts.getAtoms())
 				tuple.add(at.toString());
