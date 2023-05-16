@@ -1,4 +1,4 @@
-package pt.haslab.alloy4fun.utils;
+package pt.haslab.alloy4fun.data.transfer;
 
 public class InstancesRequest {
 	public String model;
