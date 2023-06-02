@@ -29,7 +29,7 @@ export function displayError(err) {
  */
 export function markEditor(from, to, className) {
     const options = {
-        className: className,
+        className,
         clearWhenEmpty: true,
         inclusiveLeft: true,
         inclusiveRight: true
@@ -46,7 +46,7 @@ export function markEditor(from, to, className) {
  * @param {Number} col2 the collumn of the last character to mark
  */
 export function markEditorError(line, col, line2, col2) {
-    markEditor({ line: line, ch: col }, { line: line2, ch: col2 + 1 }, "editor-error-mark")
+    markEditor({ line, ch: col }, { line: line2, ch: col2 + 1 }, 'editor-error-mark')
 }
 
 /**
@@ -58,5 +58,17 @@ export function markEditorError(line, col, line2, col2) {
  * @param {Number} col2 the collumn of the last character to mark
  */
 export function markEditorWarning(line, col, line2, col2) {
-    markEditor({ line: line, ch: col }, { line: line2, ch: col2 + 1 }, "editor-warning-mark")
+    markEditor({ line, ch: col }, { line: line2, ch: col2 + 1 }, 'editor-warning-mark')
+}
+
+/**
+ * Mark the text in the editor with a info
+ *
+ * @param {Number} line the line of the first character to mark
+ * @param {Number} col the collumn of the first character to mark
+ * @param {Number} line2 the line of the last character to mark
+ * @param {Number} col2 the collumn of the last character to mark
+ */
+export function markEditorInfo(line, col, line2, col2) {
+    markEditor({ line, ch: col }, { line: line2, ch: col2 + 1 }, 'editor-info-mark')
 }

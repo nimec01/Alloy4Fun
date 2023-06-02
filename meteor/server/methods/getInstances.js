@@ -33,17 +33,17 @@ Meteor.methods({
                 derivationOf: currentModelId
             }
 
-            // insert the new model
+            // insert  the new model
             const new_model_id = Model.insert(new_model)
-            
+
             // call webservice to get instances
             HTTP.call('POST', `${Meteor.settings.env.API_URL}/getInstances`, {
                 data: {
                     model: code_with_secrets,
                     numberOfInstances: Meteor.settings.env.MAX_INSTANCES,
-                    commandIndex: commandIndex,
+                    commandIndex,
                     sessionId: new_model_id,
-                    parentId: currentModelId?currentModelId:''
+                    parentId: currentModelId || ''
                 }
             }, (error, result) => {
                 if (error) reject(error)
@@ -53,6 +53,7 @@ Meteor.methods({
                 let sat
                 let cmd_n
                 let chk
+                let msg
                 if (content.alloy_error) {
                     msg = content.msg
                     sat = -1

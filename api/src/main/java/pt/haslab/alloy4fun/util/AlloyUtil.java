@@ -4,6 +4,7 @@ import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4viz.AlloyInstance;
 import edu.mit.csail.sdg.alloy4viz.StaticInstanceReader;
+import edu.mit.csail.sdg.ast.Func;
 import edu.mit.csail.sdg.parser.CompModule;
 import edu.mit.csail.sdg.parser.CompUtil;
 import edu.mit.csail.sdg.translator.A4Options;
@@ -18,6 +19,8 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 public class AlloyUtil {
@@ -40,9 +43,17 @@ public class AlloyUtil {
         return CompUtil.parseEverything_fromFile(rep, null, file.getAbsolutePath());
     }
 
-
     public static AlloyInstance parseInstance(A4Solution solution) throws IOException, Err {
         return parseInstance(solution, 0);
+    }
+
+    public static Optional<Func> getFunByLabelName(CompModule world, String label) {
+        String label_name = label.replace("this/", "");
+        return world.getAllFunc()
+                .makeConstList()
+                .stream()
+                .filter(x -> x.label.replace("this/", "").equals(label_name))
+                .findFirst();
     }
 
     public static AlloyInstance parseInstance(A4Solution solution, Integer state) throws IOException, Err {
@@ -75,5 +86,15 @@ public class AlloyUtil {
         return opt;
     }
 
+
+    public String stripThisFromLabel(String str) {
+        if (str != null)
+            str = str.replace("this/", "");
+        return str;
+    }
+
+    public boolean equalLabels(String str1, String str2) {
+        return Objects.equals(stripThisFromLabel(str1), stripThisFromLabel(str2));
+    }
 
 }

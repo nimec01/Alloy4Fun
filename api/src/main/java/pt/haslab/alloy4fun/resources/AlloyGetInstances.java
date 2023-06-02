@@ -16,7 +16,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.jboss.logging.Logger;
 import pt.haslab.alloy4fun.data.models.Session;
-import pt.haslab.alloy4fun.data.transfer.InstanceError;
+import pt.haslab.alloy4fun.data.transfer.InstanceMsg;
 import pt.haslab.alloy4fun.data.transfer.InstanceResponse;
 import pt.haslab.alloy4fun.data.transfer.InstanceTrace;
 import pt.haslab.alloy4fun.data.transfer.InstancesRequest;
@@ -36,6 +36,11 @@ public class AlloyGetInstances {
     SessionService sessionManager;
 
     private final List<ErrorWarning> warnings = new ArrayList<>();
+    private final A4Reporter rep = new A4Reporter() {
+        public void warning(ErrorWarning msg) {
+            warnings.add(msg);
+        }
+    };
 
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -47,42 +52,35 @@ public class AlloyGetInstances {
             LOGGER.debug("Deleted parent session (" + request.parentId + ").");
 
         try {
-            Session session = ensureSession(request);
+            Session session = ensureSession(request, rep);
 
             return Response.ok(batchAdd(request.numberOfInstances, session)).build();
         } catch (Err e) {
             LOGGER.info("Responding with an alloy error.");
-            return Response.ok(InstanceError.from(e)).build();
+            return Response.ok(InstanceMsg.from(e)).build();
         } catch (IOException e) {
             LOGGER.info("Responding with an error message.");
-            return Response.ok(InstanceError.error(e.getMessage())).build();
+            return Response.ok(InstanceMsg.error(e.getMessage())).build();
         }
     }
 
-    private Session ensureSession(InstancesRequest request) throws Err, IOException {
+    public Session ensureSession(InstancesRequest request, A4Reporter rep) throws Err, IOException {
         Session result = sessionManager.findById(request.sessionId);
 
         if (result == null) {
-            A4Reporter rep = new A4Reporter() {
-                public void warning(ErrorWarning msg) {
-                    warnings.add(msg);
-                }
-            };
-
             CompModule world = AlloyUtil.parseModel(request.model, rep);
             Command command = world.getAllCommands().get(request.commandIndex);
 
             A4Options options = AlloyUtil.defaultOptions(world);
             A4Solution ans = TranslateAlloyToKodkod.execute_command(rep, world.getAllReachableSigs(), command, options);
 
-            result = Session.create(request.sessionId, ans, command, world.getAllFunc());
+            result = Session.create(request.sessionId, ans, command, world.getAllFunc().makeConstList());
 
             sessionManager.update(result);
         }
 
         return result;
     }
-
 
     public List<InstanceResponse> batchAdd(Integer numberOfInstances, Session session) throws IOException {
         List<InstanceResponse> result = new ArrayList<>();
@@ -106,7 +104,7 @@ public class AlloyGetInstances {
         InstanceResponse result = new InstanceResponse();
 
         if (warnings.size() > 0)
-            result.warning = InstanceError.from(warnings.get(0));
+            result.warning = InstanceMsg.from(warnings.get(0));
 
         result.sessionId = session.id;
         result.unsat = !answer.satisfiable();
@@ -123,10 +121,10 @@ public class AlloyGetInstances {
                         .map(InstanceTrace::from)
                         .toList();
             } catch (Err e) {
-                LOGGER.error("Alloy errored during solution parsing.",e);
+                LOGGER.error("Alloy errored during solution parsing.", e);
                 return InstanceResponse.err(e);
             } catch (IOException e) {
-                LOGGER.error("IO error during solution parsing.",e);
+                LOGGER.error("IO error during solution parsing.", e);
             }
         }
 

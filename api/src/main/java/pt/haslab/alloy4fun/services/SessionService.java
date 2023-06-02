@@ -7,7 +7,9 @@ import pt.haslab.alloy4fun.data.models.Session;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class SessionService {
@@ -36,11 +38,12 @@ public class SessionService {
 
     @Scheduled(every = "${session.timeout:600}s", delay = 1, delayUnit = TimeUnit.SECONDS)
     public void deleteByLastAccessOutdated() {
-        localSessions.values()
+        Set<String> r = localSessions.values()
                 .stream()
                 .filter(s -> s.isIdleForXSec(timeoutSeconds))
                 .map(x -> x.id)
-                .forEach(localSessions::remove);
+                .collect(Collectors.toSet());
+        r.forEach(localSessions::remove);
     }
 
 }

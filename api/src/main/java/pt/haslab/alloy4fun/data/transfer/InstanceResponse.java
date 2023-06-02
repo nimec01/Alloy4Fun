@@ -16,7 +16,7 @@ public class InstanceResponse {
     public String err;
     @JsonInclude(NON_NULL)
     @JsonUnwrapped
-    public InstanceError warning;
+    public InstanceMsg warning;
 
     public String sessionId;
     public Boolean unsat;

@@ -54,6 +54,12 @@
             "no-underscore-dangle": "off",
             "no-undef": "off",
             "no-plusplus": "off",
+            "camelcase": "off",
+            "no-param-reassign": "off",
+            "no-cond-assign": "off",
+            "no-unused-vars": "off",
+            "max-len": "off",
+            "prefer-destructuring": "off",
             "semi": [
                 "error",
                 "never"
@@ -88,9 +94,10 @@
                     "templateInstanceParamName": "instance"
                 }
             ],
-            "meteor/template-names": [
-                "off"
-            ]
+            "meteor/template-names": "off",
+            "meteor/audit-argument-checks": "off",
+            "meteor/no-session": "off",
+            "import/named": "warn"
         },
         "settings": {
             "import/resolver": "meteor"

@@ -5,8 +5,9 @@ import { shareModel, shareInstance } from '../../lib/editor/genUrl'
 import { executeModel, nextInstance, prevInstance } from '../../lib/editor/executeModel'
 import { downloadTree } from '../../lib/editor/downloadTree'
 import { copyToClipboard } from '../../lib/editor/clipboard'
-import { cmdChanged, isUnsatInstance, prevState, nextState, 
-    lastState, currentState, setCurrentState, storeInstances, 
+import { hintModel } from '../../lib/editor/hintModel'
+import { cmdChanged, isUnsatInstance, prevState, nextState,
+    lastState, currentState, setCurrentState, storeInstances,
     getCurrentState, getCurrentTrace } from '../../lib/editor/state'
 import { staticProjection, savePositions, applyPositions } from '../../lib/visualizer/projection'
 
@@ -19,6 +20,11 @@ Template.alloyEditor.helpers({
         const commands = Session.get('commands')
         const running = Session.get('is_running')
         const enab = !running && Session.get('model-updated') && commands.length > 0
+        return enab ? '' : 'disabled'
+    },
+
+    hintEnabled() {
+        const enab = !Session.get('model-updated') && Session.get('hint-enabled')
         return enab ? '' : 'disabled'
     },
 
@@ -130,7 +136,9 @@ Template.alloyEditor.helpers({
     isRunning() {
         return Session.get('is_running')
     },
-
+    isHintRunning() {
+        return Session.get('is_hint_running')
+    },
     /**
      * Whether the model has local secrets defined.
      */
@@ -144,18 +152,16 @@ Template.alloyEditor.helpers({
     logs() {
         messages = Session.get('log-message')
         classes = Session.get('log-class')
-        if (messages == "") {
+        if (messages == '') {
             return []
-        } else if (Array.isArray(messages) && Array.isArray(classes)) {
-            if(messages.length !== classes.length) {
-                console.error("Arrays must be of same length")
+        } if (Array.isArray(messages) && Array.isArray(classes)) {
+            if (messages.length !== classes.length) {
+                console.error('Arrays must be of same length')
                 return []
-            } else {
-                return messages.map((msg, i) => ({ message: msg, class: classes[i] }))
             }
-        } else {
-            return [{ message: messages, class: classes }]
+            return messages.map((msg, i) => ({ message: msg, class: classes[i] }))
         }
+        return [{ message: messages, class: classes }]
     },
 
     /**
@@ -224,17 +230,18 @@ Template.alloyEditor.events({
     'change .command-selection > select'() {
         cmdChanged()
     },
+    'click #hint > button': hintModel,
     'click #genUrl > button': shareModel,
     'click #prev > button': prevInstance,
     'click #next > button': nextInstance,
-    'click #nextTrace'() {       
-        savePositions() 
-        updateGraph(nextState(),true)
+    'click #nextTrace'() {
+        savePositions()
+        updateGraph(nextState(), true)
         applyPositions()
     },
     'click #prevTrace'() {
         savePositions()
-        updateGraph(prevState(),true)
+        updateGraph(prevState(), true)
         applyPositions()
     },
     'click #genInstanceUrl > button': shareInstance,

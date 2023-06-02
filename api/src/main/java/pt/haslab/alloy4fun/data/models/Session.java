@@ -7,6 +7,7 @@ import edu.mit.csail.sdg.translator.A4Solution;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 
@@ -20,9 +21,10 @@ public class Session {
 
     public Command cmd;
 
-    public Iterable<Func> skolem;
+    public Collection<Func> skolem;
 
-    public static Session create(String sessionId, A4Solution ans, Command cmd, Iterable<Func> skolem) {
+
+    public static Session create(String sessionId, A4Solution ans, Command cmd, Collection<Func> skolem) {
         Session result = new Session();
 
         result.id = sessionId;
