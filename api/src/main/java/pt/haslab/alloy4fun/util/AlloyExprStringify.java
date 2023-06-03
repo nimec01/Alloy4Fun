@@ -42,7 +42,7 @@ public class AlloyExprStringify {
         @Override
         public String visit(ExprCall exprCall) throws Err {
             List<String> arguments = exprCall.args.stream().map(this::visitThis).toList();
-            return exprCall.fun.label + "[" + lineCSV(",", arguments) + "]";
+            return exprCall.fun.label.replace("this/", "") + "[" + lineCSV(",", arguments) + "]";
         }
 
         @Override
