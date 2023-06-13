@@ -1,94 +1,22 @@
 package pt.haslab.alloy4fun.util;
 
 import edu.mit.csail.sdg.alloy4.Err;
+import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.ast.*;
 
-import java.util.ArrayList;
-import java.util.EmptyStackException;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class AlloyExprDifference {
 
-    public static List<Changes> getChanges(Expr before, Expr after) {
-        int i, j;
+    List<? extends Expr> lines_tokens, column_tokens;
 
-        List<? extends Expr> lines_tokens = new FlattenTokenizer().visitThis(before).toList();
-        List<? extends Expr> column_tokens = new FlattenTokenizer().visitThis(after).toList();
+    List<IntPair> match_path;
 
-        //COMPUTE THE MATCHES AND MATCH PATHS ONTO THE TABLE
-        int[][] calc_table = new int[lines_tokens.size()][column_tokens.size()];
-        Stack<Pair<Integer, Integer>> matches = new Stack<>();
-
-        for (i = 0; i < lines_tokens.size(); i++) {
-            Expr curr_line = lines_tokens.get(i);
-            int line_max = i == 0 ? 0 : calc_table[i - 1][0];
-            for (j = 0; j < column_tokens.size(); j++) {
-                int col_max = i == 0 ? 0 : calc_table[i - 1][j];
-                calc_table[i][j] = Integer.max(line_max, col_max);
-                if (shallowMatch(curr_line, column_tokens.get(j))) {
-                    calc_table[i][j]++;
-                    matches.add(new Pair<>(i, j));
-                }
-                line_max = calc_table[i][j];
-            }
-        }
-
-        //COMPUTE THE LONGEST MATCH PATH
-
-        Stack<Pair<Integer, Integer>> longest_match_path = new Stack<>();
-
-        i = lines_tokens.size() - 1;
-        j = column_tokens.size() - 1;
-        while (i >= 0 || j >= 0) {
-            try {
-                int finalI = i, finalJ = j; //Lambdas require effective final references
-                while (matches.peek().test((a, b) -> a > finalI || b > finalJ))
-                    matches.pop();
-                if (matches.peek().test((a, b) -> a == finalI && b == finalJ))
-                    longest_match_path.push(matches.pop());
-            } catch (EmptyStackException e) {
-                break;
-            }
-            if (calc_table[i == 0 ? 0 : i - 1][j] > calc_table[i][j == 0 ? 0 : j - 1]) {
-                i--;
-            } else {
-                j--;
-            }
-        }
-
-
-        //COMPUTE THE DIFFERENCES FROM THE UNMATCHED TOKENS
-        i = j = 0;
-        List<Changes> result = new ArrayList<>();
-
-        while (!longest_match_path.isEmpty()) {
-            Pair<Integer, Integer> current_match = longest_match_path.pop();
-            if (current_match.a > i + 1) {
-                if (current_match.b > j + 1) {
-                    result.add(new Changes(lines_tokens.subList(i + 1, current_match.a), column_tokens.subList(j + 1, current_match.b)));
-                } else {
-                    result.add(new Changes(lines_tokens.subList(i + 1, current_match.a), List.of()));
-                }
-            } else if (current_match.b > j + 1)
-                result.add(new Changes(List.of(), column_tokens.subList(j + 1, current_match.b)));
-            i = current_match.a;
-            j = current_match.b;
-        }
-
-        if (i + 1 < lines_tokens.size() || j + 1 < column_tokens.size())
-            result.add(new Changes(lines_tokens.subList(i + 1, lines_tokens.size()), column_tokens.subList(j + 1, column_tokens.size())));
-
-        return result;
-    }
-
-    public static Pair<Integer, Integer> getEditCounts(List<Changes> edit) {
-        Pair<Integer, Integer> result = new Pair<>(0, 0);
-        edit.forEach(change -> {
-            result.a += change.added.size();
-            result.b += change.removed.size();
-        });
+    public static AlloyExprDifference create(Expr exprA, Expr exprB) {
+        AlloyExprDifference result = new AlloyExprDifference();
+        result.lines_tokens = new FlattenTokenizer().visitThis(exprA).toList();
+        result.column_tokens = new FlattenTokenizer().visitThis(exprB).toList();
         return result;
     }
 
@@ -107,12 +35,200 @@ public class AlloyExprDifference {
         return a.isSame(b);
     }
 
-    public static class Changes {
-        List<? extends Expr> removed, added;
+    private static Pos findDelimiterPos(int from, int to, List<? extends Expr> target) {
+        int x = Integer.MAX_VALUE, y = Integer.MAX_VALUE, x2 = 0, y2 = 0;
+        for (int i = from; i < to; i++) {
+            Pos pos = target.get(i).pos();
+            if (pos != null) {
+                if (x > pos.x)
+                    x = pos.x;
+                if (y > pos.y)
+                    y = pos.y;
+                if (x2 < pos.x2)
+                    x2 = pos.x2;
+                if (y2 < pos.y2)
+                    y2 = pos.y2;
+            }
+        }
+        for (; from > 0 && (x == Integer.MAX_VALUE && y == Integer.MAX_VALUE); from--) {
+            Pos pos = target.get(from).pos();
+            if (pos != null) {
+                x = pos.x2;
+                y = pos.y2;
+                break;
+            }
+        }
+        for (; to < target.size() && (x2 == 0 && y2 == 0); to++) {
+            Pos pos = target.get(to).pos();
+            if (pos != null) {
+                x2 = pos.x;
+                y2 = pos.y;
+                break;
+            }
+        }
+        return new Pos(UUID.randomUUID().toString(), x, y, x2, y2);
+    }
 
-        public Changes(List<? extends Expr> removed, List<? extends Expr> added) {
-            this.removed = removed;
-            this.added = added;
+    public static AlloyExprDifference createHalfA(Expr expr) {
+        AlloyExprDifference result = new AlloyExprDifference();
+        result.lines_tokens = new FlattenTokenizer().visitThis(expr).toList();
+        result.column_tokens = new ArrayList<>();
+        return result;
+    }
+
+    public AlloyExprDifference compute() {
+        int i, j;
+        //COMPUTE THE MATCHES (AND THEREFORE THE PATHS) ONTO THE TABLE
+        int[][] calc_table = new int[lines_tokens.size()][column_tokens.size()];
+        Stack<IntPair> all_matches = new Stack<>();
+
+        for (i = 0; i < lines_tokens.size(); i++) {
+            Expr curr_line = lines_tokens.get(i);
+            int line_max = i == 0 ? 0 : calc_table[i - 1][0];
+            for (j = 0; j < column_tokens.size(); j++) {
+                int col_max = i == 0 ? 0 : calc_table[i - 1][j];
+                calc_table[i][j] = Integer.max(line_max, col_max);
+                if (shallowMatch(curr_line, column_tokens.get(j))) {
+                    calc_table[i][j]++;
+                    all_matches.add(new IntPair(i, j));
+                }
+                line_max = calc_table[i][j];
+            }
+        }
+
+        //COMPUTE THE LONGEST MATCH PATH
+        match_path = new ArrayList<>();
+
+        i = lines_tokens.size() - 1;
+        j = column_tokens.size() - 1;
+        while (i >= 0 || j >= 0) {
+            try {
+                int finalI = i, finalJ = j; //Lambdas require effective final references
+                while (all_matches.peek().test((a, b) -> a > finalI || b > finalJ))
+                    all_matches.pop();
+                if (all_matches.peek().test((a, b) -> a == finalI && b == finalJ))
+                    match_path.add(all_matches.pop());
+            } catch (EmptyStackException e) {
+                break;
+            }
+            if (calc_table[i == 0 ? 0 : i - 1][j] > calc_table[i][j == 0 ? 0 : j - 1]) {
+                i--;
+            } else {
+                j--;
+            }
+        }
+        Collections.reverse(match_path);
+        return this;
+    }
+
+    public List<TokenDifference> extractTokensFromIndexDifferences(List<IndexRangeDifference> indexRangeDifferences) {
+        return indexRangeDifferences.stream().map(x -> new TokenDifference(lines_tokens.subList(x.fromA(), x.toA()), column_tokens.subList(x.fromB(), x.toB()))).toList();
+    }
+
+    public List<TokenDifference> getTokenDifferences(List<IndexRangeDifference> indexRangeDifferences) {
+        return extractTokensFromIndexDifferences(getIndexDifferences());
+    }
+
+    public List<IndexRangeDifference> getIndexDifferences() {
+        // I'm using an array because I can only pass effective final fields to Lambdas.
+        // Using "AtomicInteger()"s would also work, but I don't need the mutual exclusivity and its overhead
+        int[] nextIJ = new int[]{0, 0};
+        List<IndexRangeDifference> result = new ArrayList<>();
+
+        match_path.forEach(match -> {
+            if (match.fst > nextIJ[0] || match.snd > nextIJ[1]) {
+                result.add(new IndexRangeDifference(nextIJ[0], match.fst, nextIJ[1], match.snd));
+            }
+            nextIJ[0] = match.fst + 1;
+            nextIJ[1] = match.snd + 1;
+        });
+
+        if (nextIJ[0] < lines_tokens.size() || nextIJ[1] < column_tokens.size()) {
+            result.add(new IndexRangeDifference(nextIJ[0], lines_tokens.size(), nextIJ[1], column_tokens.size()));
+        }
+
+        return result;
+    }
+
+    public Pos findDelimiterPosA(IndexRangeDifference diff) {
+        return findDelimiterPos(diff.fromA(), diff.toA(), lines_tokens);
+    }
+
+    public Pos findDelimiterPosB(IndexRangeDifference diff) {
+        return findDelimiterPos(diff.fromB(), diff.toB(), column_tokens);
+    }
+
+    public static Integer getEditDifference(List<IndexRangeDifference> differences) {
+        return differences.stream().map(x -> Math.abs(x.fromA() - x.toA()) + Math.abs(x.fromB() - x.toB())).reduce(0, Integer::sum);
+    }
+
+    public String getHintMessage(IndexRangeDifference indexRangeDiff) { // TODO
+        if (indexRangeDiff.fromA() < indexRangeDiff.toA() && indexRangeDiff.fromB() < indexRangeDiff.toB())
+            return "Change something in the highlighted range";
+        else if (indexRangeDiff.fromA() < indexRangeDiff.toA()) {
+            return "Add something in the highlighted range";
+        } else {
+            return "Remove the highlighted range";
+        }
+    }
+
+    public static class IndexRangeDifference {
+        public IntPair AChanges, BChanges;
+
+        public IndexRangeDifference(int inclusiveFromA, int exclusiveToA, int inclusiveFromB, int exclusiveToB) {
+            this.AChanges = new IntPair(inclusiveFromA, exclusiveToA);
+            this.BChanges = new IntPair(inclusiveFromB, exclusiveToB);
+        }
+
+        public int fromA() {
+            return AChanges.fst;
+        }
+
+        public int toA() {
+            return AChanges.snd;
+        }
+
+        public int fromB() {
+            return BChanges.fst;
+        }
+
+        public int toB() {
+            return BChanges.snd;
+        }
+    }
+
+    public static class TokenDifference {
+        public List<? extends Expr> changesToA, changesToB;
+
+        public TokenDifference(List<? extends Expr> ATokens, List<? extends Expr> BTokens) {
+            this.changesToA = ATokens;
+            this.changesToB = BTokens;
+        }
+
+        public Pos getPosA() {
+            if (changesToA.isEmpty())
+                return null;
+
+            //posArr = [x,y,x2,y2]
+            //they must be pointers because of lambdas
+            int[] posArr = new int[]{Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE};
+
+            changesToA.stream()
+                    .map(Expr::pos)
+                    .filter(Objects::nonNull)
+                    .forEach(pos -> {
+                        if (posArr[0] > pos.x)
+                            posArr[0] = pos.x;
+                        if (posArr[1] > pos.y)
+                            posArr[1] = pos.y;
+                        if (posArr[2] < pos.x2)
+                            posArr[2] = pos.x2;
+                        if (posArr[3] < pos.y2)
+                            posArr[3] = pos.y2;
+                    });
+            if (posArr[2] > Integer.MIN_VALUE || posArr[3] > Integer.MIN_VALUE)
+                return new Pos(UUID.randomUUID().toString(), posArr[0], posArr[1], posArr[2], posArr[3]);
+            return new Pos(UUID.randomUUID().toString(), posArr[0], posArr[1]);
         }
     }
 

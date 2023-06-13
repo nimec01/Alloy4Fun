@@ -2,15 +2,12 @@ package pt.haslab.alloy4fun.data.models.HintGraph;
 
 import io.quarkus.mongodb.panache.PanacheMongoEntity;
 import io.quarkus.mongodb.panache.common.MongoEntity;
-import org.bson.BsonType;
-import org.bson.codecs.pojo.annotations.BsonRepresentation;
-import org.bson.types.ObjectId;
 
 import java.util.Set;
 
 @MongoEntity(collection = "HintGroup")
 public class HintExercise extends PanacheMongoEntity {
-    public  String model_id;
+    public String model_id;
 
     public Long graph_id;
 

@@ -4,6 +4,7 @@ import edu.mit.csail.sdg.alloy4.A4Reporter;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4viz.AlloyInstance;
 import edu.mit.csail.sdg.alloy4viz.StaticInstanceReader;
+import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.Func;
 import edu.mit.csail.sdg.parser.CompModule;
 import edu.mit.csail.sdg.parser.CompUtil;
@@ -11,6 +12,7 @@ import edu.mit.csail.sdg.translator.A4Options;
 import edu.mit.csail.sdg.translator.A4Solution;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pt.haslab.Repairer;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -84,6 +86,22 @@ public class AlloyUtil {
         opt.solver = A4Options.SatSolver.SAT4J;
 
         return opt;
+    }
+
+    public static List<Expr> parseAndMutate(final CompModule world, final String expr_string,int depth) {
+        try {
+            return Repairer.eagerlyMutateFormula(world.parseOneExpressionFromString(expr_string), world.getAllReachableSigs(), depth);
+        } catch (Err | IOException e) {
+            return List.of();
+        }
+    }
+
+    public static List<Expr> mutate(final CompModule world, final Expr target,int depth) {
+        try {
+            return Repairer.eagerlyMutateFormula(target, world.getAllReachableSigs(), depth);
+        } catch (Err e) {
+            return List.of();
+        }
     }
 
 

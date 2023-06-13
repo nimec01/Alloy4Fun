@@ -1,9 +1,9 @@
 package pt.haslab.alloy4fun.resources;
 
 
-import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
 import java.util.Date;

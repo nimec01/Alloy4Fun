@@ -1,55 +1,77 @@
 package pt.haslab.alloy4fun.data.models.HintGraph;
 
 
+import edu.mit.csail.sdg.ast.Expr;
+import edu.mit.csail.sdg.ast.ExprConstant;
+import edu.mit.csail.sdg.parser.CompModule;
 import io.quarkus.mongodb.panache.PanacheMongoEntity;
 import io.quarkus.mongodb.panache.common.MongoEntity;
+import org.bson.types.ObjectId;
+import pt.haslab.alloy4fun.util.AlloyExprDifference;
+import pt.haslab.alloy4fun.util.AlloyExprDifference.IndexRangeDifference;
 
-import java.util.Objects;
-import java.util.Set;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.toMap;
 
 @MongoEntity(collection = "HintEdge")
 public class HintEdge extends PanacheMongoEntity {
+    public Long graph_id;
 
-    public Set<Endpoint> endpoints;
+    public ObjectId origin, destination;
+
+
+    public Map<String, List<IndexRangeDifference>> differenceRange;
+
+    public int editDistance;
+
+    public int count;
 
     public Double score;
 
-    public static HintEdge createEmpty(String originNodeId, String destinationNodeId) {
+
+    public static HintEdge createEmpty(Long graph_id, ObjectId originNodeId, ObjectId destinationNodeId) {
         HintEdge result = new HintEdge();
-        result.endpoints = Set.of(Endpoint.createEmpty(originNodeId), Endpoint.createEmpty(destinationNodeId));
+        result.graph_id = graph_id;
+        result.origin = originNodeId;
+        result.destination = destinationNodeId;
+
+        result.count = 0;
+
         return result;
     }
 
-    private Endpoint findEndpoint(String node_id) {
-        return endpoints.stream().filter(endpoint -> endpoint.node_id.equals(node_id)).findFirst().orElse(null);
-    }
+    public HintEdge computeDifferences(CompModule world, Function<ObjectId, HintNode> nodeGetter) {
+        Map<String, Expr> originParsed = nodeGetter.apply(origin).getParsedFormula(world);
+        Map<String, Expr> peerParsed = nodeGetter.apply(destination).getParsedFormula(world);
 
-    public HintEdge directedIncrement(String destination) {
-        findEndpoint(destination).count++;
+        Map<String, AlloyExprDifference> diffs = Stream.of(originParsed.keySet(), peerParsed.keySet())
+                .flatMap(Collection::stream)
+                .collect(Collectors.toSet())
+                .stream()
+                .collect(toMap(key -> key, key -> AlloyExprDifference.create(originParsed.getOrDefault(key, ExprConstant.TRUE), peerParsed.getOrDefault(key, ExprConstant.TRUE))));
+
+        diffs.values().forEach(AlloyExprDifference::compute);
+
+        differenceRange = diffs.entrySet().stream().collect(toMap(Map.Entry::getKey, x -> x.getValue().getIndexDifferences()));
+
+        editDistance = differenceRange.values().stream().map(AlloyExprDifference::getEditDifference).reduce(0, Integer::sum);
         return this;
     }
 
-    public String getDifferentNodeId(String node_id) {
-        return Objects.requireNonNull(endpoints.stream().filter(endpoint -> !endpoint.node_id.equals(node_id)).findFirst().orElse(null)).node_id;
+    public HintEdge visit() {
+        count++;
+        return this;
     }
 
-    public static class Endpoint {
-        public String node_id;
-        public int count;
-
-        public Double score;
-
-        public Endpoint() {
-        }
-
-        public Endpoint(String node_id, int count, Double score) {
-            this.node_id = node_id;
-            this.count = count;
-            this.score = score;
-        }
-
-        public static Endpoint createEmpty(String node_id) {
-            return new Endpoint(node_id, 0, null);
-        }
+    public ObjectId oppositeId(ObjectId id) {
+        if (origin.equals(id))
+            return destination;
+        return origin;
     }
 }

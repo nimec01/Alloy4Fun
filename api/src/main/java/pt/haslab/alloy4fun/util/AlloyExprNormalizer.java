@@ -28,15 +28,15 @@ public class AlloyExprNormalizer {
         public Expr type;
         public ExprQt.Op quantifier;
 
-        public String fieldName() {
-            return name.label;
-        }
-
         public QuantifierDecl(int depth, ExprHasName name, Expr type, ExprQt.Op quantifier) {
             this.depth = depth;
             this.name = name;
             this.type = type;
             this.quantifier = quantifier;
+        }
+
+        public String fieldName() {
+            return name.label;
         }
 
         public String migrateName(String new_label) {
@@ -57,6 +57,11 @@ public class AlloyExprNormalizer {
 
         public boolean canMigrateName() {
             return name instanceof ExprVar;
+        }
+
+        @Override
+        public String toString() {
+            return "#" + depth + " " + quantifier.toString() + " " + name + ":" + type;
         }
     }
 
@@ -183,7 +188,7 @@ public class AlloyExprNormalizer {
                 }
             });
 
-            Expr result = this.visitThis(exprQt.sub);
+            Expr result = this.visitThis(current);
 
             for (int i = quantifiers.size() - 1; i >= 0; i--) {
                 QuantifierDecl qtfDecl = quantifiers.get(i);
@@ -191,7 +196,7 @@ public class AlloyExprNormalizer {
 
                 Decl d = new Decl(null, null, null, null, List.of(qtfDecl.name), normalizedType);
 
-                result = qtfDecl.quantifier.make(Pos.UNKNOWN, Pos.UNKNOWN, List.of(d), result);
+                result = qtfDecl.quantifier.make(null, null, List.of(d), result);
             }
 
             return result;

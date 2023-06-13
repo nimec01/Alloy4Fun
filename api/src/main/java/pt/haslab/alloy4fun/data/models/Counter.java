@@ -22,22 +22,14 @@ public class Counter extends PanacheMongoEntityBase {
         this.value = value;
     }
 
-    public static <V> Counter from(Map.Entry<? extends String, ? extends Long> entry) {
+    public static Counter from(Map.Entry<? extends String, ? extends Long> entry) {
         return new Counter(entry.getKey(), entry.getValue());
     }
 
-    public static <V> Counter of(String key, Long value) {
-        return new Counter(key, value);
-    }
-
-    public Long getThenIncrement() {
-        return value++;
-    }
-
     public static Long nextGraphId() {
-        Counter v = (Counter) findByIdOptional("GraphCounter").orElseGet(() -> Counter.of("GraphCounter", 0L));
+        Counter v = (Counter) findByIdOptional("GraphCounter").orElseGet(() -> new Counter("GraphCounter", 0L));
         try {
-            return v.getThenIncrement();
+            return v.value++;
         } finally {
             v.persistOrUpdate();
         }

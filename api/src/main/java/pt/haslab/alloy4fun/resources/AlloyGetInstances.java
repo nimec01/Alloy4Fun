@@ -31,16 +31,14 @@ import java.util.List;
 public class AlloyGetInstances {
 
     private static final Logger LOGGER = Logger.getLogger(AlloyGetInstances.class);
-
-    @Inject
-    SessionService sessionManager;
-
     private final List<ErrorWarning> warnings = new ArrayList<>();
     private final A4Reporter rep = new A4Reporter() {
         public void warning(ErrorWarning msg) {
             warnings.add(msg);
         }
     };
+    @Inject
+    SessionService sessionManager;
 
     @POST
     @Produces(MediaType.APPLICATION_JSON)

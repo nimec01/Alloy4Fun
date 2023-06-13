@@ -10,6 +10,17 @@ public class AlloyExprStringify {
         return new ExprStringifyVisitReturn().visitThis(e);
     }
 
+    public static String stringifyAndDiscardTrue(Expr e) {
+        String res = stringify(e);
+        if ("true".equals(res))
+            return "";
+        return res;
+    }
+
+    public static String stringifyBaseToken(Expr e) {
+        return new RootExprStringifyVisitReturn().visitThis(e);
+    }
+
     public static String lineCSV(String sep, List<String> strings) {
         if (strings == null || strings.isEmpty())
             return "";
@@ -106,4 +117,68 @@ public class AlloyExprStringify {
             return "(" + field.sig.label.replace("this/", "") + " <: " + field.label.replace("this/", "") + ")";
         }
     }
+
+    private static class RootExprStringifyVisitReturn extends VisitReturn<String> {
+
+        @Override
+        public String visit(ExprBinary exprBinary) throws Err {
+            return exprBinary.op.toString();
+        }
+
+        @Override
+        public String visit(ExprList exprList) throws Err {
+            return switch (exprList.op) {
+                case AND -> "&&";
+                case OR -> "||";
+                case DISJOINT -> "disj";
+                default -> "";
+            };
+        }
+
+        @Override
+        public String visit(ExprCall exprCall) throws Err {
+            return exprCall.fun.label.replace("this/", "");
+        }
+
+        @Override
+        public String visit(ExprConstant exprConstant) throws Err {
+            return exprConstant.toString();
+        }
+
+        @Override
+        public String visit(ExprITE exprITE) throws Err {
+            return "if";
+        }
+
+        @Override
+        public String visit(ExprLet exprLet) throws Err {
+            return null;
+        }
+
+        @Override
+        public String visit(ExprQt exprQt) throws Err {
+            return exprQt.op.toString();
+        }
+
+        @Override
+        public String visit(ExprUnary exprUnary) throws Err {
+            return exprUnary.op.toString();
+        }
+
+        @Override
+        public String visit(ExprVar exprVar) throws Err {
+            return exprVar.label.replace("this/", "");
+        }
+
+        @Override
+        public String visit(Sig sig) throws Err {
+            return sig.label.replace("this/", "");
+        }
+
+        @Override
+        public String visit(Sig.Field field) throws Err {
+            return "(" + field.sig.label.replace("this/", "") + " <: " + field.label.replace("this/", "") + ")";
+        }
+    }
+
 }

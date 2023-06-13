@@ -9,8 +9,8 @@ import java.util.function.Predicate;
 
 public class AlloyFunctionSearch extends VisitReturn<Void> {
 
-    private final Predicate<Func> filter;
     public final List<Func> result = new ArrayList<>();
+    private final Predicate<Func> filter;
 
     public AlloyFunctionSearch(Predicate<Func> filter) {
         this.filter = filter;

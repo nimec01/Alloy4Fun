@@ -30,13 +30,6 @@ public class InstanceMsg {
     public InstanceMsg() {
     }
 
-    private void mapPos(Pos pos) {
-        line = pos.y;
-        column = pos.x;
-        line2 = pos.y2;
-        column2 = pos.x2;
-    }
-
     public static InstanceMsg error(String msg) {
         InstanceMsg response = new InstanceMsg();
         response.alloy_error = true;
@@ -73,5 +66,14 @@ public class InstanceMsg {
         response.mapPos(pos);
 
         return response;
+    }
+
+    private void mapPos(Pos pos) {
+        if (pos != null) {
+            line = pos.y;
+            column = pos.x;
+            line2 = pos.y2;
+            column2 = pos.x2;
+        }
     }
 }
