@@ -272,8 +272,8 @@ public class HintService {
 
         Optional<InstanceMsg> result = hintWithMutation(graph_id, world.getAllFunc().makeConstList(), world.getAllReachableSigs(), exercise);
 
-        //if (result.isPresent())
-        //    return result;
+        if (result.isPresent())
+            return result;
 
         return hintWithGraph(world, exercise, graph_id);
     }
