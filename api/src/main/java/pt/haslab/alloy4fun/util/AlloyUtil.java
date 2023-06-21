@@ -1,18 +1,19 @@
 package pt.haslab.alloy4fun.util;
 
 import edu.mit.csail.sdg.alloy4.A4Reporter;
+import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4viz.AlloyInstance;
 import edu.mit.csail.sdg.alloy4viz.StaticInstanceReader;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.Func;
+import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.parser.CompModule;
 import edu.mit.csail.sdg.parser.CompUtil;
 import edu.mit.csail.sdg.translator.A4Options;
 import edu.mit.csail.sdg.translator.A4Solution;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import pt.haslab.Repairer;
+import pt.haslab.mutation.Candidate;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -20,29 +21,30 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class AlloyUtil {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AlloyUtil.class);
-
-    public static CompModule parseModel(String model) throws IOException, Err {
+    public static CompModule parseModel(String model) throws UncheckedIOException, Err {
         return parseModel(model, A4Reporter.NOP);
     }
 
-    public static CompModule parseModel(String model, A4Reporter rep) throws IOException, Err {
-        String prefix_name = "thr-%s.alloy_heredoc".formatted(Thread.currentThread().threadId());
-        File file = File.createTempFile(prefix_name, ".als");
-        file.deleteOnExit();
+    public static CompModule parseModel(String model, A4Reporter rep) throws UncheckedIOException, Err {
+        try {
+            String prefix_name = "thr-%s.alloy_heredoc".formatted(Thread.currentThread().threadId());
+            File file = File.createTempFile(prefix_name, ".als");
+            file.deleteOnExit();
 
-        try (OutputStream out = new BufferedOutputStream(Files.newOutputStream(file.toPath()))) {
-            out.write(model.getBytes());
-            out.flush();
+            try (OutputStream out = new BufferedOutputStream(Files.newOutputStream(file.toPath()))) {
+                out.write(model.getBytes());
+                out.flush();
+            }
+            return CompUtil.parseEverything_fromFile(rep, null, file.getAbsolutePath());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
-        return CompUtil.parseEverything_fromFile(rep, null, file.getAbsolutePath());
     }
 
     public static AlloyInstance parseInstance(A4Solution solution) throws IOException, Err {
@@ -88,22 +90,38 @@ public class AlloyUtil {
         return opt;
     }
 
-    public static List<Expr> parseAndMutate(final CompModule world, final String expr_string,int depth) {
+
+    public static <ID> List<Map<ID, Candidate>> makeCandidateMaps(Map<ID, Expr> targets, ConstList<Sig> sigs, int maxDepth) {
+        Map<ID, Candidate> unchanged = new HashMap<>();
+        List<Map.Entry<ID, List<Candidate>>> changed = new ArrayList<>();
+
+        targets.forEach((target, expr) -> {
+            List<Candidate> mutations = Repairer.getValidCandidates(expr, sigs, maxDepth);
+
+            if (mutations.isEmpty()) {
+                Candidate c = Candidate.empty();
+                c.mutated = expr;
+                unchanged.put(target, c);
+            } else
+                changed.add(Map.entry(target, mutations));
+        });
+        if (changed.isEmpty())
+            return List.of(unchanged);
+
+        return Static.getArrangements(unchanged, changed);
+    }
+
+    public static Expr parseOneExprFromString(CompModule world, String value) {
         try {
-            return Repairer.eagerlyMutateFormula(world.parseOneExpressionFromString(expr_string), world.getAllReachableSigs(), depth);
-        } catch (Err | IOException e) {
-            return List.of();
+            return world.parseOneExpressionFromString(value);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 
-    public static List<Expr> mutate(final CompModule world, final Expr target,int depth) {
-        try {
-            return Repairer.eagerlyMutateFormula(target, world.getAllReachableSigs(), depth);
-        } catch (Err e) {
-            return List.of();
-        }
+    public static Stream<Func> streamFuncsWithNames(Collection<Func> allFunctions, Set<String> targetNames) {
+        return allFunctions.stream().filter(x -> targetNames.contains(x.label.replace("this/", "")));
     }
-
 
     public String stripThisFromLabel(String str) {
         if (str != null)

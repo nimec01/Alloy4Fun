@@ -5,10 +5,12 @@ import { shareModel, shareInstance } from '../../lib/editor/genUrl'
 import { executeModel, nextInstance, prevInstance } from '../../lib/editor/executeModel'
 import { downloadTree } from '../../lib/editor/downloadTree'
 import { copyToClipboard } from '../../lib/editor/clipboard'
-import { hintModel } from '../../lib/editor/hintModel'
-import { cmdChanged, isUnsatInstance, prevState, nextState,
+import { displayHint, hintModel } from '../../lib/editor/hintModel'
+import {
+    cmdChanged, isUnsatInstance, prevState, nextState,
     lastState, currentState, setCurrentState, storeInstances,
-    getCurrentState, getCurrentTrace } from '../../lib/editor/state'
+    getCurrentState, getCurrentTrace
+} from '../../lib/editor/state'
 import { staticProjection, savePositions, applyPositions } from '../../lib/visualizer/projection'
 
 Template.alloyEditor.helpers({
@@ -23,8 +25,12 @@ Template.alloyEditor.helpers({
         return enab ? '' : 'disabled'
     },
 
-    hintEnabled() {
-        const enab = !Session.get('model-updated') && Session.get('hint-enabled')
+    hintReplacesExecution() {
+        return !Session.get('is_running') && !Session.get('model-updated') && Session.get('hint-enabled')
+    },
+
+    hintAvailable() {
+        const enab = !Session.get('model-updated') && Session.get('hint-available')
         return enab ? '' : 'disabled'
     },
 
@@ -154,14 +160,21 @@ Template.alloyEditor.helpers({
         classes = Session.get('log-class')
         if (messages == '') {
             return []
-        } if (Array.isArray(messages) && Array.isArray(classes)) {
+        }
+        if (Array.isArray(messages) && Array.isArray(classes)) {
             if (messages.length !== classes.length) {
                 console.error('Arrays must be of same length')
                 return []
             }
-            return messages.map((msg, i) => ({ message: msg, class: classes[i] }))
+            return messages.map((msg, i) => ({
+                message: msg,
+                class: classes[i]
+            }))
         }
-        return [{ message: messages, class: classes }]
+        return [{
+            message: messages,
+            class: classes
+        }]
     },
 
     /**
@@ -221,16 +234,20 @@ Template.alloyEditor.helpers({
 
 Template.alloyEditor.events({
     keydown(e) {
-        if (e.ctrlKey && e.key === 'e') $('#exec > button').trigger('click')
+        if (e.ctrlKey && e.key === 'e') {
+            $('#exec > button')
+                .trigger('click')
+        }
 
         // clear all marks
-        textEditor.doc.getAllMarks().forEach(marker => marker.clear())
+        textEditor.doc.getAllMarks()
+            .forEach(marker => marker.clear())
     },
     'click #exec > button': executeModel,
     'change .command-selection > select'() {
         cmdChanged()
     },
-    'click #hint > button': hintModel,
+    'click #hint > button': displayHint,
     'click #genUrl > button': shareModel,
     'click #prev > button': prevInstance,
     'click #next > button': nextInstance,
@@ -267,7 +284,8 @@ Template.alloyEditor.onRendered(() => {
     // if there's subscribed data, process it
     if (Router.current().data && textEditor) {
         // load the model from controller
-        const model = Router.current().data()
+        const model = Router.current()
+            .data()
         // save the loaded model id for later derivations
         Session.set('last_id', model.model_id)
         // whether the followed link was private
@@ -364,12 +382,13 @@ function buttonsEffects() {
 
     const eventtype = mobilecheck() ? 'touchstart' : 'click';
 
-    [].slice.call(document.querySelectorAll('.cbutton')).forEach((el) => {
-        el.addEventListener(eventtype, () => {
-            classie.add(el, 'cbutton--click')
-            onEndAnimation(classie.has(el, 'cbutton--complex') ? el.querySelector('.cbutton__helper') : el, () => {
-                classie.remove(el, 'cbutton--click')
+    [].slice.call(document.querySelectorAll('.cbutton'))
+        .forEach((el) => {
+            el.addEventListener(eventtype, () => {
+                classie.add(el, 'cbutton--click')
+                onEndAnimation(classie.has(el, 'cbutton--complex') ? el.querySelector('.cbutton__helper') : el, () => {
+                    classie.remove(el, 'cbutton--click')
+                })
             })
         })
-    })
 }

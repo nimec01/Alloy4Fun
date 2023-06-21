@@ -6,12 +6,12 @@ import edu.mit.csail.sdg.ast.*;
 import java.util.List;
 
 public class AlloyExprStringify {
-    public static String stringify(Expr e) {
+    public static String rawStringify(Expr e) {
         return new ExprStringifyVisitReturn().visitThis(e);
     }
 
-    public static String stringifyAndDiscardTrue(Expr e) {
-        String res = stringify(e);
+    public static String stringify(Expr e) {
+        String res = rawStringify(e);
         if ("true".equals(res))
             return "";
         return res;

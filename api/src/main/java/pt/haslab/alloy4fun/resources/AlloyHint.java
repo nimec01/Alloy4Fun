@@ -16,6 +16,9 @@ import pt.haslab.alloy4fun.services.HintService;
 import pt.haslab.alloy4fun.services.SessionService;
 
 import java.io.IOException;
+import java.util.Optional;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 
 @Path("/hint")
 public class AlloyHint {
@@ -32,15 +35,27 @@ public class AlloyHint {
     @Path("/get")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getHint(HintRequest request) {
-        LOG.info("Hint requested for model " + request.originId);
+        LOG.info("Hint requested for session " + request.sessionId);
 
         Session session = sessionManager.findById(request.sessionId);
 
         if (session == null)
             return Response.ok(InstanceMsg.error("Invalid Session")).build();
 
-        return Response.ok(hintService.getHint(request.originId, session.cmd.label, session.skolem)).build();
+        try {
+            Optional<InstanceMsg> response = session.hintRequest.get();
 
+            if (response.isEmpty())
+                LOG.debug("NO HINT AVAILABLE FOR " + request.sessionId);
+
+            return Response.ok(response.orElseGet(() -> InstanceMsg.error("Unable to generate hint"))).build();
+        } catch (CancellationException | InterruptedException e) {
+            LOG.debug("HINT GEN Cancellation/Interruption");
+            return Response.ok(InstanceMsg.error("Hint is unavailable")).build();
+        } catch (ExecutionException e) {
+            LOG.error(e);
+            return Response.ok(InstanceMsg.error("Error when generating hint")).build();
+        }
     }
 
     @GET
@@ -55,6 +70,5 @@ public class AlloyHint {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class HintRequest {
         public String sessionId;
-        public String originId;
     }
 }

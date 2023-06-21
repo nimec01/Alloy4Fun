@@ -1,8 +1,11 @@
 package pt.haslab.alloy4fun.data.models.HintGraph;
 
+import edu.mit.csail.sdg.ast.Func;
+import io.netty.handler.codec.http2.Http2Connection;
 import io.quarkus.mongodb.panache.PanacheMongoEntity;
 import io.quarkus.mongodb.panache.common.MongoEntity;
 
+import java.util.Collection;
 import java.util.Set;
 
 @MongoEntity(collection = "HintGroup")
@@ -31,4 +34,6 @@ public class HintExercise extends PanacheMongoEntity {
         this.cmd_n = cmd_n;
         this.targetFunctions = targetFunctions;
     }
+
+
 }

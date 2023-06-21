@@ -7,12 +7,10 @@ Meteor.methods({
      * @returns {Promise<unknown>}
      */
     getHint(currentModelId) {
-        const originId = Model.findOne(currentModelId).original
         return new Promise((resolve, reject) => {
             HTTP.call('GET', `${Meteor.settings.env.API_URL}/hint/get`, {
                 data: {
-                    sessionId: currentModelId,
-                    originId
+                    sessionId: currentModelId
                 }
             }, (error, result) => {
                 if (error) reject(error)

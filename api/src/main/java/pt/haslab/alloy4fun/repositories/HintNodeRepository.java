@@ -15,17 +15,6 @@ import java.util.stream.Stream;
 @ApplicationScoped
 public class HintNodeRepository implements PanacheMongoRepository<HintNode> {
 
-    public Optional<HintNode> findByGraphIdAndFormula(Long graph_id, Map<String, String> formula) {
-        Document query = appendFormulaToDocument(new Document("graph_id", graph_id), formula);
-        return find(query).firstResultOptional();
-    }
-
-
-    public boolean incrementByGraphIdAndFormula(Long graph_id, Map<String, String> formula) {
-        Document query = appendFormulaToDocument(new Document("graph_id", graph_id), formula);
-        return update(new Document("$inc", new Document("count", 1))).where(query) > 0;
-    }
-
     private static Document appendFormulaToDocument(Document graph_id, Map<String, String> formula) {
         Document query = graph_id;
         for (Map.Entry<String, String> entry : formula.entrySet()) {
@@ -34,8 +23,18 @@ public class HintNodeRepository implements PanacheMongoRepository<HintNode> {
         return query;
     }
 
-    public Stream<HintNode> findByGraphIdAndFormulaIn(Long graph_id, List<Map<String, String>> formulas) {
-        return find(new Document("$or", formulas.stream().map(x -> appendFormulaToDocument(new Document("graph_id", graph_id), x)).toList())).stream();
+    public Optional<HintNode> findByGraphIdAndFormula(Long graph_id, Map<String, String> formula) {
+        Document query = appendFormulaToDocument(new Document("graph_id", graph_id), formula);
+        return find(query).firstResultOptional();
+    }
+
+    public boolean incrementByGraphIdAndFormula(Long graph_id, Map<String, String> formula) {
+        Document query = appendFormulaToDocument(new Document("graph_id", graph_id), formula);
+        return update(new Document("$inc", new Document("count", 1))).where(query) > 0;
+    }
+
+    public Optional<HintNode> findBestByGraphIdAndFormulaIn(Long graph_id, List<Map<String, String>> formulas) {
+        return find(new Document("$or", formulas.stream().map(x -> appendFormulaToDocument(new Document("graph_id", graph_id), x)).toList()),new Document("valid",-1).append("visits",-1)).firstResultOptional();
     }
 
     public void incrementLeaveById(ObjectId oldNodeId) {

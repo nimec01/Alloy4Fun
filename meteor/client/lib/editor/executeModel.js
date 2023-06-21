@@ -4,10 +4,13 @@
  * @module client/lib/editor/genUrl
  */
 
-import { displayError,
+import {
+    displayError,
     markEditorError,
-    markEditorWarning} from './feedback'
-import { getCommandIndex,
+    markEditorWarning
+} from './feedback'
+import {
+    getCommandIndex,
     storeInstances,
     modelExecuted,
     getNextInstance,
@@ -16,8 +19,10 @@ import { getCommandIndex,
     isUnsatInstance,
     getCommandLabel,
     resetState,
-    currentState } from './state'
-import { resetPositions,newInstanceSetup } from '../visualizer/projection'
+    currentState
+} from './state'
+import { resetPositions, newInstanceSetup } from '../visualizer/projection'
+import { bufferHint } from './hintModel'
 
 const no_more_msg = 'No more satisfying instances!'
 
@@ -25,13 +30,14 @@ const no_more_msg = 'No more satisfying instances!'
  * Execute the model through the selected command. Will call the Alloy API.
  */
 export function executeModel() {
-    Session.set('is_running',true)
+    Session.set('is_running', true)
+    Session.set('hint-enabled', false)
     const commandIndex = getCommandIndex()
 
     // no command to run
-    if (commandIndex < 0) displayError('There are no commands to execute', '')
-
-    // execute command
+    if (commandIndex < 0) {
+        displayError('There are no commands to execute', '')
+    }// execute command
     else {
         modelExecuted()
         const model = textEditor.getValue()
@@ -46,11 +52,11 @@ export function executeModel() {
 export function nextInstance() {
     log_messages = Session.get('log-message')
     log_classes = Session.get('log-class')
-    if (log_messages[log_messages.length-1] == no_more_msg) {
+    if (log_messages[log_messages.length - 1] == no_more_msg) {
         log_messages.pop()
         log_classes.pop()
-        Session.set('log-message',log_messages)
-        Session.set('log-class',log_classes)
+        Session.set('log-message', log_messages)
+        Session.set('log-class', log_classes)
     }
 
     const instanceIndex = Session.get('currentInstance')
@@ -66,11 +72,11 @@ export function nextInstance() {
             Session.set('currentInstance', instanceIndex)
             log_messages = Session.get('log-message')
             log_messages.push(no_more_msg)
-            Session.set('log-message',log_messages)
+            Session.set('log-message', log_messages)
 
             log_classes = Session.get('log-class')
             log_classes.push('log-info')
-            Session.set('log-class',log_classes)
+            Session.set('log-class', log_classes)
         } else {
             resetPositions()
             updateGraph(ni)
@@ -87,11 +93,11 @@ export function nextInstance() {
 export function prevInstance() {
     log_messages = Session.get('log-message')
     log_classes = Session.get('log-class')
-    if (log_messages[log_messages.length-1] == no_more_msg) {
+    if (log_messages[log_messages.length - 1] == no_more_msg) {
         log_messages.pop()
         log_classes.pop()
-        Session.set('log-message',log_messages)
-        Session.set('log-class',log_classes)
+        Session.set('log-message', log_messages)
+        Session.set('log-class', log_classes)
     }
 
 
@@ -114,15 +120,17 @@ export function prevInstance() {
  *     meteor calls
  */
 function handleExecuteModel(err, result) {
-    Session.set('is_running',false)
+    Session.set('hint-enabled', false)
+    Session.set('is_running', false)
     if (err) {
         maxInstanceNumber = -1
         return displayError(err)
     }
     Session.set('last_id', result.newModelId) // update the last_id for next derivations
 
-    if (result.instances)
+    if (result.instances) {
         result = result.instances
+    }
 
     storeInstances(result)
     if (Array.isArray(result)) result = result[0]
@@ -166,7 +174,10 @@ function handleExecuteModel(err, result) {
             newInstanceSetup()
         }
 
+        bufferHint()
+
         Session.set('log-message', log_messages)
         Session.set('log-class', log_classes)
+
     }
 }

@@ -8,8 +8,8 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import pt.haslab.alloy4fun.util.AlloyUtil;
+import pt.haslab.alloy4fun.util.UncheckedIOException;
 
-import java.io.IOException;
 import java.util.Map;
 
 
@@ -25,7 +25,7 @@ public class AlloyValidate {
             return Response.ok(Map.of("success", true)).build();
         } catch (Err e) {
             return Response.ok(makeErrorJson(e)).build();
-        } catch (IOException e) {
+        } catch (UncheckedIOException e) {
             return Response.serverError().build();
         }
     }

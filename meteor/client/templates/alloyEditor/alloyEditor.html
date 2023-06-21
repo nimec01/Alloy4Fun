@@ -37,7 +37,19 @@
                  Next Instance : next div -->
                 <div class="col-lg-4 col-md-12 col-xs-12">
                     <div class="text-center">
-                        <div id="exec" class="col-lg-12 col-md-4 col-xs-4">
+                        {{#if hintReplacesExecution}}
+                            <div id="hint" class="col-lg-12 col-md-4 col-xs-4">
+                                <button class="cbutton cbutton--effect-boris" {{hintAvailable}}>
+                                    <div class="col-xs-12">
+                                 <span class="fa-stack">
+                                    <i class="cbutton__icon fas fa-question-circle fa-stack-2x"></i>
+                                </span>
+                                    </div>
+                                    <span class="cbutton__text">Play</span><i class="legend">Hint</i>
+                                </button>
+                            </div>
+                        {{else}}
+                            <div id="exec" class="col-lg-12 col-md-4 col-xs-4">
                             <button class="cbutton cbutton--effect-boris" {{execEnabled}}>
                                  <div class="col-xs-12">
                                  <span class="fa-stack">
@@ -53,19 +65,7 @@
                                 <span class="cbutton__text">Play</span><i class="legend">Execute</i>
                             </button>
                         </div>
-                        <div id="hint" class="col-lg-12 col-md-4 col-xs-4">
-                            <button class="cbutton cbutton--effect-boris" {{hintEnabled}}>
-                                <div class="col-xs-12">
-                                 <span class="fa-stack">
-                                    <i class="cbutton__icon fas fa-question-circle fa-stack-2x"></i>
-                                     {{#if isHintRunning}}
-                                         <i id="running_icon" title="Command executing" class="fas fa-thin fa-spinner fa-spin fa-stack-1x" style="color:white;"></i>
-                                     {{/if}}
-                                </span>
-                                </div>
-                                <span class="cbutton__text">Play</span><i class="legend">Hint</i>
-                            </button>
-                        </div>
+                        {{/if}}
                         <div id="genUrl" class="col-lg-12 col-md-4 col-xs-4 text-center permalink">
                             <button id="genurlbtn" class="cbutton cbutton--effect-boris" {{shareModelEnabled}}>
                                 <div class="col-xs-12">
