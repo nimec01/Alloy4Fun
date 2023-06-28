@@ -33,12 +33,7 @@ import java.util.concurrent.CompletableFuture;
 public class AlloyGetInstances {
 
     private static final Logger LOGGER = Logger.getLogger(AlloyGetInstances.class);
-    private final List<ErrorWarning> warnings = new ArrayList<>();
-    private final A4Reporter rep = new A4Reporter() {
-        public void warning(ErrorWarning msg) {
-            warnings.add(msg);
-        }
-    };
+
     @Inject
     SessionService sessionManager;
 
@@ -55,9 +50,17 @@ public class AlloyGetInstances {
             LOGGER.debug("Deleted parent session (" + request.parentId + ").");
 
         try {
+
+            List<ErrorWarning> warnings = new ArrayList<>();
+            A4Reporter rep = new A4Reporter() {
+                public void warning(ErrorWarning msg) {
+                    warnings.add(msg);
+                }
+            };
+
             Session session = ensureSession(request, rep);
 
-            return Response.ok(batchAdd(request.numberOfInstances, session)).build();
+            return Response.ok(batchAdd(request.numberOfInstances, session, warnings)).build();
         } catch (Err e) {
             LOGGER.info("Responding with an alloy error.");
             return Response.ok(InstanceMsg.from(e)).build();
@@ -87,22 +90,22 @@ public class AlloyGetInstances {
         return result;
     }
 
-    public List<InstanceResponse> batchAdd(Integer numberOfInstances, Session session) throws IOException {
+    public List<InstanceResponse> batchAdd(Integer numberOfInstances, Session session, List<ErrorWarning> warnings) throws IOException {
         List<InstanceResponse> result = new ArrayList<>();
 
         for (int i = 0; i < numberOfInstances && session.getSolution().satisfiable(); i++) {
-            result.add(assembleInstanceResponse(session));
+            result.add(assembleInstanceResponse(session, warnings));
             session.next();
         }
         if (!session.getSolution().satisfiable()) {
-            result.add(assembleInstanceResponse(session));
+            result.add(assembleInstanceResponse(session, warnings));
         }
 
         return result;
     }
 
 
-    public InstanceResponse assembleInstanceResponse(Session session) {
+    public InstanceResponse assembleInstanceResponse(Session session, List<ErrorWarning> warnings) {
         A4Solution answer = session.getSolution();
         int cnt = session.getCount();
 

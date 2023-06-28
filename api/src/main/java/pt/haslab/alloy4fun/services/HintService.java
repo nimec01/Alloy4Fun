@@ -153,7 +153,7 @@ public class HintService {
 
     public Model getOriginal(String challenge) {
         Model m = modelRepo.findById(challenge);
-        if (!m.isOriginal_()) m = modelRepo.findById(m.original);
+        if (m != null && !m.isOriginal_()) m = modelRepo.findById(m.original);
         return m;
     }
 

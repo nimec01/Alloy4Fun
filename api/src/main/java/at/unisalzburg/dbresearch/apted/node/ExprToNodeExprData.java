@@ -125,18 +125,19 @@ public class ExprToNodeExprData extends VisitReturn<Node<ExprData>> {
 
     @Override
     public Node<ExprData> visit(ExprUnary exprUnary) throws Err {
-        try {
-            pushValidPos(exprUnary.pos());
 
-            if (ExprUnary.Op.NOOP.equals(exprUnary.op))
+        if (ExprUnary.Op.NOOP.equals(exprUnary.op)) {
+            try {
+                pushValidPos(exprUnary.pos());
                 return visitThis(exprUnary.sub);
-
-            Node<ExprData> result = new Node<>(new ExprData(exprUnary, posStack.peek()));
-            result.addChild(visitThis(exprUnary.sub));
-            return result;
-        } finally {
-            posStack.pop();
+            } finally {
+                posStack.pop();
+            }
         }
+
+        Node<ExprData> result = new Node<>(new ExprData(exprUnary, peekValidPos(exprUnary.pos)));
+        result.addChild(visitThis(exprUnary.sub));
+        return result;
     }
 
     @Override
