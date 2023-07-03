@@ -240,10 +240,13 @@ Template.alloyEditor.events({
         }
 
         // clear all marks
-        textEditor.doc.getAllMarks()
-            .forEach(marker => marker.clear())
+        textEditor.doc.getAllMarks().forEach(marker => marker.clear())
     },
-    'click #exec > button': executeModel,
+    'click #exec > button'() {
+        // clear all marks
+        textEditor.doc.getAllMarks().forEach(marker => marker.clear())
+        executeModel()
+    },
     'change .command-selection > select'() {
         cmdChanged()
     },
@@ -284,8 +287,7 @@ Template.alloyEditor.onRendered(() => {
     // if there's subscribed data, process it
     if (Router.current().data && textEditor) {
         // load the model from controller
-        const model = Router.current()
-            .data()
+        const model = Router.current().data()
         // save the loaded model id for later derivations
         Session.set('last_id', model.model_id)
         // whether the followed link was private

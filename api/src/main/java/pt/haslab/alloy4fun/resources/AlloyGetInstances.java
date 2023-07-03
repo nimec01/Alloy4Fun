@@ -8,6 +8,7 @@ import edu.mit.csail.sdg.parser.CompModule;
 import edu.mit.csail.sdg.translator.A4Options;
 import edu.mit.csail.sdg.translator.A4Solution;
 import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
+import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -27,9 +28,11 @@ import pt.haslab.alloy4fun.util.AlloyUtil;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 @Path("/getInstances")
+@RequestScoped
 public class AlloyGetInstances {
 
     private static final Logger LOGGER = Logger.getLogger(AlloyGetInstances.class);
@@ -82,8 +85,9 @@ public class AlloyGetInstances {
 
             result = Session.create(request.sessionId, ans, command, world.getAllFunc().makeConstList());
 
-            if (request.parentId != null)
+            if (request.parentId != null && command.check && ans.satisfiable())
                 result.hintRequest = CompletableFuture.supplyAsync(() -> hintService.getHint(request.parentId, command.label, world));
+            else result.hintRequest = CompletableFuture.completedFuture(Optional.empty());
             sessionManager.update(result);
         }
 
