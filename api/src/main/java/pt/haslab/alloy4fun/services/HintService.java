@@ -25,6 +25,7 @@ import pt.haslab.alloy4fun.data.models.HintGraph.HintEdge;
 import pt.haslab.alloy4fun.data.models.HintGraph.HintExercise;
 import pt.haslab.alloy4fun.data.models.HintGraph.HintNode;
 import pt.haslab.alloy4fun.data.models.Model;
+import pt.haslab.alloy4fun.data.transfer.ExerciseForm;
 import pt.haslab.alloy4fun.data.transfer.InstanceMsg;
 import pt.haslab.alloy4fun.data.transfer.ScoreTraversalContext;
 import pt.haslab.alloy4fun.repositories.HintEdgeRepository;
@@ -157,16 +158,15 @@ public class HintService {
         return m;
     }
 
-    private <Context> CompletableFuture<Void> walkModelTree(BiFunction<Model, Context, Context> step, Context ctx, Model current) {
-        return supplyAsync(() -> step.apply(current, ctx))
-                .thenCompose(updatedContext ->
-                        CompletableFuture.allOf(modelRepo.streamByDerivationOfAndOriginal(current.id, current.original)
-                                .map(child -> walkModelTree(step, updatedContext, child))
-                                .toArray(CompletableFuture[]::new)
-                        ));
+    private static <Context> CompletableFuture<Void> walkModelTree(BiFunction<Model, Context, Context> step, Function<Model, Stream<Model>> modelGetter, Context ctx, Model current) {
+        return supplyAsync(() -> step.apply(current, ctx)).thenCompose(updatedContext -> CompletableFuture.allOf((modelGetter.apply(current).map(child -> walkModelTree(step, modelGetter, updatedContext, child)).toArray(CompletableFuture[]::new))));
     }
 
     public CompletableFuture<Void> walkModelTree(Model root) {
+        return walkModelTree(root, null);
+    }
+
+    public CompletableFuture<Void> walkModelTree(Model root, Integer year) {
         Map<String, HintExercise> cmdToExercise = exerciseRepo.streamByModelId(root.id).collect(toUnmodifiableMap(x -> x.cmd_n, x -> x));
 
         Map<ObjectId, ObjectId> initCtx = new HashMap<>();
@@ -178,9 +178,18 @@ public class HintService {
             Map<String, String> formula = HintNode.getNormalizedFormulaFrom(world.getAllFunc().makeConstList(), exercise.targetFunctions);
             initCtx.put(exercise.id, incrementOrCreateNode(formula, false, exercise.graph_id, null));
         });
-
-        return walkModelTree((m, ctx) -> walkModelTreeStep(cmdToExercise, modules, m, ctx), initCtx, root);
+        Function<Model, Stream<Model>> modelGetter;
+        if (year == null)
+            modelGetter = model -> modelRepo.streamByDerivationOfAndOriginal(model.id, model.original);
+        else {
+            Calendar c = Calendar.getInstance();
+            c.set(year, Calendar.SEPTEMBER, 1);
+            Date max = c.getTime();
+            modelGetter = model -> modelRepo.streamByDerivationOfAndOriginal(model.id, model.original).filter(x -> max.after(MultiDateDeserializer.deserialize(x.time, max)));
+        }
+        return walkModelTree((m, ctx) -> walkModelTreeStep(cmdToExercise, modules, m, ctx), modelGetter, initCtx, root);
     }
+
 
     private Map<ObjectId, ObjectId> walkModelTreeStep(Map<String, HintExercise> cmdToExercise, Set<String> root_modules, Model current, Map<ObjectId, ObjectId> context) {
         try {
@@ -348,5 +357,15 @@ public class HintService {
         }
 
         return Optional.empty();
+    }
+
+    public int generateExercisesWithGraphId(Long graph_id, Collection<ExerciseForm> comandsToModelIds) {
+        List<HintExercise> exs = comandsToModelIds.stream()
+                .filter(x -> exerciseRepo.notExistsModelIdAndCmdN(x.modelId, x.cmd_n))
+                .map(x -> new HintExercise(x.modelId, graph_id, x.secretCommandCount, x.cmd_n, x.targetFunctions))
+                .toList();
+        if (!exs.isEmpty())
+            exerciseRepo.persistOrUpdate(exs);
+        return exs.size();
     }
 }

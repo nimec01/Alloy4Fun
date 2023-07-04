@@ -17,4 +17,8 @@ public class HintExerciseRepository implements PanacheMongoRepository<HintExerci
     public Optional<HintExercise> findByModelIdAndCmdN(String model_id, String cmd_n) {
         return find("model_id = ?1 and cmd_n = ?2", model_id, cmd_n).firstResultOptional();
     }
+
+    public boolean notExistsModelIdAndCmdN(String model_id, String cmd_n){
+        return findByModelIdAndCmdN(model_id,cmd_n).isEmpty();
+    }
 }

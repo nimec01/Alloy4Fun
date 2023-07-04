@@ -34,4 +34,13 @@ public class Counter extends PanacheMongoEntityBase {
             v.persistOrUpdate();
         }
     }
+
+    public static Long ensureGraphId(Long target) {
+        Counter v = (Counter) findByIdOptional("GraphCounter").orElseGet(() -> new Counter("GraphCounter", 0L));
+        if (v.value < target) {
+            v.value = target + 1;
+            v.persistOrUpdate();
+        }
+        return target;
+    }
 }
