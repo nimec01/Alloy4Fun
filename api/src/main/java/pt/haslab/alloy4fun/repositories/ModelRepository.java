@@ -2,6 +2,7 @@ package pt.haslab.alloy4fun.repositories;
 
 import io.quarkus.mongodb.panache.PanacheMongoRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
+import org.bson.Document;
 import pt.haslab.alloy4fun.data.models.Model;
 
 import java.util.Collection;
@@ -20,5 +21,9 @@ public class ModelRepository implements PanacheMongoRepositoryBase<Model, String
 
     public Stream<Model> streamByDerivationOfAndOriginal(String derivationOf, String original) {
         return find("derivationOf = ?1 and original = ?2", derivationOf, original).stream();
+    }
+
+    public Stream<Model> streamByOriginalAndUnSat(String original_id) {
+        return find(new Document("original", original_id).append("sat", 1)).stream();
     }
 }

@@ -25,19 +25,15 @@ public class HintEdgeRepository implements PanacheMongoRepository<HintEdge> {
         return find(new Document("$or", List.of(new Document("score", new Document("$gt", score)), new Document("score", null))).append("destination", destination).append("origin", new Document("$ne", destination))).stream();
     }
 
-    public Stream<HintEdge> streamByOriginId(ObjectId origin) {
-        return find(new Document("origin", origin)).stream();
+    public void deleteByGraphId(ObjectId graph_id) {
+        delete(new Document("graph_id", graph_id));
     }
 
-    public Stream<HintEdge> streamByGraphId(Long graphId) {
+    public Stream<HintEdge> streamByGraphId(ObjectId graphId) {
         return find(new Document("graph_id", graphId)).stream();
     }
 
-    public void deleteByScoreNull(Long graph_id) {
+    public void deleteByScoreNull(ObjectId graph_id) {
         delete(new Document("score", null).append("graph_id", graph_id));
-    }
-
-    public boolean hasEndpoint(ObjectId node_id) {
-        return find(new Document("$or", List.of(new Document("origin", node_id), new Document("destination", node_id)))).firstResultOptional().isPresent();
     }
 }

@@ -6,7 +6,6 @@ import org.bson.Document;
 import org.bson.types.ObjectId;
 import pt.haslab.alloy4fun.data.models.HintGraph.HintNode;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -23,42 +22,33 @@ public class HintNodeRepository implements PanacheMongoRepository<HintNode> {
         return query;
     }
 
-    public Optional<HintNode> findByGraphIdAndFormula(Long graph_id, Map<String, String> formula) {
+    public Optional<HintNode> findByGraphIdAndFormula(ObjectId graph_id, Map<String, String> formula) {
         Document query = appendFormulaToDocument(new Document("graph_id", graph_id), formula);
         return find(query).firstResultOptional();
     }
 
-    public boolean incrementByGraphIdAndFormula(Long graph_id, Map<String, String> formula) {
-        Document query = appendFormulaToDocument(new Document("graph_id", graph_id), formula);
-        return update(new Document("$inc", new Document("count", 1))).where(query) > 0;
+    public void deleteByGraphId(ObjectId graph_id) {
+        delete(new Document("graph_id", graph_id));
     }
 
-    public Optional<HintNode> findBestByGraphIdAndFormulaIn(Long graph_id, List<Map<String, String>> formulas) {
-        return find(new Document("$or", formulas.stream().map(x -> appendFormulaToDocument(new Document("graph_id", graph_id), x)).toList()),new Document("valid",-1).append("visits",-1)).firstResultOptional();
+    public Optional<HintNode> findBestByGraphIdAndFormulaIn(ObjectId graph_id, List<Map<String, String>> formulas) {
+        return find(new Document("$or", formulas.stream().map(x -> appendFormulaToDocument(new Document("graph_id", graph_id), x)).toList()), new Document("score", -1).append("visits", -1)).firstResultOptional();
     }
 
     public void incrementLeaveById(ObjectId oldNodeId) {
         update(new Document("$inc", new Document("leaves", 1))).where(new Document("_id", oldNodeId));
     }
 
-    public Stream<HintNode> streamByGraphIdAndValidTrue(Long graphId) {
+    public Stream<HintNode> streamByGraphIdAndValidTrue(ObjectId graphId) {
         return find(new Document("graph_id", graphId).append("valid", true)).stream();
     }
 
-    public Optional<HintNode> getByMostLeavesAndGraphID(Long graph_id) {
-        return find(new Document("graph_id", graph_id), new Document("leaves", -1)).firstResultOptional();
+    public void deleteByScoreNull(ObjectId graph_id) {
+        delete(new Document("score", null).append("graph_id", graph_id));
     }
 
-    public Collection<HintNode> findAllByIdIn(Collection<ObjectId> ids) {
-        return find(new Document("_id", new Document("$in", ids))).stream().toList();
+    public Long getTotalVisitsFromGraph(ObjectId graph_id) {
+        return find(new Document("graph_id", graph_id)).stream().map(x -> x.visits).map(Integer::longValue).reduce(0L,Long::sum);
     }
 
-
-    public Stream<HintNode> streamByIdIn(Collection<ObjectId> ids) {
-        return find(new Document("_id", new Document("$in", ids))).stream();
-    }
-
-    public Stream<HintNode> streamByGraphId(Long graph_id) {
-        return find(new Document("graph_id", graph_id)).stream();
-    }
 }

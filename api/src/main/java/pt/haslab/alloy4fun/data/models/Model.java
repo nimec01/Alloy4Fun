@@ -56,16 +56,6 @@ public class Model extends PanacheMongoEntityBase {
     public Integer sat;
 
     /**
-     * optional field, a possible error or warning message.
-     */
-    public String msg;
-
-    /**
-     * the theme associated with this model.
-     */
-    //public Theme theme;
-
-    /**
      * the timestamp.
      */
     public String time;

@@ -3,7 +3,6 @@ package pt.haslab.alloy4fun.data.transfer;
 import org.bson.types.ObjectId;
 import pt.haslab.alloy4fun.data.models.HintGraph.HintEdge;
 import pt.haslab.alloy4fun.data.models.HintGraph.HintNode;
-import pt.haslab.alloy4fun.services.HintService;
 
 import java.util.function.Function;
 
@@ -22,7 +21,7 @@ public class ScoreTraversalContext implements Comparable<ScoreTraversalContext> 
     }
 
     public ScoreTraversalContext bestScored(ScoreTraversalContext scoreTraversalContext) {
-        if (this.cost.compareTo(scoreTraversalContext.cost) < 0) return this;
+        if (this.cost < scoreTraversalContext.cost) return this;
         return scoreTraversalContext;
     }
 
@@ -60,5 +59,10 @@ public class ScoreTraversalContext implements Comparable<ScoreTraversalContext> 
 
     public ObjectId nodeId() {
         return node.id;
+    }
+
+    public void assignScore() {
+        this.node.score = this.cost;
+        this.node.persistOrUpdate();
     }
 }

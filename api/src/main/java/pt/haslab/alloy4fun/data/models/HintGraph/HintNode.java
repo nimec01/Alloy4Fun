@@ -6,6 +6,7 @@ import edu.mit.csail.sdg.ast.Func;
 import edu.mit.csail.sdg.parser.CompModule;
 import io.quarkus.mongodb.panache.PanacheMongoEntity;
 import io.quarkus.mongodb.panache.common.MongoEntity;
+import org.bson.types.ObjectId;
 import pt.haslab.alloy4fun.util.AlloyExprNormalizer;
 import pt.haslab.alloy4fun.util.AlloyExprStringify;
 import pt.haslab.alloy4fun.util.AlloyUtil;
@@ -20,7 +21,7 @@ import static java.util.stream.Collectors.toUnmodifiableMap;
 @MongoEntity(collection = "HintNode")
 public class HintNode extends PanacheMongoEntity {
 
-    public Long graph_id;
+    public ObjectId graph_id;
     public Map<String, String> formula;
 
     public String witness;
@@ -31,11 +32,13 @@ public class HintNode extends PanacheMongoEntity {
 
     public Integer leaves;
 
+    public Double score;
+
 
     public HintNode() {
     }
 
-    public static HintNode create(Long graph_id, Map<String, String> formula, Boolean sat, String witness) {
+    public static HintNode create(ObjectId graph_id, Map<String, String> formula, Boolean sat, String witness) {
         HintNode result = new HintNode();
 
         result.graph_id = graph_id;

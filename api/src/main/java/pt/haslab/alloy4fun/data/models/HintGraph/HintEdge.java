@@ -5,14 +5,9 @@ import io.quarkus.mongodb.panache.PanacheMongoEntity;
 import io.quarkus.mongodb.panache.common.MongoEntity;
 import org.bson.types.ObjectId;
 
-import java.util.List;
-import java.util.Map;
-
 @MongoEntity(collection = "HintEdge")
 public class HintEdge extends PanacheMongoEntity {
-    public Long graph_id;
-
-    public ObjectId origin, destination;
+    public ObjectId graph_id, origin, destination;
 
     public Integer hopDistance;
 
@@ -23,7 +18,7 @@ public class HintEdge extends PanacheMongoEntity {
     public Double score;
 
 
-    public static HintEdge createEmpty(Long graph_id, ObjectId originNodeId, ObjectId destinationNodeId) {
+    public static HintEdge createEmpty(ObjectId graph_id, ObjectId originNodeId, ObjectId destinationNodeId) {
         HintEdge result = new HintEdge();
         result.graph_id = graph_id;
         result.origin = originNodeId;
@@ -47,7 +42,7 @@ public class HintEdge extends PanacheMongoEntity {
 
     public double computeImminentCost() {
         if (editDistance == null || hopDistance == null)
-            return Double.MAX_VALUE /2;
+            return Double.MAX_VALUE / 2;
         return editDistance * hopDistance;
     }
 }

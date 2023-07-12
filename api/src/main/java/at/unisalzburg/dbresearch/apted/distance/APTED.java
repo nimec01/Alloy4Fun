@@ -74,42 +74,39 @@ public class APTED<D, C extends CostModel<D>> {
      * Identifier of an inner path type = {@value INNER};
      */
     private static final byte INNER = 2;
-
+    /**
+     * Cost model to be used for calculating costs of edit operations.
+     */
+    private final C costModel;
     /**
      * Indexer of the source tree.
      *
      * @see NodeIndexer
      */
     private NodeIndexer<D, C> it1 = null;
-
     /**
      * Indexer of the destination tree.
      *
      * @see NodeIndexer
      */
     private NodeIndexer<D, C> it2 = null;
-
     /**
      * The size of the source input tree.
      */
     private int size1;
-
     /**
      * The size of the destination tree.
      */
     private int size2;
-
     /**
      * The distance matrix [1, Sections 3.4,8.2,8.3]. Used to store intermediate
      * distances between pairs of subtrees.
      */
     private float[][] delta;
-
     /**
      * One of distance arrays to store intermediate distances in spfA.
      */
     private float[] q;
-
     /**
      * Array used in the algorithm before [1]. Using it does not change the
      * complexity.
@@ -117,7 +114,6 @@ public class APTED<D, C extends CostModel<D>> {
      * <p> Do not use it [1, Section 8.4].
      */
     private int[] fn;
-
     /**
      * Array used in the algorithm before [1]. Using it does not change the
      * complexity.
@@ -125,17 +121,11 @@ public class APTED<D, C extends CostModel<D>> {
      * <p> Do not use it [1, Section 8.4].
      */
     private int[] ft;
-
     /**
      * Stores the number of subproblems encountered while computing the distance
      * [1, Section 10].
      */
     private long counter;
-
-    /**
-     * Cost model to be used for calculating costs of edit operations.
-     */
-    private final C costModel;
 
     /**
      * Constructs the APTED algorithm object with the specified cost model.
@@ -1874,7 +1864,7 @@ public class APTED<D, C extends CostModel<D>> {
                 return Map.entry(CostModel.OpType.Delete, it1.postL_to_node(mapping.get(i)[0] - 1).getNodeData());
             } else if (!costModel.eq(it1.postL_to_node(mapping.get(i)[0] - 1), it2.postL_to_node(mapping.get(i)[1] - 1))) {
                 // Rename.
-                return Map.entry(CostModel.OpType.Rename, it1.postL_to_node(mapping.get(i)[1] - 1).getNodeData());
+                return Map.entry(CostModel.OpType.Rename, it1.postL_to_node(mapping.get(i)[0] - 1).getNodeData());
             }
         }
         return null;

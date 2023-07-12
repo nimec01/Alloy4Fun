@@ -1,18 +1,16 @@
 package pt.haslab.alloy4fun.data.models.HintGraph;
 
-import edu.mit.csail.sdg.ast.Func;
-import io.netty.handler.codec.http2.Http2Connection;
 import io.quarkus.mongodb.panache.PanacheMongoEntity;
 import io.quarkus.mongodb.panache.common.MongoEntity;
+import org.bson.types.ObjectId;
 
-import java.util.Collection;
 import java.util.Set;
 
-@MongoEntity(collection = "HintGroup")
+@MongoEntity(collection = "HintExercise")
 public class HintExercise extends PanacheMongoEntity {
     public String model_id;
 
-    public Long graph_id;
+    public ObjectId graph_id;
 
     //Indicates the number of secret commands introduced by the model
     //Allows the program to filter commands with repeated names under normal conditions
@@ -27,7 +25,7 @@ public class HintExercise extends PanacheMongoEntity {
     public HintExercise() {
     }
 
-    public HintExercise(String model_id, Long graph_id, Integer secret_cmd_count, String cmd_n, Set<String> targetFunctions) {
+    public HintExercise(String model_id, ObjectId graph_id, Integer secret_cmd_count, String cmd_n, Set<String> targetFunctions) {
         this.model_id = model_id;
         this.graph_id = graph_id;
         this.secret_cmd_count = secret_cmd_count;

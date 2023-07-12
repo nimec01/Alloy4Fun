@@ -2,7 +2,6 @@ package pt.haslab.alloy4fun.data.transfer;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import java.util.Objects;
 import java.util.Set;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -59,6 +58,6 @@ public class ExerciseForm {
 
     @Override
     public int hashCode() {
-        return 31 * modelId.hashCode()+ cmd_n.hashCode();
+        return 31 * modelId.hashCode() + cmd_n.hashCode();
     }
 }
