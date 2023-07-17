@@ -1,9 +1,9 @@
-package pt.haslab.alloy4fun.repositories;
+package pt.haslab.specassistant.repositories;
 
 import io.quarkus.mongodb.panache.PanacheMongoRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.bson.Document;
-import pt.haslab.alloy4fun.data.models.Model;
+import pt.haslab.specassistant.models.Model;
 
 import java.util.Collection;
 import java.util.stream.Stream;

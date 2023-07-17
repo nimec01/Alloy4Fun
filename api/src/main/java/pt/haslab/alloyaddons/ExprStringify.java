@@ -1,11 +1,11 @@
-package pt.haslab.alloy4fun.util;
+package pt.haslab.alloyaddons;
 
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.ast.*;
 
 import java.util.List;
 
-public class AlloyExprStringify {
+public class ExprStringify {
     public static String rawStringify(Expr e) {
         return new ExprStringifyVisitReturn().visitThis(e);
     }
@@ -16,6 +16,17 @@ public class AlloyExprStringify {
             return "";
         return res;
     }
+
+    static String lineCSV(String sep, List<String> strings) {
+        if (strings == null || strings.isEmpty())
+            return "";
+        StringBuilder res = new StringBuilder();
+        String last = strings.get(strings.size() - 1);
+        for (int i = 0; i < strings.size() - 1; i++) res.append(strings.get(i)).append(sep);
+
+        return res.append(last).toString();
+    }
+
     private static class ExprStringifyVisitReturn extends VisitReturn<String> {
 
         @Override
@@ -28,17 +39,17 @@ public class AlloyExprStringify {
             List<String> list = exprList.args.stream().map(this::visitThis).toList();
 
             return switch (exprList.op) {
-                case AND -> '(' + Text.lineCSV(" && ", list) + ')';
-                case OR -> '(' + Text.lineCSV(" || ", list) + ')';
-                case DISJOINT -> "disj[" + Text.lineCSV(",", list) + "]";
-                default -> exprList.op + "[" + Text.lineCSV(",", list) + "]";
+                case AND -> '(' + lineCSV(" && ", list) + ')';
+                case OR -> '(' + lineCSV(" || ", list) + ')';
+                case DISJOINT -> "disj[" + lineCSV(",", list) + "]";
+                default -> exprList.op + "[" + lineCSV(",", list) + "]";
             };
         }
 
         @Override
         public String visit(ExprCall exprCall) throws Err {
             List<String> arguments = exprCall.args.stream().map(this::visitThis).toList();
-            return exprCall.fun.label.replace("this/", "") + "[" + Text.lineCSV(",", arguments) + "]";
+            return exprCall.fun.label.replace("this/", "") + "[" + lineCSV(",", arguments) + "]";
         }
 
         @Override
@@ -62,7 +73,7 @@ public class AlloyExprStringify {
 
         @Override
         public String visit(ExprQt exprQt) throws Err {
-            String decString = Text.lineCSV(",", exprQt.decls.stream().map(e -> Text.lineCSV(",", e.names.stream().map(x -> x.label).toList()) + ":" + visitThis(e.expr)).toList());
+            String decString = lineCSV(",", exprQt.decls.stream().map(e -> lineCSV(",", e.names.stream().map(x -> x.label).toList()) + ":" + visitThis(e.expr)).toList());
             String sub = visitThis(exprQt.sub);
 
             if (exprQt.op == ExprQt.Op.COMPREHENSION)

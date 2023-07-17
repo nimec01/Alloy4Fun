@@ -1,4 +1,4 @@
-package pt.haslab.alloy4fun.util;
+package pt.haslab.alloyaddons;
 
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.ast.*;
@@ -7,17 +7,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
-public class AlloyFunctionSearch extends VisitReturn<Void> {
+public class FunctionSearch extends VisitReturn<Void> {
 
     public final List<Func> result = new ArrayList<>();
     private final Predicate<Func> filter;
 
-    public AlloyFunctionSearch(Predicate<Func> filter) {
+    public FunctionSearch(Predicate<Func> filter) {
         this.filter = filter;
     }
 
     public static List<Func> search(Predicate<Func> filter, Expr expr) {
-        AlloyFunctionSearch v = new AlloyFunctionSearch(filter);
+        FunctionSearch v = new FunctionSearch(filter);
         v.visitThis(expr);
         return v.result;
     }

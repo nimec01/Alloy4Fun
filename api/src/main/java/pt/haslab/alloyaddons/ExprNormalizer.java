@@ -1,4 +1,4 @@
-package pt.haslab.alloy4fun.util;
+package pt.haslab.alloyaddons;
 
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.Pos;
@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 import static edu.mit.csail.sdg.ast.ExprBinary.Op.*;
 import static edu.mit.csail.sdg.ast.ExprUnary.Op.NOOP;
 
-public class AlloyExprNormalizer {
+public class ExprNormalizer {
 
     private static Pos maxPos(String f) {
         return new Pos(f, 0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE);
@@ -160,6 +160,7 @@ public class AlloyExprNormalizer {
         public Expr visit(ExprQt exprQt) throws Err {
             Expr current = exprQt;
             List<QuantifierDecl> quantifiers = new ArrayList<>();
+            List<Decl> disjunctions = new ArrayList<>();
 
             while (true) {
                 while (current instanceof ExprUnary && ((ExprUnary) current).op == NOOP)
@@ -170,6 +171,9 @@ public class AlloyExprNormalizer {
 
                     for (Decl decl : ((ExprQt) current).decls) {
                         Set<String> dependentFields = new StreamFieldNames().visitThis(decl.expr).collect(Collectors.toSet());
+                        if (decl.disjoint != null)
+                            disjunctions.add(decl);
+
                         decl.names.forEach(name -> {
                             int depth = 0;
 
@@ -204,6 +208,18 @@ public class AlloyExprNormalizer {
             });
 
             Expr result = this.visitThis(current);
+            if (!disjunctions.isEmpty()) {
+                result = ExprList.make(Pos.UNKNOWN, Pos.UNKNOWN, ExprList.Op.AND, Stream.concat(
+                        disjunctions.stream().map(
+                                dec -> ExprList.make(
+                                        dec.disjoint, dec.disjoint2,
+                                        ExprList.Op.DISJOINT,
+                                        dec.names.stream()
+                                                .map(this::visitThis)
+                                                .sorted(Comparator.comparing(Expr::toString))
+                                                .toList())
+                        ).sorted(Comparator.comparing(Expr::toString)), Stream.of(result)).toList());
+            }
 
             for (int i = quantifiers.size() - 1; i >= 0; i--) {
                 QuantifierDecl qtfDecl = quantifiers.get(i);

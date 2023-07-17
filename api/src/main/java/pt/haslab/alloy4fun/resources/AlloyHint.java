@@ -9,15 +9,16 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.bson.types.ObjectId;
 import org.jboss.logging.Logger;
-import pt.haslab.alloy4fun.data.models.HintGraph.HintGraph;
 import pt.haslab.alloy4fun.data.models.Session;
 import pt.haslab.alloy4fun.data.transfer.ExerciseForm;
 import pt.haslab.alloy4fun.data.transfer.InstanceMsg;
 import pt.haslab.alloy4fun.data.transfer.InstancesRequest;
 import pt.haslab.alloy4fun.data.transfer.YearRange;
-import pt.haslab.alloy4fun.services.HintService;
 import pt.haslab.alloy4fun.services.SessionService;
-import pt.haslab.alloy4fun.util.AlloyUtil;
+import pt.haslab.alloyaddons.Util;
+import pt.haslab.specassistant.HintMsg;
+import pt.haslab.specassistant.HintService;
+import pt.haslab.specassistant.models.HintGraph;
 
 import java.util.*;
 import java.util.concurrent.CancellationException;
@@ -40,9 +41,9 @@ public class AlloyHint {
     @Produces(MediaType.APPLICATION_JSON)
     public Response makeGraphAndExercises(List<ExerciseForm> forms, @QueryParam("graph_id") String graph_id_str, @DefaultValue("Unkown") @QueryParam("name") String graph_name) {
         ObjectId graph_id = (graph_id_str == null || graph_id_str.isEmpty() ? HintGraph.newGraph(graph_name) : HintGraph.findById(graph_id_str).orElseThrow()).id;
-        int n = hintService.generateExercisesWithGraphId(graph_id, new HashSet<>(forms)); // Set clears duplicates
 
-        return Response.ok(n == 0 ? "No changes were made" : n < forms.size() ? "Some forms were ignored" : "Sucess").build();
+        forms.forEach(f -> hintService.generateExercise(graph_id, f.modelId, f.secretCommandCount, f.cmd_n, f.targetFunctions));
+        return Response.ok("Sucess").build();
     }
 
     private static ObjectId getAGraphID(Map<String, ObjectId> graphspace, String prefix, String label) {
@@ -66,7 +67,7 @@ public class AlloyHint {
     @Path("/stress-test-model")
     @Produces(MediaType.APPLICATION_JSON)
     public Response stressHints(@QueryParam("model_id") String model_id, @BeanParam YearRange yearRange) {
-        hintService.testAllHintsOfModel(model_id, yearRange);
+        hintService.testAllHintsOfModel(model_id, yearRange::testDate);
         return Response.ok().build();
     }
 
@@ -74,7 +75,7 @@ public class AlloyHint {
     @Path("/check")
     @Produces(MediaType.APPLICATION_JSON)
     public Response checkHint(InstancesRequest request) {
-        CompModule world = AlloyUtil.parseModel(request.model);
+        CompModule world = Util.parseModel(request.model);
         return Response.ok(hintService.getHint(request.parentId, world.getAllCommands().get(request.commandIndex).label, world).isPresent()).build();
     }
 
@@ -82,7 +83,7 @@ public class AlloyHint {
     @Path("/scan-model")
     @Produces(MediaType.APPLICATION_JSON)
     public Response scanModel(@QueryParam("model_id") String model_id, @BeanParam YearRange yearRange) {
-        hintService.parseModelHint(model_id, yearRange);
+        hintService.parseModelHint(model_id, yearRange::testDate);
         return Response.ok().build();
     }
 
@@ -90,7 +91,7 @@ public class AlloyHint {
     @Path("/scan-models")
     @Produces(MediaType.APPLICATION_JSON)
     public Response scanModels(List<String> model_ids, @BeanParam YearRange yearRange) {
-        model_ids.forEach(id -> hintService.parseModelHint(id, yearRange));
+        model_ids.forEach(id -> hintService.parseModelHint(id, yearRange::testDate));
         return Response.ok().build();
     }
 
@@ -154,12 +155,12 @@ public class AlloyHint {
             return Response.ok(InstanceMsg.error("Invalid Session")).build();
 
         try {
-            Optional<InstanceMsg> response = session.hintRequest.get();
+            Optional<HintMsg> response = session.hintRequest.get();
 
             if (response.isEmpty())
                 LOG.debug("NO HINT AVAILABLE FOR " + request.sessionId);
 
-            return Response.ok(response.orElseGet(() -> InstanceMsg.error("Unable to generate hint"))).build();
+            return Response.ok(response.map(InstanceMsg::from).orElseGet(() -> InstanceMsg.error("Unable to generate hint"))).build();
         } catch (CancellationException | InterruptedException e) {
             LOG.debug("HINT GEN Cancellation/Interruption");
             return Response.ok(InstanceMsg.error("Hint is unavailable")).build();

@@ -21,9 +21,9 @@ import pt.haslab.alloy4fun.data.transfer.InstanceMsg;
 import pt.haslab.alloy4fun.data.transfer.InstanceResponse;
 import pt.haslab.alloy4fun.data.transfer.InstanceTrace;
 import pt.haslab.alloy4fun.data.transfer.InstancesRequest;
-import pt.haslab.alloy4fun.services.HintService;
+import pt.haslab.specassistant.HintService;
 import pt.haslab.alloy4fun.services.SessionService;
-import pt.haslab.alloy4fun.util.AlloyUtil;
+import pt.haslab.alloyaddons.Util;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -77,10 +77,10 @@ public class AlloyGetInstances {
         Session result = sessionManager.findById(request.sessionId);
 
         if (result == null) {
-            CompModule world = AlloyUtil.parseModel(request.model, rep);
+            CompModule world = Util.parseModel(request.model, rep);
             Command command = world.getAllCommands().get(request.commandIndex);
 
-            A4Options options = AlloyUtil.defaultOptions(world);
+            A4Options options = Util.defaultOptions(world);
             A4Solution ans = TranslateAlloyToKodkod.execute_command(rep, world.getAllReachableSigs(), command, options);
 
             result = Session.create(request.sessionId, ans, command, world.getAllFunc().makeConstList());
@@ -128,7 +128,7 @@ public class AlloyGetInstances {
         if (answer.satisfiable()) {
             result.loop = answer.getLoopState();
             try {
-                result.instance = AlloyUtil.parseInstances(answer, answer.getTraceLength())
+                result.instance = Util.parseInstances(answer, answer.getTraceLength())
                         .stream()
                         .map(InstanceTrace::from)
                         .toList();

@@ -1,4 +1,4 @@
-package pt.haslab.alloy4fun.data.models;
+package pt.haslab.specassistant.models;
 
 
 import io.quarkus.mongodb.panache.PanacheMongoEntityBase;

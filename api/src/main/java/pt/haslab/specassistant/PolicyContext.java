@@ -1,32 +1,32 @@
-package pt.haslab.alloy4fun.data.transfer;
+package pt.haslab.specassistant;
 
 import org.bson.types.ObjectId;
-import pt.haslab.alloy4fun.data.models.HintGraph.HintEdge;
-import pt.haslab.alloy4fun.data.models.HintGraph.HintNode;
+import pt.haslab.specassistant.models.HintEdge;
+import pt.haslab.specassistant.models.HintNode;
 
 import java.util.function.Function;
 
-public class ScoreTraversalContext implements Comparable<ScoreTraversalContext> {
+public class PolicyContext implements Comparable<PolicyContext> {
     public HintNode node;
 
     public Double cost;
     public int distance;
 
-    public static ScoreTraversalContext init(HintNode n) {
-        ScoreTraversalContext result = new ScoreTraversalContext();
+    public static PolicyContext init(HintNode n) {
+        PolicyContext result = new PolicyContext();
         result.node = n;
         result.cost = 0.0;
         result.distance = 0;
         return result;
     }
 
-    public ScoreTraversalContext bestScored(ScoreTraversalContext scoreTraversalContext) {
-        if (this.cost < scoreTraversalContext.cost) return this;
-        return scoreTraversalContext;
+    public PolicyContext bestScored(PolicyContext policyContext) {
+        if (this.cost < policyContext.cost) return this;
+        return policyContext;
     }
 
-    public ScoreTraversalContext scoreEdgeOrigin(HintEdge edge, Function<ObjectId, HintNode> nodeGetter) {
-        ScoreTraversalContext result = new ScoreTraversalContext();
+    public PolicyContext scoreEdgeOrigin(HintEdge edge, Function<ObjectId, HintNode> nodeGetter) {
+        PolicyContext result = new PolicyContext();
 
         result.node = nodeGetter.apply(edge.origin);
 
@@ -48,7 +48,7 @@ public class ScoreTraversalContext implements Comparable<ScoreTraversalContext> 
     }
 
     @Override
-    public int compareTo(ScoreTraversalContext o) {
+    public int compareTo(PolicyContext o) {
         return this.cost.compareTo(o.cost);
     }
 

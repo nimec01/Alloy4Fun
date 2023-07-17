@@ -1,10 +1,10 @@
-package pt.haslab.alloy4fun.repositories;
+package pt.haslab.specassistant.repositories;
 
 import io.quarkus.mongodb.panache.PanacheMongoRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.bson.Document;
 import org.bson.types.ObjectId;
-import pt.haslab.alloy4fun.data.models.HintGraph.HintNode;
+import pt.haslab.specassistant.models.HintNode;
 
 import java.util.List;
 import java.util.Map;

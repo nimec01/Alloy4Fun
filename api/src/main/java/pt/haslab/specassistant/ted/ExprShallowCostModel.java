@@ -1,5 +1,6 @@
-package at.unisalzburg.dbresearch.apted.costmodel;
+package pt.haslab.specassistant.ted;
 
+import at.unisalzburg.dbresearch.apted.costmodel.CostModel;
 import at.unisalzburg.dbresearch.apted.node.Node;
 import edu.mit.csail.sdg.ast.Expr;
 

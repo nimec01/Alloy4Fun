@@ -1,4 +1,6 @@
-package pt.haslab.alloy4fun.util;
+package pt.haslab.specassistant.util;
+
+import edu.mit.csail.sdg.alloy4.Pos;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -7,6 +9,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static pt.haslab.alloyaddons.Util.offsetsToPos;
 
 public interface Text {
 
@@ -47,17 +51,6 @@ public interface Text {
         return result.toString();
     }
 
-    static int sortByFirstNumber(String a, String b) {
-        Pattern p = Pattern.compile("\\d+");
-        Matcher m1 = p.matcher(a), m2 = p.matcher(b);
-        try {
-            if (m1.find() && m2.find())
-                return Integer.valueOf(m1.group()).compareTo(Integer.valueOf(m2.group()));
-        } catch (NumberFormatException ignored) {
-        }
-        return a.compareTo(b);
-    }
-
     static LocalDateTime parseDate(String dateString) {
         dateString = dateString.replaceAll(",", "").replaceAll("/", "-").strip();
         if (dateString.matches(".*?(?i:pm|am)")) {
@@ -77,13 +70,11 @@ public interface Text {
 
     }
 
-    static String lineCSV(String sep, List<String> strings) {
-        if (strings == null || strings.isEmpty())
-            return "";
-        StringBuilder res = new StringBuilder();
-        String last = strings.get(strings.size() - 1);
-        for (int i = 0; i < strings.size() - 1; i++) res.append(strings.get(i)).append(sep);
+    public static List<Pos> secretPos(String code) {
+        return offsetsToPos(code, Text.getSecretPositions(code));
+    }
 
-        return res.append(last).toString();
+    public static List<Pos> secretPos(String filename,String code) {
+        return offsetsToPos(filename,code, Text.getSecretPositions(code));
     }
 }

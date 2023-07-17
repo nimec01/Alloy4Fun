@@ -4,7 +4,7 @@ import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.Func;
 import edu.mit.csail.sdg.translator.A4Solution;
-import pt.haslab.alloy4fun.data.transfer.InstanceMsg;
+import pt.haslab.specassistant.HintMsg;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ public class Session {
 
     public Collection<Func> skolem;
 
-    public CompletableFuture<Optional<InstanceMsg>> hintRequest;
+    public CompletableFuture<Optional<HintMsg>> hintRequest;
 
 
     public static Session create(String sessionId, A4Solution ans, Command cmd, Collection<Func> skolem) {

@@ -1,6 +1,6 @@
-package at.unisalzburg.dbresearch.apted.costmodel;
+package pt.haslab.specassistant.ted;
 
-import at.unisalzburg.dbresearch.apted.node.ExprData;
+import at.unisalzburg.dbresearch.apted.costmodel.CostModel;
 import at.unisalzburg.dbresearch.apted.node.Node;
 
 public class ExprDataShallowCostModel implements CostModel<ExprData> {

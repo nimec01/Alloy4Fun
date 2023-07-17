@@ -1,4 +1,4 @@
-package pt.haslab.alloy4fun.data.models.HintGraph;
+package pt.haslab.specassistant.models;
 
 
 import edu.mit.csail.sdg.ast.Expr;
@@ -7,9 +7,9 @@ import edu.mit.csail.sdg.parser.CompModule;
 import io.quarkus.mongodb.panache.PanacheMongoEntity;
 import io.quarkus.mongodb.panache.common.MongoEntity;
 import org.bson.types.ObjectId;
-import pt.haslab.alloy4fun.util.AlloyExprNormalizer;
-import pt.haslab.alloy4fun.util.AlloyExprStringify;
-import pt.haslab.alloy4fun.util.AlloyUtil;
+import pt.haslab.alloyaddons.ExprNormalizer;
+import pt.haslab.alloyaddons.ExprStringify;
+import pt.haslab.alloyaddons.Util;
 
 import java.util.Collection;
 import java.util.Map;
@@ -51,21 +51,21 @@ public class HintNode extends PanacheMongoEntity {
     }
 
     public static Map<String, Expr> getNormalizedFormulaExprFrom(Collection<Func> skolem, Set<String> functions) {
-        return AlloyUtil.streamFuncsWithNames(skolem, functions)
-                .collect(toUnmodifiableMap(x -> x.label, AlloyExprNormalizer::normalize));
+        return Util.streamFuncsWithNames(skolem, functions)
+                .collect(toUnmodifiableMap(x -> x.label, ExprNormalizer::normalize));
     }
 
     public static Map<String, Expr> getFormulaExprFrom(Collection<Func> skolem, Set<String> functions) {
-        return AlloyUtil.streamFuncsWithNames(skolem, functions).collect(toUnmodifiableMap(x -> x.label, Func::getBody));
+        return Util.streamFuncsWithNames(skolem, functions).collect(toUnmodifiableMap(x -> x.label, Func::getBody));
     }
 
     public static Map<String, String> getNormalizedFormulaFrom(Collection<Func> funcs, Set<String> targetNames) {
-        return AlloyUtil.streamFuncsWithNames(funcs, targetNames)
-                .collect(toUnmodifiableMap(x -> x.label, x -> AlloyExprStringify.stringify(AlloyExprNormalizer.normalize(x))));
+        return Util.streamFuncsWithNames(funcs, targetNames)
+                .collect(toUnmodifiableMap(x -> x.label, x -> ExprStringify.stringify(ExprNormalizer.normalize(x))));
     }
 
     public Map<String, Expr> getParsedFormula(CompModule world) throws RuntimeException {
-        return formula.entrySet().stream().collect(toMap(Map.Entry::getKey, x -> AlloyUtil.parseOneExprFromString(world, x.getValue())));
+        return formula.entrySet().stream().collect(toMap(Map.Entry::getKey, x -> Util.parseOneExprFromString(world, x.getValue())));
     }
 
     public HintNode visit() {

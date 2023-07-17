@@ -1,5 +1,6 @@
-package at.unisalzburg.dbresearch.apted.node;
+package pt.haslab.specassistant.ted;
 
+import at.unisalzburg.dbresearch.apted.node.Node;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.ast.*;
 

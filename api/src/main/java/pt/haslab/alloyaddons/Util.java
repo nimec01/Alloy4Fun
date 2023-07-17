@@ -1,20 +1,17 @@
-package pt.haslab.alloy4fun.util;
+package pt.haslab.alloyaddons;
 
 import edu.mit.csail.sdg.alloy4.A4Reporter;
-import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.alloy4viz.AlloyInstance;
 import edu.mit.csail.sdg.alloy4viz.StaticInstanceReader;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.Func;
-import edu.mit.csail.sdg.ast.Sig;
 import edu.mit.csail.sdg.parser.CompModule;
 import edu.mit.csail.sdg.parser.CompUtil;
 import edu.mit.csail.sdg.translator.A4Options;
 import edu.mit.csail.sdg.translator.A4Solution;
-import pt.haslab.Repairer;
-import pt.haslab.mutation.Candidate;
+import pt.haslab.alloyaddons.exceptions.UncheckedIOException;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -29,7 +26,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class AlloyUtil {
+public class Util {
 
     public static CompModule parseModel(String model) throws UncheckedIOException, Err {
         return parseModel(model, A4Reporter.NOP);
@@ -95,25 +92,6 @@ public class AlloyUtil {
     }
 
 
-    public static <ID> List<Map<ID, Candidate>> makeCandidateMaps(Map<ID, Expr> targets, ConstList<Sig> sigs, int maxDepth) {
-        Map<ID, Candidate> unchanged = new HashMap<>();
-        List<Map.Entry<ID, List<Candidate>>> changed = new ArrayList<>();
-
-        targets.forEach((target, expr) -> {
-            List<Candidate> mutations = Repairer.getValidCandidates(expr, sigs, maxDepth);
-
-            if (mutations.isEmpty()) {
-                Candidate c = Candidate.empty();
-                c.mutated = expr;
-                unchanged.put(target, c);
-            } else
-                changed.add(Map.entry(target, mutations));
-        });
-        if (changed.isEmpty())
-            return List.of(unchanged);
-
-        return Static.getArrangements(unchanged, changed);
-    }
 
     public static Expr parseOneExprFromString(CompModule world, String value) {
         try {
@@ -138,25 +116,17 @@ public class AlloyUtil {
 
         module.getAllCommands().forEach(cmd -> {
             if (posIn(cmd.pos, secret_positions)) {
-                Set<String> targets = AlloyFunctionSearch
+                Set<String> targets = FunctionSearch
                         .search(f -> f.pos.sameFile(cmd.pos) && notPosIn(f.pos, secret_positions), cmd.formula)
                         .stream()
                         .map(f -> f.label)
-                        .map(AlloyUtil::stripThisFromLabel)
+                        .map(Util::stripThisFromLabel)
                         .collect(Collectors.toSet());
                 if (!targets.isEmpty())
                     result.put(stripThisFromLabel(cmd.label), targets);
             }
         });
         return result;
-    }
-
-    public static List<Pos> secretPos(String code) {
-        return offsetsToPos(code, Text.getSecretPositions(code));
-    }
-
-    public static List<Pos> secretPos(String filename,String code) {
-        return offsetsToPos(filename,code, Text.getSecretPositions(code));
     }
 
     public static boolean posIn(Pos pos, Collection<Pos> collection) {

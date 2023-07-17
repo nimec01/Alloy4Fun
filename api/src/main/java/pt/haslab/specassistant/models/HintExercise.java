@@ -1,4 +1,4 @@
-package pt.haslab.alloy4fun.data.models.HintGraph;
+package pt.haslab.specassistant.models;
 
 import io.quarkus.mongodb.panache.PanacheMongoEntity;
 import io.quarkus.mongodb.panache.common.MongoEntity;

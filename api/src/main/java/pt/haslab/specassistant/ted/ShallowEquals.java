@@ -1,4 +1,4 @@
-package at.unisalzburg.dbresearch.apted.costmodel;
+package pt.haslab.specassistant.ted;
 
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.ast.*;
@@ -87,6 +87,9 @@ public class ShallowEquals extends VisitReturn<Boolean> {
         if (other.decls.size() == exprQt.decls.size()) {
             for (int i = 0; i < other.decls.size(); i++) {
                 Decl decThis = exprQt.decls.get(i), decOther = other.decls.get(i);
+
+                if ((decThis.disjoint != null) == (decOther.disjoint != null))
+                    return false;
 
                 if (decThis.names.size() == decOther.names.size())
                     for (int j = 0; j < decThis.names.size(); j++)

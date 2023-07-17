@@ -1,13 +1,8 @@
-package pt.haslab.alloy4fun.services;
+package pt.haslab.specassistant;
 
 
 import at.unisalzburg.dbresearch.apted.costmodel.CostModel;
-import at.unisalzburg.dbresearch.apted.costmodel.ExprDataShallowCostModel;
-import at.unisalzburg.dbresearch.apted.costmodel.ExprShallowCostModel;
 import at.unisalzburg.dbresearch.apted.distance.APTED;
-import at.unisalzburg.dbresearch.apted.node.ExprData;
-import at.unisalzburg.dbresearch.apted.node.ExprToNode;
-import at.unisalzburg.dbresearch.apted.node.ExprToNodeExprData;
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.ErrorSyntax;
@@ -21,22 +16,21 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.bson.types.ObjectId;
 import org.jboss.logging.Logger;
-import pt.haslab.alloy4fun.data.models.HintGraph.HintEdge;
-import pt.haslab.alloy4fun.data.models.HintGraph.HintExercise;
-import pt.haslab.alloy4fun.data.models.HintGraph.HintGraph;
-import pt.haslab.alloy4fun.data.models.HintGraph.HintNode;
-import pt.haslab.alloy4fun.data.models.Model;
-import pt.haslab.alloy4fun.data.transfer.ExerciseForm;
-import pt.haslab.alloy4fun.data.transfer.InstanceMsg;
-import pt.haslab.alloy4fun.data.transfer.ScoreTraversalContext;
-import pt.haslab.alloy4fun.data.transfer.YearRange;
-import pt.haslab.alloy4fun.repositories.HintEdgeRepository;
-import pt.haslab.alloy4fun.repositories.HintExerciseRepository;
-import pt.haslab.alloy4fun.repositories.HintNodeRepository;
-import pt.haslab.alloy4fun.repositories.ModelRepository;
-import pt.haslab.alloy4fun.util.*;
+import pt.haslab.Repairer;
+import pt.haslab.alloyaddons.ExprNormalizer;
+import pt.haslab.alloyaddons.ExprStringify;
+import pt.haslab.alloyaddons.Util;
+import pt.haslab.alloyaddons.exceptions.UncheckedIOException;
 import pt.haslab.mutation.Candidate;
 import pt.haslab.mutation.mutator.Mutator;
+import pt.haslab.specassistant.models.*;
+import pt.haslab.specassistant.repositories.HintEdgeRepository;
+import pt.haslab.specassistant.repositories.HintExerciseRepository;
+import pt.haslab.specassistant.repositories.HintNodeRepository;
+import pt.haslab.specassistant.repositories.ModelRepository;
+import pt.haslab.specassistant.ted.*;
+import pt.haslab.specassistant.util.Static;
+import pt.haslab.specassistant.util.Text;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -47,6 +41,9 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static pt.haslab.specassistant.util.Static.getCombinations;
+import static pt.haslab.specassistant.util.Text.secretPos;
 
 @ApplicationScoped
 public class HintService {
@@ -74,7 +71,7 @@ public class HintService {
     }
 
     private CompModule getWorld(String model_id) {
-        return AlloyUtil.parseModel(modelRepo.findById(model_id).code);
+        return Util.parseModel(modelRepo.findById(model_id).code);
     }
 
     public HintEdge computeDifferences(HintEdge edge, CompModule world, Function<ObjectId, HintNode> nodeGetter) {
@@ -123,16 +120,15 @@ public class HintService {
         exerciseRepo.deleteAll();
     }
 
-    public void parseModelHint(String model_id, YearRange year) {
+    public void parseModelHint(String model_id, Predicate<LocalDateTime> year_tester) {
         Model model = modelRepo.findById(model_id);
-        CompModule base_world = AlloyUtil.parseModel(model.code);
+        CompModule base_world = Util.parseModel(model.code);
         try {
             long commonT = System.nanoTime();
-            if (year == null)
+            if (year_tester == null)
                 walkModelTree(model).get();
             else {
-                year.cacheDates();
-                walkModelTree(model, year::testDate).get();
+                walkModelTree(model, year_tester).get();
             }
             commonT = System.nanoTime() - commonT;
 
@@ -153,15 +149,6 @@ public class HintService {
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public Model getRootModel(String challenge) {
-        Model m = getOriginal(challenge);
-        while (m != null && !m.isRoot()) {
-            if (m.isOriginal_()) m = modelRepo.findById(m.derivationOf);
-            else m = modelRepo.findById(m.original);
-        }
-        return m;
     }
 
     public Model getOriginal(String challenge) {
@@ -194,7 +181,7 @@ public class HintService {
             return CompletableFuture.completedFuture(null);
 
         Map<ObjectId, ObjectId> initCtx = new HashMap<>();
-        CompModule world = AlloyUtil.parseModel(root.code);
+        CompModule world = Util.parseModel(root.code);
 
         Set<String> modules = world.getAllReachableModules().makeConstList().stream().map(CompModule::path).collect(Collectors.toSet());
 
@@ -216,7 +203,7 @@ public class HintService {
         try {
             if (current.sat != null && current.sat >= 0 && cmdToExercise.containsKey(current.cmd_n)) {
 
-                CompModule world = AlloyUtil.parseModel(current.code);
+                CompModule world = Util.parseModel(current.code);
                 HintExercise exercise = cmdToExercise.get(current.cmd_n);
                 HintGraph.incrementParsingCount(exercise.graph_id);
                 ObjectId contextId = exercise.id;
@@ -254,30 +241,30 @@ public class HintService {
     public void computePolicyForGraph(ObjectId graph_id) {
         HintGraph.removeAllPolicyStats(graph_id);
         long t = System.nanoTime();
-        Collection<ScoreTraversalContext> batch = nodeRepo.streamByGraphIdAndValidTrue(graph_id).map(ScoreTraversalContext::init).toList();
+        Collection<PolicyContext> batch = nodeRepo.streamByGraphIdAndValidTrue(graph_id).map(PolicyContext::init).toList();
 
         while (!batch.isEmpty()) {
-            ScoreTraversalContext targetScore = Collections.min(batch);
+            PolicyContext targetScore = Collections.min(batch);
 
-            Map<Boolean, List<ScoreTraversalContext>> targetIds = batch.stream().collect(Collectors.partitioningBy(x -> x.compareTo(targetScore) <= 0));
+            Map<Boolean, List<PolicyContext>> targetIds = batch.stream().collect(Collectors.partitioningBy(x -> x.compareTo(targetScore) <= 0));
 
             try {
-                List<CompletableFuture<List<ScoreTraversalContext>>> actionPool = targetIds.get(true)
+                List<CompletableFuture<List<PolicyContext>>> actionPool = targetIds.get(true)
                         .stream()
-                        .peek(ScoreTraversalContext::assignScore)
+                        .peek(PolicyContext::assignScore)
                         .map(x -> CompletableFuture.supplyAsync(() ->
                                 edgeRepo.streamByDestinationNodeIdAndAllScoreGT(x.nodeId(), x.cost)
                                         .map(y -> x.scoreEdgeOrigin(y, nodeRepo::findById)).filter(Objects::nonNull).toList())).toList();
 
                 CompletableFuture.allOf(actionPool.toArray(CompletableFuture[]::new)).get();
 
-                List<List<ScoreTraversalContext>> result = new ArrayList<>();
+                List<List<PolicyContext>> result = new ArrayList<>();
                 result.add(targetIds.get(false));
-                for (CompletableFuture<List<ScoreTraversalContext>> l : actionPool) {
+                for (CompletableFuture<List<PolicyContext>> l : actionPool) {
                     result.add(l.get());
                 }
 
-                batch = List.copyOf(result.stream().flatMap(Collection::stream).collect(Collectors.toMap(ScoreTraversalContext::nodeId, x -> x, ScoreTraversalContext::bestScored)).values());
+                batch = List.copyOf(result.stream().flatMap(Collection::stream).collect(Collectors.toMap(PolicyContext::nodeId, x -> x, PolicyContext::bestScored)).values());
 
             } catch (InterruptedException | ExecutionException e) {
                 LOG.error(e);
@@ -286,7 +273,7 @@ public class HintService {
         HintGraph.registerPolicyCalculationTime(graph_id, System.nanoTime() - t);
     }
 
-    public Optional<InstanceMsg> getHint(String originId, String command_label, CompModule world) {
+    public Optional<HintMsg> getHint(String originId, String command_label, CompModule world) {
         String original_id = getOriginalId(originId);
         HintExercise exercise = exerciseRepo.findByModelIdAndCmdN(original_id, command_label).orElse(null);
         if (exercise == null)
@@ -294,7 +281,7 @@ public class HintService {
 
         ObjectId graph_id = exercise.graph_id;
 
-        Optional<InstanceMsg> result = hintWithMutation(graph_id, world.getAllFunc().makeConstList(), world.getAllReachableSigs(), exercise);
+        Optional<HintMsg> result = hintWithMutation(graph_id, world.getAllFunc().makeConstList(), world.getAllReachableSigs(), exercise);
 
         if (result.isPresent())
             return result;
@@ -309,18 +296,18 @@ public class HintService {
 
         ObjectId graph_id = exercise.graph_id;
 
-        Optional<InstanceMsg> a = hintWithMutation(graph_id, world.getAllFunc().makeConstList(), world.getAllReachableSigs(), exercise);
-        Optional<InstanceMsg> b = hintWithGraph(world, exercise, graph_id);
+        Optional<HintMsg> a = hintWithMutation(graph_id, world.getAllFunc().makeConstList(), world.getAllReachableSigs(), exercise);
+        Optional<HintMsg> b = hintWithGraph(world, exercise, graph_id);
 
         HintGraph.registerMultipleHintAttempt(graph_id, a.isPresent(), b.isPresent());
 
         return a.isPresent() || b.isPresent();
     }
 
-    private Optional<InstanceMsg> hintWithGraph(CompModule world, HintExercise exercise, ObjectId graph_id) {
+    private Optional<HintMsg> hintWithGraph(CompModule world, HintExercise exercise, ObjectId graph_id) {
         Map<String, Expr> formulaExpr = HintNode.getNormalizedFormulaExprFrom(world.getAllFunc().makeConstList(), exercise.targetFunctions);
 
-        Map<String, String> formula = formulaExpr.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, x -> AlloyExprStringify.stringify(x.getValue())));
+        Map<String, String> formula = formulaExpr.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, x -> ExprStringify.stringify(x.getValue())));
 
         Optional<HintNode> node_opt = nodeRepo.findByGraphIdAndFormula(graph_id, formula);
 
@@ -344,9 +331,9 @@ public class HintService {
                         if (change != null) {
                             return switch (change.getKey()) {
                                 case Rename, Delete ->
-                                        Optional.of(InstanceMsg.hintFrom(change.getValue().position(), "Try to change this declaration"));
+                                        Optional.of(HintMsg.from(change.getValue().position(), "Try to change this declaration"));
                                 case Insertion ->
-                                        Optional.of(InstanceMsg.hintFrom(change.getValue().position(), "Try to add something to this declaration"));
+                                        Optional.of(HintMsg.from(change.getValue().position(), "Try to add something to this declaration"));
                             };
                         }
 
@@ -358,10 +345,10 @@ public class HintService {
     }
 
 
-    public Optional<InstanceMsg> hintWithMutation(ObjectId graph_id, Collection<Func> skolem, ConstList<Sig> sigs, HintExercise exercise) {
-        List<Map<String, Candidate>> candidateFormulas = AlloyUtil.makeCandidateMaps(HintNode.getFormulaExprFrom(skolem, exercise.targetFunctions), sigs, 1);
+    public Optional<HintMsg> hintWithMutation(ObjectId graph_id, Collection<Func> skolem, ConstList<Sig> sigs, HintExercise exercise) {
+        List<Map<String, Candidate>> candidateFormulas = makeCandidateMaps(HintNode.getFormulaExprFrom(skolem, exercise.targetFunctions), sigs, 1);
 
-        List<Map<String, String>> mutatedFormulas = candidateFormulas.stream().map(m -> Static.mapValues(m, f -> AlloyExprStringify.stringify(AlloyExprNormalizer.normalize(f.mutated)))).toList();
+        List<Map<String, String>> mutatedFormulas = candidateFormulas.stream().map(m -> Static.mapValues(m, f -> ExprStringify.stringify(ExprNormalizer.normalize(f.mutated)))).toList();
 
         Optional<HintNode> e = nodeRepo.findBestByGraphIdAndFormulaIn(graph_id, mutatedFormulas);
 
@@ -373,7 +360,7 @@ public class HintService {
                 if (!c.mutators.isEmpty()) {
                     for (Mutator m : c.mutators) {
                         if (m.hint().isPresent())
-                            return Optional.of(InstanceMsg.hintFrom(m.original.expr.pos(), m.hint().orElseThrow()));
+                            return Optional.of(HintMsg.from(m.original.expr.pos(), m.hint().orElseThrow()));
                     }
                 }
             }
@@ -382,34 +369,51 @@ public class HintService {
         return Optional.empty();
     }
 
-    public int generateExercisesWithGraphId(ObjectId graph_id, Collection<ExerciseForm> comandsToModelIds) {
-        List<HintExercise> exs = comandsToModelIds.stream()
-                .filter(x -> exerciseRepo.notExistsModelIdAndCmdN(x.modelId, x.cmd_n))
-                .map(x -> new HintExercise(x.modelId, graph_id, x.secretCommandCount, x.cmd_n, x.targetFunctions))
-                .toList();
-        if (!exs.isEmpty())
-            exerciseRepo.persistOrUpdate(exs);
-        return exs.size();
+    public static <ID> List<Map<ID, Candidate>> makeCandidateMaps(Map<ID, Expr> targets, ConstList<Sig> sigs, int maxDepth) {
+        Map<ID, Candidate> unchanged = new HashMap<>();
+        List<Map.Entry<ID, List<Candidate>>> changed = new ArrayList<>();
+
+        targets.forEach((target, expr) -> {
+            List<Candidate> mutations = Repairer.getValidCandidates(expr, sigs, maxDepth);
+
+            if (mutations.isEmpty()) {
+                Candidate c = Candidate.empty();
+                c.mutated = expr;
+                unchanged.put(target, c);
+            } else
+                changed.add(Map.entry(target, mutations));
+        });
+        if (changed.isEmpty())
+            return List.of(unchanged);
+
+        return getCombinations(unchanged, changed);
+    }
+
+    public boolean generateExercise(ObjectId graph_id, String model_id, Integer secretCommandCount, String cmd_n, Set<String> targetFunctions) {
+        if (exerciseRepo.notExistsModelIdAndCmdN(model_id, cmd_n)) {
+            exerciseRepo.persistOrUpdate(new HintExercise(model_id, graph_id, secretCommandCount, cmd_n, targetFunctions));
+            return true;
+        }
+        return false;
     }
 
     public void generateExercisesWithGraphIdFromSecrets(Function<String, ObjectId> commandToGraphId, String model_id) {
         Model m = modelRepo.findByIdOptional(model_id).orElseThrow();
-        CompModule world = AlloyUtil.parseModel(m.code);
-        List<Pos> secretPositions = AlloyUtil.secretPos(world.path, m.code);
+        CompModule world = Util.parseModel(m.code);
+        List<Pos> secretPositions = secretPos(world.path, m.code);
 
-        Map<String, Set<String>> targets = AlloyUtil.getSecretFunctionTargetsOf(world, secretPositions);
+        Map<String, Set<String>> targets = Util.getSecretFunctionTargetsOf(world, secretPositions);
         Integer cmdCount = targets.size();
 
         exerciseRepo.persistOrUpdate(targets.entrySet().stream().map(x -> new HintExercise(model_id, commandToGraphId.apply(x.getKey()), cmdCount, x.getKey(), x.getValue())));
     }
 
 
-    public void testAllHintsOfModel(String modelId, YearRange yearRange) {
-        yearRange.cacheDates();
+    public void testAllHintsOfModel(String modelId, Predicate<LocalDateTime> year_tester) {
         try {
             CompletableFuture.allOf(modelRepo.streamByOriginalAndUnSat(modelId)
-                    .filter(x -> yearRange.testDate(Text.parseDate(x.time)))
-                    .map(x -> CompletableFuture.runAsync(() -> testAllHints(x.original, x.cmd_n, AlloyUtil.parseModel(x.code))))
+                    .filter(x -> year_tester.test(Text.parseDate(x.time)))
+                    .map(x -> CompletableFuture.runAsync(() -> testAllHints(x.original, x.cmd_n, Util.parseModel(x.code))))
                     .toArray(CompletableFuture[]::new)).get();
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);

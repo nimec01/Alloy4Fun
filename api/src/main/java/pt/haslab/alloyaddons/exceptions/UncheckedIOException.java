@@ -1,4 +1,4 @@
-package pt.haslab.alloy4fun.util;
+package pt.haslab.alloyaddons.exceptions;
 
 public class UncheckedIOException extends RuntimeException {
     public UncheckedIOException() {
