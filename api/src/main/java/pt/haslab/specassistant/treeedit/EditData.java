@@ -4,8 +4,9 @@ import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.ast.Expr;
 import pt.haslab.alloyaddons.ExprNodeEquals;
 import pt.haslab.alloyaddons.ExprNodeStringify;
+import pt.haslab.alloyaddons.Util;
 
-public record EditData(Expr expr, Pos position) {
+public record EditData(Expr node, Pos position) {
 
     @Override
     public boolean equals(Object o) {
@@ -14,11 +15,11 @@ public record EditData(Expr expr, Pos position) {
 
         EditData editData = (EditData) o;
 
-        return ExprNodeEquals.equals(expr, editData.expr);
+        return ExprNodeEquals.equals(node, editData.node);
     }
 
     @Override
     public String toString() {
-        return "{\"expr\"=" + ExprNodeStringify.stringify(expr) + ", \"position\"=\"" + position + "\"}";
+        return "{\"node\"=" + ExprNodeStringify.stringify(node) + ",\"position\"=\"" + Util.posAsStringTuple(position) + "\"}";
     }
 }

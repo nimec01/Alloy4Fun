@@ -18,7 +18,7 @@ public class EditDataCostModel implements CostModel<EditData> {
 
     @Override
     public float ren(Node<EditData> n1, Node<EditData> n2) {
-        return ExprNodeEquals.equals(n1.getNodeData().expr(), n2.getNodeData().expr()) ? 0.0f : 1.0f;
+        return ExprNodeEquals.equals(n1.getNodeData().node(), n2.getNodeData().node()) ? 0.0f : 1.0f;
     }
 }
 

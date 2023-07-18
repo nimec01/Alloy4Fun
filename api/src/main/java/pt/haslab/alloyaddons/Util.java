@@ -26,13 +26,13 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class Util {
+public interface Util {
 
-    public static CompModule parseModel(String model) throws UncheckedIOException, Err {
+    static CompModule parseModel(String model) throws UncheckedIOException, Err {
         return parseModel(model, A4Reporter.NOP);
     }
 
-    public static CompModule parseModel(String model, A4Reporter rep) throws UncheckedIOException, Err {
+    static CompModule parseModel(String model, A4Reporter rep) throws UncheckedIOException, Err {
         try {
             String prefix_name = "thr-%s.alloy_heredoc".formatted(Thread.currentThread().threadId());
             File file = File.createTempFile(prefix_name, ".als");
@@ -48,11 +48,11 @@ public class Util {
         }
     }
 
-    public static AlloyInstance parseInstance(A4Solution solution) throws UncheckedIOException, Err {
+    static AlloyInstance parseInstance(A4Solution solution) throws UncheckedIOException, Err {
         return parseInstance(solution, 0);
     }
 
-    public static AlloyInstance parseInstance(A4Solution solution, Integer state) throws UncheckedIOException, Err {
+    static AlloyInstance parseInstance(A4Solution solution, Integer state) throws UncheckedIOException, Err {
         try {
             String prefix_name = "thr-%s.a4f".formatted(Thread.currentThread().threadId());
             File file = File.createTempFile(prefix_name, ".als");
@@ -65,11 +65,11 @@ public class Util {
         }
     }
 
-    public static List<AlloyInstance> parseInstances(A4Solution solution, Integer count) throws UncheckedIOException, Err {
+    static List<AlloyInstance> parseInstances(A4Solution solution, Integer count) throws UncheckedIOException, Err {
         return parseInstances(solution, 0, count);
     }
 
-    public static List<AlloyInstance> parseInstances(A4Solution solution, Integer from, Integer to) throws UncheckedIOException, Err {
+    static List<AlloyInstance> parseInstances(A4Solution solution, Integer from, Integer to) throws UncheckedIOException, Err {
         try {
             String prefix_name = "thr-%s.a4f".formatted(Thread.currentThread().threadId());
             File file = File.createTempFile(prefix_name, ".als");
@@ -82,7 +82,7 @@ public class Util {
         }
     }
 
-    public static A4Options defaultOptions(CompModule world) {
+    static A4Options defaultOptions(CompModule world) {
         A4Options opt = new A4Options();
         opt.originalFilename = Path.of(world.path()).getFileName().toString();
         opt.solver = A4Options.SatSolver.SAT4J;
@@ -91,7 +91,7 @@ public class Util {
     }
 
 
-    public static Expr parseOneExprFromString(CompModule world, String value) {
+    static Expr parseOneExprFromString(CompModule world, String value) {
         try {
             return world.parseOneExpressionFromString(value);
         } catch (IOException e) {
@@ -99,17 +99,17 @@ public class Util {
         }
     }
 
-    public static Stream<Func> streamFuncsWithNames(Collection<Func> allFunctions, Set<String> targetNames) {
+    static Stream<Func> streamFuncsWithNames(Collection<Func> allFunctions, Set<String> targetNames) {
         return allFunctions.stream().filter(x -> targetNames.contains(x.label.replace("this/", "")));
     }
 
-    public static String stripThisFromLabel(String str) {
+    static String stripThisFromLabel(String str) {
         if (str != null)
             str = str.replace("this/", "");
         return str;
     }
 
-    public static Map<String, Set<String>> getFunctionWithPositions(CompModule module, List<Pos> positions) {
+    static Map<String, Set<String>> getFunctionWithPositions(CompModule module, List<Pos> positions) {
         Map<String, Set<String>> result = new HashMap<>();
 
         module.getAllCommands().forEach(cmd -> {
@@ -127,19 +127,19 @@ public class Util {
         return result;
     }
 
-    public static boolean posIn(Pos pos, Collection<Pos> collection) {
+    static boolean posIn(Pos pos, Collection<Pos> collection) {
         return collection.stream().anyMatch(p -> p.contains(pos));
     }
 
-    public static boolean notPosIn(Pos pos, Collection<Pos> collection) {
+    static boolean notPosIn(Pos pos, Collection<Pos> collection) {
         return collection.stream().noneMatch(p -> p.contains(pos));
     }
 
-    public static List<Pos> offsetsToPos(String code, List<Integer> offsets) {
+    static List<Pos> offsetsToPos(String code, List<Integer> offsets) {
         return offsetsToPos("alloy_heredoc.als", code, offsets);
     }
 
-    public static List<Pos> offsetsToPos(String filename, String code, List<Integer> offsets) {
+    static List<Pos> offsetsToPos(String filename, String code, List<Integer> offsets) {
         List<Integer> integers = offsets.stream().sorted().distinct().toList();
         Pattern p = Pattern.compile("\\n");
         Matcher m = p.matcher(code);
@@ -158,6 +158,10 @@ public class Util {
         return result;
     }
 
+
+    static String posAsStringTuple(Pos p) {
+        return "(" + p.x + "," + p.y + (p.x2 != p.x || p.y2 != p.y ? "," + p.x2 + "," + p.y2: "") + ")";
+    }
 
     static String lineCSV(String sep, List<String> strings) {
         if (strings == null || strings.isEmpty())
