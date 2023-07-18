@@ -1,10 +1,12 @@
-package pt.haslab.specassistant.models;
+package pt.haslab.specassistant.data.models;
 
 
+import edu.mit.csail.sdg.parser.CompModule;
 import io.quarkus.mongodb.panache.PanacheMongoEntityBase;
 import io.quarkus.mongodb.panache.common.MongoEntity;
 import org.bson.codecs.pojo.annotations.BsonId;
 import org.bson.codecs.pojo.annotations.BsonIgnore;
+import pt.haslab.alloyaddons.Util;
 
 @MongoEntity(collection = "Model")
 public class Model extends PanacheMongoEntityBase {
@@ -63,6 +65,10 @@ public class Model extends PanacheMongoEntityBase {
     public Model() {
     }
 
+    public static CompModule getWorld(String model_id) {
+        return Util.parseModel(((Model) findById(model_id)).code);
+    }
+
     @BsonIgnore
     public boolean isOriginal_() {
         return id.equals(original);
@@ -72,5 +78,4 @@ public class Model extends PanacheMongoEntityBase {
     public boolean isRoot() {
         return derivationOf == null;
     }
-
 }

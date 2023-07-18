@@ -4,7 +4,7 @@ import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.Func;
 import edu.mit.csail.sdg.translator.A4Solution;
-import pt.haslab.specassistant.HintMsg;
+import pt.haslab.specassistant.data.transfer.HintMsg;
 
 import java.time.Instant;
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package pt.haslab.specassistant.ted;
+package pt.haslab.specassistant.edittree;
 
 import at.unisalzburg.dbresearch.apted.node.Node;
 import edu.mit.csail.sdg.alloy4.Err;
@@ -11,22 +11,22 @@ import java.util.List;
 import java.util.Stack;
 import java.util.stream.Stream;
 
-public class ExprToNodeExprData extends VisitReturn<Node<ExprData>> {
+public class ExprToEditData extends VisitReturn<Node<EditData>> {
 
 
     Stack<Pos> posStack = new Stack<>();
 
-    public ExprToNodeExprData(Pos init) {
+    public ExprToEditData(Pos init) {
         posStack.push(init);
     }
 
-    public static Node<ExprData> parse(Expr e) {
-        return new ExprToNodeExprData(new Pos(e.pos.filename, 1, 1, Integer.MAX_VALUE, Integer.MAX_VALUE)).visitThis(e);
+    public static Node<EditData> parse(Expr e) {
+        return new ExprToEditData(new Pos(e.pos.filename, 1, 1, Integer.MAX_VALUE, Integer.MAX_VALUE)).visitThis(e);
     }
 
-    public static Node<ExprData> parseOrDefault(Expr e) {
+    public static Node<EditData> parseOrDefault(Expr e) {
         if (e == null)
-            return new Node<>(new ExprData(ExprConstant.TRUE, Pos.UNKNOWN));
+            return new Node<>(new EditData(ExprConstant.TRUE, Pos.UNKNOWN));
         return parse(e);
     }
 
@@ -48,8 +48,8 @@ public class ExprToNodeExprData extends VisitReturn<Node<ExprData>> {
     }
 
     @Override
-    public Node<ExprData> visit(ExprBinary exprBinary) throws Err {
-        Node<ExprData> result = new Node<>(new ExprData(exprBinary, pushValidPos(exprBinary.pos)));
+    public Node<EditData> visit(ExprBinary exprBinary) throws Err {
+        Node<EditData> result = new Node<>(new EditData(exprBinary, pushValidPos(exprBinary.pos)));
 
         result.addChild(visitThis(exprBinary.left));
         result.addChild(visitThis(exprBinary.right));
@@ -60,8 +60,8 @@ public class ExprToNodeExprData extends VisitReturn<Node<ExprData>> {
     }
 
     @Override
-    public Node<ExprData> visit(ExprList exprList) throws Err {
-        Node<ExprData> result = new Node<>(new ExprData(exprList, pushValidPos(exprList.pos)));
+    public Node<EditData> visit(ExprList exprList) throws Err {
+        Node<EditData> result = new Node<>(new EditData(exprList, pushValidPos(exprList.pos)));
 
         exprList.args.stream().map(this::visitThis).forEach(result::addChild);
 
@@ -71,18 +71,18 @@ public class ExprToNodeExprData extends VisitReturn<Node<ExprData>> {
     }
 
     @Override
-    public Node<ExprData> visit(ExprCall exprCall) throws Err {
-        return new Node<>(new ExprData(exprCall, peekValidPos(exprCall.pos)));
+    public Node<EditData> visit(ExprCall exprCall) throws Err {
+        return new Node<>(new EditData(exprCall, peekValidPos(exprCall.pos)));
     }
 
     @Override
-    public Node<ExprData> visit(ExprConstant exprConstant) throws Err {
-        return new Node<>(new ExprData(exprConstant, peekValidPos(exprConstant.pos)));
+    public Node<EditData> visit(ExprConstant exprConstant) throws Err {
+        return new Node<>(new EditData(exprConstant, peekValidPos(exprConstant.pos)));
     }
 
     @Override
-    public Node<ExprData> visit(ExprITE exprITE) throws Err {
-        Node<ExprData> result = new Node<>(new ExprData(exprITE, pushValidPos(exprITE.pos)));
+    public Node<EditData> visit(ExprITE exprITE) throws Err {
+        Node<EditData> result = new Node<>(new EditData(exprITE, pushValidPos(exprITE.pos)));
 
         result.addChild(visitThis(exprITE.left));
         result.addChild(visitThis(exprITE.right));
@@ -92,8 +92,8 @@ public class ExprToNodeExprData extends VisitReturn<Node<ExprData>> {
     }
 
     @Override
-    public Node<ExprData> visit(ExprLet exprLet) throws Err {
-        Node<ExprData> result = new Node<>(new ExprData(exprLet, pushValidPos(exprLet.pos)));
+    public Node<EditData> visit(ExprLet exprLet) throws Err {
+        Node<EditData> result = new Node<>(new EditData(exprLet, pushValidPos(exprLet.pos)));
 
         result.addChild(visitThis(exprLet.sub));
         posStack.pop();
@@ -102,10 +102,10 @@ public class ExprToNodeExprData extends VisitReturn<Node<ExprData>> {
     }
 
     @Override
-    public Node<ExprData> visit(ExprQt exprQt) throws Err {
+    public Node<EditData> visit(ExprQt exprQt) throws Err {
         Pos topValidPos = pushValidPos(exprQt.pos);
 
-        Node<ExprData> bottom = visitThis(exprQt.sub);
+        Node<EditData> bottom = visitThis(exprQt.sub);
         Expr bottomExpr = exprQt.sub;
 
         List<Decl> rv_decls = new ArrayList<>(exprQt.decls);
@@ -114,7 +114,7 @@ public class ExprToNodeExprData extends VisitReturn<Node<ExprData>> {
         for (Decl d : rv_decls) {
             Pos clusterPos = Stream.concat(d.names.stream().map(Expr::pos), Stream.of(d.expr.pos(), d.span())).map(this::peekValidPos).reduce(Pos::merge).orElse(topValidPos);
             bottomExpr = exprQt.op.make(null, null, List.of(d), bottomExpr);
-            Node<ExprData> next = new Node<>(new ExprData(bottomExpr, peekValidPos(clusterPos)));
+            Node<EditData> next = new Node<>(new EditData(bottomExpr, peekValidPos(clusterPos)));
 
             next.addChild(bottom);
             bottom = next;
@@ -125,7 +125,7 @@ public class ExprToNodeExprData extends VisitReturn<Node<ExprData>> {
     }
 
     @Override
-    public Node<ExprData> visit(ExprUnary exprUnary) throws Err {
+    public Node<EditData> visit(ExprUnary exprUnary) throws Err {
 
         if (ExprUnary.Op.NOOP.equals(exprUnary.op)) {
             try {
@@ -136,23 +136,23 @@ public class ExprToNodeExprData extends VisitReturn<Node<ExprData>> {
             }
         }
 
-        Node<ExprData> result = new Node<>(new ExprData(exprUnary, peekValidPos(exprUnary.pos)));
+        Node<EditData> result = new Node<>(new EditData(exprUnary, peekValidPos(exprUnary.pos)));
         result.addChild(visitThis(exprUnary.sub));
         return result;
     }
 
     @Override
-    public Node<ExprData> visit(ExprVar exprVar) throws Err {
-        return new Node<>(new ExprData(exprVar, peekValidPos(exprVar.pos())));
+    public Node<EditData> visit(ExprVar exprVar) throws Err {
+        return new Node<>(new EditData(exprVar, peekValidPos(exprVar.pos())));
     }
 
     @Override
-    public Node<ExprData> visit(Sig sig) throws Err {
-        return new Node<>(new ExprData(sig, peekValidPos(sig.pos())));
+    public Node<EditData> visit(Sig sig) throws Err {
+        return new Node<>(new EditData(sig, peekValidPos(sig.pos())));
     }
 
     @Override
-    public Node<ExprData> visit(Sig.Field field) throws Err {
-        return new Node<>(new ExprData(field, peekValidPos(field.pos())));
+    public Node<EditData> visit(Sig.Field field) throws Err {
+        return new Node<>(new EditData(field, peekValidPos(field.pos())));
     }
 }

@@ -1,18 +1,18 @@
-package pt.haslab.specassistant.ted;
+package pt.haslab.alloyaddons;
 
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.ast.*;
 
-public class ShallowEquals extends VisitReturn<Boolean> {
+public class ExprNodeEquals extends VisitReturn<Boolean> {
 
     Expr other;
 
-    public ShallowEquals(Expr other) {
+    public ExprNodeEquals(Expr other) {
         this.other = other;
     }
 
     public static Boolean equals(Expr expr1, Expr expr2) {
-        return new ShallowEquals(expr2).visitThis(expr1);
+        return new ExprNodeEquals(expr2).visitThis(expr1);
     }
 
     @Override

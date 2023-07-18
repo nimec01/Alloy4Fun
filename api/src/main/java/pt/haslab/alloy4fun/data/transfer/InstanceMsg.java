@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.ErrorWarning;
 import edu.mit.csail.sdg.alloy4.Pos;
-import pt.haslab.specassistant.HintMsg;
+import pt.haslab.specassistant.data.transfer.HintMsg;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;

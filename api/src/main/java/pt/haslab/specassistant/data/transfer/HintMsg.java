@@ -1,4 +1,4 @@
-package pt.haslab.specassistant;
+package pt.haslab.specassistant.data.transfer;
 
 import edu.mit.csail.sdg.alloy4.Pos;
 

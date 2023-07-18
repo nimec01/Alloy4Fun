@@ -20,11 +20,14 @@ public interface Text {
     String tag_opt_regex = tag_regex + "\\s+" + options_regex;
 
     String pgs = "sig|fact|assert|check|fun|pred|run";
-    String pgp = "var|one|abstract|lone|some";
-    String pgd = "(?:(?:" + pgp + ")\\s+)?" + pgs;
-    String comment = "/\\*(?:.|\\n)*?\\*/\\s*|//.*\\n|--.*\\n";
-    String secret_prefix = "(" + tag_regex + "\\s*?\\n\\s*(?:" + comment + ")*?\\s*)(?: " + pgd + ")";
 
+    String pgp = "var|one|abstract|lone|some";
+
+    String pgd = "(?:(?:" + pgp + ")\\s+)?" + pgs;
+
+    String comment = "/\\*(?:.|\\n)*?\\*/\\s*|//.*\\n|--.*\\n";
+
+    String secret_prefix = "(" + tag_regex + "\\s*?\\n\\s*(?:" + comment + ")*?\\s*)(?: " + pgd + ")";
     String block_end = "(?:" + tag_regex + "\\s*?\\n\\s*)?(?:(?:" + comment + ")*?\\s*(?:" + pgd + ")\\s|$)";
     String secret = tag_regex + "\\s*?\\n\\s*(?:" + comment + ")*?\\s*((?:" + pgd + ")(?:.|\\n)*?)" + block_end;
 
@@ -67,14 +70,14 @@ public interface Text {
             }
         }
         throw new IllegalArgumentException("Invalid date format: " + dateString);
-
     }
 
-    public static List<Pos> secretPos(String code) {
+    static List<Pos> secretPos(String code) {
         return offsetsToPos(code, Text.getSecretPositions(code));
     }
 
-    public static List<Pos> secretPos(String filename,String code) {
-        return offsetsToPos(filename,code, Text.getSecretPositions(code));
+    static List<Pos> secretPos(String filename, String code) {
+        return offsetsToPos(filename, code, Text.getSecretPositions(code));
     }
+
 }

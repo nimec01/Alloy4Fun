@@ -28,7 +28,12 @@ public class YearRange {
     }
 
     public boolean testDate(LocalDateTime d) {
-        return d.isBefore(maxDate) && d.isAfter(minDate);
+        try {
+            return d.isBefore(maxDate) && d.isAfter(minDate);
+        } catch (NullPointerException e) {
+            this.cacheDates();
+            return d.isBefore(maxDate) && d.isAfter(minDate);
+        }
     }
 
     public void cacheDates() {

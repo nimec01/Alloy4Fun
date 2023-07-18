@@ -3,7 +3,7 @@ package pt.haslab.specassistant.repositories;
 import io.quarkus.mongodb.panache.PanacheMongoRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.bson.Document;
-import pt.haslab.specassistant.models.Model;
+import pt.haslab.specassistant.data.models.Model;
 
 import java.util.Collection;
 import java.util.stream.Stream;

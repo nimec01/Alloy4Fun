@@ -1,4 +1,4 @@
-package pt.haslab.specassistant.models;
+package pt.haslab.specassistant.data.models;
 
 
 import edu.mit.csail.sdg.ast.Expr;

@@ -4,7 +4,7 @@ import io.quarkus.mongodb.panache.PanacheMongoRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.bson.Document;
 import org.bson.types.ObjectId;
-import pt.haslab.specassistant.models.HintExercise;
+import pt.haslab.specassistant.data.models.HintExercise;
 
 import java.util.List;
 import java.util.Optional;

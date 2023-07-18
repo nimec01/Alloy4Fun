@@ -4,7 +4,7 @@ import io.quarkus.mongodb.panache.PanacheMongoRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.bson.Document;
 import org.bson.types.ObjectId;
-import pt.haslab.specassistant.models.HintNode;
+import pt.haslab.specassistant.data.models.HintNode;
 
 import java.util.List;
 import java.util.Map;
@@ -48,7 +48,7 @@ public class HintNodeRepository implements PanacheMongoRepository<HintNode> {
     }
 
     public Long getTotalVisitsFromGraph(ObjectId graph_id) {
-        return find(new Document("graph_id", graph_id)).stream().map(x -> x.visits).map(Integer::longValue).reduce(0L,Long::sum);
+        return find(new Document("graph_id", graph_id)).stream().map(x -> x.visits).map(Integer::longValue).reduce(0L, Long::sum);
     }
 
 }

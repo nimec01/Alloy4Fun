@@ -1,4 +1,4 @@
-package pt.haslab.specassistant.models;
+package pt.haslab.specassistant.data.models;
 
 import io.quarkus.mongodb.panache.PanacheMongoEntity;
 import io.quarkus.mongodb.panache.common.MongoEntity;
@@ -94,7 +94,7 @@ public class HintGraph extends PanacheMongoEntity {
     public static void registerMultipleHintAttempt(ObjectId graphId, boolean mutationSuccess, boolean graphSuccess) {
         Document inc_value = new Document("requestsCount", 1);
 
-        if (mutationSuccess || graphSuccess) inc_value.append("responseCount",1);
+        if (mutationSuccess || graphSuccess) inc_value.append("responseCount", 1);
         if (mutationSuccess) inc_value.append("mutationHintCount", 1);
         if (graphSuccess) inc_value.append("graphHintCount", 1);
         if (mutationSuccess && !graphSuccess) inc_value.append("uniqueMutationHintCount", 1);

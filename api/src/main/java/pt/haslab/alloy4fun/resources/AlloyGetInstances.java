@@ -21,9 +21,9 @@ import pt.haslab.alloy4fun.data.transfer.InstanceMsg;
 import pt.haslab.alloy4fun.data.transfer.InstanceResponse;
 import pt.haslab.alloy4fun.data.transfer.InstanceTrace;
 import pt.haslab.alloy4fun.data.transfer.InstancesRequest;
-import pt.haslab.specassistant.HintService;
 import pt.haslab.alloy4fun.services.SessionService;
 import pt.haslab.alloyaddons.Util;
+import pt.haslab.specassistant.HintGenerator;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,7 +41,7 @@ public class AlloyGetInstances {
     SessionService sessionManager;
 
     @Inject
-    HintService hintService;
+    HintGenerator hintGenerator;
 
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -86,7 +86,7 @@ public class AlloyGetInstances {
             result = Session.create(request.sessionId, ans, command, world.getAllFunc().makeConstList());
 
             if (request.parentId != null && command.check && ans.satisfiable())
-                result.hintRequest = CompletableFuture.supplyAsync(() -> hintService.getHint(request.parentId, command.label, world));
+                result.hintRequest = CompletableFuture.supplyAsync(() -> hintGenerator.getHint(request.parentId, command.label, world));
             else result.hintRequest = CompletableFuture.completedFuture(Optional.empty());
             sessionManager.update(result);
         }
