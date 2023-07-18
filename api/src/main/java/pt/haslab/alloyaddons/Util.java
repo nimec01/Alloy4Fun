@@ -48,39 +48,38 @@ public class Util {
         }
     }
 
-    public static AlloyInstance parseInstance(A4Solution solution) throws IOException, Err {
+    public static AlloyInstance parseInstance(A4Solution solution) throws UncheckedIOException, Err {
         return parseInstance(solution, 0);
     }
 
-    public static Optional<Func> getFunByLabelName(CompModule world, String label) {
-        String label_name = label.replace("this/", "");
-        return world.getAllFunc()
-                .makeConstList()
-                .stream()
-                .filter(x -> x.label.replace("this/", "").equals(label_name))
-                .findFirst();
+    public static AlloyInstance parseInstance(A4Solution solution, Integer state) throws UncheckedIOException, Err {
+        try {
+            String prefix_name = "thr-%s.a4f".formatted(Thread.currentThread().threadId());
+            File file = File.createTempFile(prefix_name, ".als");
+            file.deleteOnExit();
+            solution.writeXML(file.getAbsolutePath());
+
+            return StaticInstanceReader.parseInstance(file.getAbsoluteFile(), state);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
-    public static AlloyInstance parseInstance(A4Solution solution, Integer state) throws IOException, Err {
-        String prefix_name = "thr-%s.a4f".formatted(Thread.currentThread().threadId());
-        File file = File.createTempFile(prefix_name, ".als");
-        file.deleteOnExit();
-        solution.writeXML(file.getAbsolutePath());
-
-        return StaticInstanceReader.parseInstance(file.getAbsoluteFile(), state);
-    }
-
-    public static List<AlloyInstance> parseInstances(A4Solution solution, Integer count) throws IOException, Err {
+    public static List<AlloyInstance> parseInstances(A4Solution solution, Integer count) throws UncheckedIOException, Err {
         return parseInstances(solution, 0, count);
     }
 
-    public static List<AlloyInstance> parseInstances(A4Solution solution, Integer from, Integer to) throws IOException, Err {
-        String prefix_name = "thr-%s.a4f".formatted(Thread.currentThread().threadId());
-        File file = File.createTempFile(prefix_name, ".als");
-        file.deleteOnExit();
-        solution.writeXML(file.getAbsolutePath());
+    public static List<AlloyInstance> parseInstances(A4Solution solution, Integer from, Integer to) throws UncheckedIOException, Err {
+        try {
+            String prefix_name = "thr-%s.a4f".formatted(Thread.currentThread().threadId());
+            File file = File.createTempFile(prefix_name, ".als");
+            file.deleteOnExit();
+            solution.writeXML(file.getAbsolutePath());
 
-        return IntStream.range(from, to).boxed().map(i -> StaticInstanceReader.parseInstance(file.getAbsoluteFile(), i)).toList();
+            return IntStream.range(from, to).boxed().map(i -> StaticInstanceReader.parseInstance(file.getAbsoluteFile(), i)).toList();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     public static A4Options defaultOptions(CompModule world) {
@@ -110,13 +109,13 @@ public class Util {
         return str;
     }
 
-    public static Map<String, Set<String>> getSecretFunctionTargetsOf(CompModule module, List<Pos> secret_positions) {
+    public static Map<String, Set<String>> getFunctionWithPositions(CompModule module, List<Pos> positions) {
         Map<String, Set<String>> result = new HashMap<>();
 
         module.getAllCommands().forEach(cmd -> {
-            if (posIn(cmd.pos, secret_positions)) {
+            if (posIn(cmd.pos, positions)) {
                 Set<String> targets = FunctionSearch
-                        .search(f -> f.pos.sameFile(cmd.pos) && notPosIn(f.pos, secret_positions), cmd.formula)
+                        .search(f -> f.pos.sameFile(cmd.pos) && notPosIn(f.pos, positions), cmd.formula)
                         .stream()
                         .map(f -> f.label)
                         .map(Util::stripThisFromLabel)
@@ -160,4 +159,13 @@ public class Util {
     }
 
 
+    static String lineCSV(String sep, List<String> strings) {
+        if (strings == null || strings.isEmpty())
+            return "";
+        StringBuilder res = new StringBuilder();
+        String last = strings.get(strings.size() - 1);
+        for (int i = 0; i < strings.size() - 1; i++) res.append(strings.get(i)).append(sep);
+
+        return res.append(last).toString();
+    }
 }

@@ -1,4 +1,4 @@
-package pt.haslab.specassistant.edittree;
+package pt.haslab.specassistant.treeedit;
 
 import at.unisalzburg.dbresearch.apted.costmodel.CostModel;
 import at.unisalzburg.dbresearch.apted.node.Node;
@@ -19,11 +19,6 @@ public class EditDataCostModel implements CostModel<EditData> {
     @Override
     public float ren(Node<EditData> n1, Node<EditData> n2) {
         return ExprNodeEquals.equals(n1.getNodeData().expr(), n2.getNodeData().expr()) ? 0.0f : 1.0f;
-    }
-
-    @Override
-    public boolean eq(Node<EditData> n1, Node<EditData> n2) {
-        return ExprNodeEquals.equals(n1.getNodeData().expr(), n2.getNodeData().expr());
     }
 }
 

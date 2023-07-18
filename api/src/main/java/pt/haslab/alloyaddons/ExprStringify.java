@@ -17,16 +17,6 @@ public class ExprStringify {
         return res;
     }
 
-    static String lineCSV(String sep, List<String> strings) {
-        if (strings == null || strings.isEmpty())
-            return "";
-        StringBuilder res = new StringBuilder();
-        String last = strings.get(strings.size() - 1);
-        for (int i = 0; i < strings.size() - 1; i++) res.append(strings.get(i)).append(sep);
-
-        return res.append(last).toString();
-    }
-
     private static class ExprStringifyVisitReturn extends VisitReturn<String> {
 
         @Override
@@ -39,17 +29,17 @@ public class ExprStringify {
             List<String> list = exprList.args.stream().map(this::visitThis).toList();
 
             return switch (exprList.op) {
-                case AND -> '(' + lineCSV(" && ", list) + ')';
-                case OR -> '(' + lineCSV(" || ", list) + ')';
-                case DISJOINT -> "disj[" + lineCSV(",", list) + "]";
-                default -> exprList.op + "[" + lineCSV(",", list) + "]";
+                case AND -> '(' + Util.lineCSV(" && ", list) + ')';
+                case OR -> '(' + Util.lineCSV(" || ", list) + ')';
+                case DISJOINT -> "disj[" + Util.lineCSV(",", list) + "]";
+                default -> exprList.op + "[" + Util.lineCSV(",", list) + "]";
             };
         }
 
         @Override
         public String visit(ExprCall exprCall) throws Err {
             List<String> arguments = exprCall.args.stream().map(this::visitThis).toList();
-            return exprCall.fun.label.replace("this/", "") + "[" + lineCSV(",", arguments) + "]";
+            return exprCall.fun.label.replace("this/", "") + "[" + Util.lineCSV(",", arguments) + "]";
         }
 
         @Override
@@ -73,7 +63,7 @@ public class ExprStringify {
 
         @Override
         public String visit(ExprQt exprQt) throws Err {
-            String decString = lineCSV(",", exprQt.decls.stream().map(e -> lineCSV(",", e.names.stream().map(x -> x.label).toList()) + ":" + visitThis(e.expr)).toList());
+            String decString = Util.lineCSV(",", exprQt.decls.stream().map(e -> Util.lineCSV(",", e.names.stream().map(x -> x.label).toList()) + ":" + visitThis(e.expr)).toList());
             String sub = visitThis(exprQt.sub);
 
             if (exprQt.op == ExprQt.Op.COMPREHENSION)

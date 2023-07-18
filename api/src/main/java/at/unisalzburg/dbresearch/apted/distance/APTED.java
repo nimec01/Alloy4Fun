@@ -27,10 +27,11 @@ import at.unisalzburg.dbresearch.apted.costmodel.CostModel;
 import at.unisalzburg.dbresearch.apted.node.Node;
 import at.unisalzburg.dbresearch.apted.node.NodeIndexer;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Stack;
 import java.util.function.Supplier;
-
-import static java.util.stream.Collectors.toMap;
 
 /**
  * Implements APTED algorithm [1,2].
@@ -1845,29 +1846,11 @@ public class APTED<D, C extends CostModel<D>> {
         return cost;
     }
 
-    public Map.Entry<CostModel.OpType, D> mappingFirstChange(List<int[]> mapping) {
-        Map<Integer, Integer> renamesBA = mapping.stream().filter(x -> x[0] != 0 && x[1] != 0).collect(toMap(x -> x[1] - 1, x -> x[0] - 1));
-
-        for (int i = mapping.size() - 1; i >= 0; i--) {
-            if (mapping.get(i)[0] == 0) {
-                // Insertion.
-                int t0 = mapping.get(i)[1] - 1;
-                while (!renamesBA.containsKey(t0)) {
-                    if (it2.parents[t0] == -1)
-                        return Map.entry(CostModel.OpType.Insertion, it1.postL_to_node(t0).getNodeData());
-                    else
-                        t0 = it2.parents[t0];
-                }
-                return Map.entry(CostModel.OpType.Insertion, it1.postL_to_node(renamesBA.get(t0)).getNodeData());
-            } else if (mapping.get(i)[1] == 0) {
-                // Deletion.
-                return Map.entry(CostModel.OpType.Delete, it1.postL_to_node(mapping.get(i)[0] - 1).getNodeData());
-            } else if (!costModel.eq(it1.postL_to_node(mapping.get(i)[0] - 1), it2.postL_to_node(mapping.get(i)[1] - 1))) {
-                // Rename.
-                return Map.entry(CostModel.OpType.Rename, it1.postL_to_node(mapping.get(i)[0] - 1).getNodeData());
-            }
-        }
-        return null;
+    public NodeIndexer<D, C> getIndexer1() {
+        return it1;
     }
 
+    public NodeIndexer<D, C> getIndexer2() {
+        return it2;
+    }
 }

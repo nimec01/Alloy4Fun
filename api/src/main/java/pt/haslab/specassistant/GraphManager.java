@@ -71,7 +71,7 @@ public class GraphManager {
         CompModule world = Util.parseModel(m.code);
         List<Pos> secretPositions = secretPos(world.path, m.code);
 
-        Map<String, Set<String>> targets = Util.getSecretFunctionTargetsOf(world, secretPositions);
+        Map<String, Set<String>> targets = Util.getFunctionWithPositions(world, secretPositions);
         Integer cmdCount = targets.size();
 
         exerciseRepo.persistOrUpdate(targets.entrySet().stream().map(x -> new HintExercise(model_id, commandToGraphId.apply(x.getKey()), cmdCount, x.getKey(), x.getValue())));

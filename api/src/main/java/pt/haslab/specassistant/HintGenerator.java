@@ -1,6 +1,5 @@
 package pt.haslab.specassistant;
 
-import at.unisalzburg.dbresearch.apted.costmodel.CostModel;
 import edu.mit.csail.sdg.alloy4.ConstList;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.ast.Func;
@@ -9,6 +8,7 @@ import edu.mit.csail.sdg.parser.CompModule;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.bson.types.ObjectId;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import pt.haslab.Repairer;
 import pt.haslab.alloyaddons.ExprNormalizer;
 import pt.haslab.alloyaddons.ExprStringify;
@@ -17,13 +17,12 @@ import pt.haslab.mutation.Candidate;
 import pt.haslab.mutation.mutator.Mutator;
 import pt.haslab.specassistant.data.models.*;
 import pt.haslab.specassistant.data.transfer.HintMsg;
-import pt.haslab.specassistant.edittree.ASTEditDiff;
-import pt.haslab.specassistant.edittree.EditData;
-import pt.haslab.specassistant.edittree.ExprToEditData;
 import pt.haslab.specassistant.repositories.HintEdgeRepository;
 import pt.haslab.specassistant.repositories.HintExerciseRepository;
 import pt.haslab.specassistant.repositories.HintNodeRepository;
 import pt.haslab.specassistant.repositories.ModelRepository;
+import pt.haslab.specassistant.treeedit.ASTEditDiff;
+import pt.haslab.specassistant.treeedit.EditOperation;
 import pt.haslab.specassistant.util.Static;
 import pt.haslab.specassistant.util.Text;
 
@@ -38,6 +37,10 @@ import static pt.haslab.specassistant.util.Static.getCombinations;
 
 @ApplicationScoped
 public class HintGenerator {
+
+
+    @ConfigProperty(name = "hint.mutations", defaultValue = "true")
+    boolean mutationsEnabled;
 
     @Inject
     ModelRepository modelRepo;
@@ -69,10 +72,7 @@ public class HintGenerator {
     }
 
     private String getOriginalId(String model_id) {
-        Model m = modelRepo.findById(model_id);
-        if (m.isOriginal_())
-            return m.id;
-        return m.original;
+        return modelRepo.findById(model_id).original;
     }
 
     public Optional<HintMsg> getHint(String originId, String command_label, CompModule world) {
@@ -83,10 +83,12 @@ public class HintGenerator {
 
         ObjectId graph_id = exercise.graph_id;
 
-        Optional<HintMsg> result = hintWithMutation(graph_id, world.getAllFunc().makeConstList(), world.getAllReachableSigs(), exercise);
+        if (mutationsEnabled) {
+            Optional<HintMsg> result = hintWithMutation(graph_id, world.getAllFunc().makeConstList(), world.getAllReachableSigs(), exercise);
 
-        if (result.isPresent())
-            return result;
+            if (result.isPresent())
+                return result;
+        }
 
         return hintWithGraph(world, exercise, graph_id);
     }
@@ -109,21 +111,9 @@ public class HintGenerator {
 
                     Map<String, Expr> otherFormulaExpr = dest_node.getParsedFormula(Optional.ofNullable(dest_node.witness).map(Model::getWorld).orElse(world));
                     for (String s : formula.keySet()) {
-                        ASTEditDiff apted = new ASTEditDiff();
-
-                        apted.computeEditDistance(ExprToEditData.parseOrDefault(formulaExpr.get(s)), ExprToEditData.parseOrDefault(otherFormulaExpr.get(s)));
-
-                        Map.Entry<CostModel.OpType, EditData> change = apted.mappingFirstChange(apted.computeEditMapping());
-
-                        if (change != null) {
-                            return switch (change.getKey()) {
-                                case Rename, Delete ->
-                                        Optional.of(HintMsg.from(change.getValue().position(), "Try to change this declaration"));
-                                case Insertion ->
-                                        Optional.of(HintMsg.from(change.getValue().position(), "Try to add something to this declaration"));
-                            };
-                        }
-
+                        ASTEditDiff diff = new ASTEditDiff().initFrom(formulaExpr.get(s), otherFormulaExpr.get(s));
+                        diff.computeEditDistance();
+                        return operationToMsg(diff.getFirstEditOperation());
                     }
                 }
             }
@@ -154,6 +144,19 @@ public class HintGenerator {
 
         return Optional.empty();
     }
+
+    public Optional<HintMsg> operationToMsg(EditOperation operation) {
+        if (operation == null)
+            return Optional.empty();
+        return switch (operation.type) {
+            case "rename", "delete" ->
+                    Optional.of(HintMsg.from(operation.target().position(), "Try to change this declaration"));
+            case "insert" ->
+                    Optional.of(HintMsg.from(operation.target().position(), "Try adding something to this declaration"));
+            default -> Optional.empty();
+        };
+    }
+
 
     public Boolean testAllHints(String original_id, String command_label, CompModule world) {
         HintExercise exercise = exerciseRepo.findByModelIdAndCmdN(original_id, command_label).orElse(null);

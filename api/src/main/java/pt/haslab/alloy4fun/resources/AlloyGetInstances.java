@@ -23,6 +23,7 @@ import pt.haslab.alloy4fun.data.transfer.InstanceTrace;
 import pt.haslab.alloy4fun.data.transfer.InstancesRequest;
 import pt.haslab.alloy4fun.services.SessionService;
 import pt.haslab.alloyaddons.Util;
+import pt.haslab.alloyaddons.exceptions.UncheckedIOException;
 import pt.haslab.specassistant.HintGenerator;
 
 import java.io.IOException;
@@ -135,7 +136,7 @@ public class AlloyGetInstances {
             } catch (Err e) {
                 LOGGER.error("Alloy errored during solution parsing.", e);
                 return InstanceResponse.err(e);
-            } catch (IOException e) {
+            } catch (UncheckedIOException e) {
                 LOGGER.error("IO error during solution parsing.", e);
             }
         }

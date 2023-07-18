@@ -12,7 +12,7 @@ import org.jboss.logging.Logger;
 import pt.haslab.alloyaddons.Util;
 import pt.haslab.alloyaddons.exceptions.UncheckedIOException;
 import pt.haslab.specassistant.data.models.*;
-import pt.haslab.specassistant.edittree.ASTEditDiff;
+import pt.haslab.specassistant.treeedit.ASTEditDiff;
 import pt.haslab.specassistant.repositories.HintEdgeRepository;
 import pt.haslab.specassistant.repositories.HintExerciseRepository;
 import pt.haslab.specassistant.repositories.HintNodeRepository;

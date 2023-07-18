@@ -25,8 +25,6 @@ package at.unisalzburg.dbresearch.apted.costmodel;
 
 import at.unisalzburg.dbresearch.apted.node.Node;
 
-import java.util.Objects;
-
 /**
  * This interface specifies the methods to implement for a custom cost model.
  * The methods represent the costs of edit operations (delete, insert, rename).
@@ -66,15 +64,4 @@ public interface CostModel<D> {
      * @return the cost of renaming (mapping) node n1 to n2.
      */
     float ren(Node<D> n1, Node<D> n2);
-
-
-    default boolean eq(Node<D> n1, Node<D> n2) {
-        return Objects.equals(n1.getNodeData(), n2.getNodeData());
-    }
-
-    enum OpType {
-        Insertion,
-        Delete,
-        Rename
-    }
 }

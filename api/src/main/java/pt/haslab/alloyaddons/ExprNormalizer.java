@@ -12,11 +12,6 @@ import static edu.mit.csail.sdg.ast.ExprBinary.Op.*;
 import static edu.mit.csail.sdg.ast.ExprUnary.Op.NOOP;
 
 public class ExprNormalizer {
-
-    private static Pos maxPos(String f) {
-        return new Pos(f, 0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE);
-    }
-
     public static Expr normalize(Expr expr) {
         return new ExprVisitReturn().visitThis(expr);
     }
@@ -316,74 +311,6 @@ public class ExprNormalizer {
         @Override
         public Stream<String> visit(Sig.Field field) throws Err {
             return visitThis(field.decl().expr);
-        }
-    }
-
-    private static class PosMerge extends VisitReturn<Expr> {
-
-        private final Pos pos;
-
-        public PosMerge(Pos pos) {
-            this.pos = pos;
-        }
-
-        public static Expr merge(Expr sub, Pos pos) {
-            return new PosMerge(pos).visitThis(sub);
-        }
-
-        @Override
-        public Expr visit(ExprBinary exprBinary) throws Err {
-            return exprBinary.op.make(pos.merge(exprBinary.pos), exprBinary.closingBracket, exprBinary.left, exprBinary.right);
-        }
-
-        @Override
-        public Expr visit(ExprList exprList) throws Err {
-            return ExprList.make(pos.merge(exprList.pos), exprList.closingBracket, exprList.op, exprList.args);
-        }
-
-        @Override
-        public Expr visit(ExprCall exprCall) throws Err {
-            return ExprCall.make(pos.merge(exprCall.pos), exprCall.closingBracket, exprCall.fun, exprCall.args, exprCall.extraWeight);
-        }
-
-        @Override
-        public Expr visit(ExprConstant exprConstant) throws Err {
-            return exprConstant;
-        }
-
-        @Override
-        public Expr visit(ExprITE exprITE) throws Err {
-            return ExprITE.make(pos.merge(exprITE.pos), exprITE.cond, exprITE.left, exprITE.right);
-        }
-
-        @Override
-        public Expr visit(ExprLet exprLet) throws Err {
-            return ExprLet.make(pos.merge(exprLet.pos), exprLet.var, exprLet.expr, exprLet.sub);
-        }
-
-        @Override
-        public Expr visit(ExprQt exprQt) throws Err {
-            return exprQt.op.make(pos.merge(exprQt.pos), exprQt.closingBracket, exprQt.decls, exprQt.sub);
-        }
-
-        @Override
-        public Expr visit(ExprUnary exprUnary) throws Err {
-            return exprUnary.op.make(pos.merge(exprUnary.pos), exprUnary.sub);
-        }
-
-        @Override
-        public Expr visit(ExprVar exprVar) throws Err {
-            return exprVar;
-        }
-
-        @Override
-        public Expr visit(Sig sig) throws Err {
-            return sig;
-        }
-
-        @Override
-        public Expr visit(Sig.Field field) throws Err {
-            return field;
         }
     }
 

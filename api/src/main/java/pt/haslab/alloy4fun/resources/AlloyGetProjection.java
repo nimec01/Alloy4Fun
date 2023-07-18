@@ -15,8 +15,8 @@ import pt.haslab.alloy4fun.data.models.Session;
 import pt.haslab.alloy4fun.data.transfer.InstanceTrace;
 import pt.haslab.alloy4fun.services.SessionService;
 import pt.haslab.alloyaddons.Util;
+import pt.haslab.alloyaddons.exceptions.UncheckedIOException;
 
-import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +58,7 @@ public class AlloyGetProjection {
             LOGGER.debug(projected.toString());
 
             return Response.ok(List.of(InstanceTrace.from(projected))).build();
-        } catch (Err | IOException e) {
+        } catch (Err | UncheckedIOException e) {
             LOGGER.error("Error during parsing.", e);
             return Response.ok("").build();
         }
