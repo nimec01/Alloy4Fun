@@ -49,23 +49,19 @@ public class ExprToEditData extends VisitReturn<Node<EditData>> {
 
     @Override
     public Node<EditData> visit(ExprBinary exprBinary) throws Err {
-        Node<EditData> result = new Node<>(new EditData(exprBinary, pushValidPos(exprBinary.pos)));
+        Node<EditData> result = new Node<>(new EditData(exprBinary, posStack.peek()));
 
         result.addChild(visitThis(exprBinary.left));
         result.addChild(visitThis(exprBinary.right));
-
-        posStack.pop();
 
         return result;
     }
 
     @Override
     public Node<EditData> visit(ExprList exprList) throws Err {
-        Node<EditData> result = new Node<>(new EditData(exprList, pushValidPos(exprList.pos)));
+        Node<EditData> result = new Node<>(new EditData(exprList, posStack.peek()));
 
         exprList.args.stream().map(this::visitThis).forEach(result::addChild);
-
-        posStack.pop();
 
         return result;
     }
@@ -82,21 +78,19 @@ public class ExprToEditData extends VisitReturn<Node<EditData>> {
 
     @Override
     public Node<EditData> visit(ExprITE exprITE) throws Err {
-        Node<EditData> result = new Node<>(new EditData(exprITE, pushValidPos(exprITE.pos)));
+        Node<EditData> result = new Node<>(new EditData(exprITE, posStack.peek()));
 
         result.addChild(visitThis(exprITE.left));
         result.addChild(visitThis(exprITE.right));
-        posStack.pop();
 
         return result;
     }
 
     @Override
     public Node<EditData> visit(ExprLet exprLet) throws Err {
-        Node<EditData> result = new Node<>(new EditData(exprLet, pushValidPos(exprLet.pos)));
+        Node<EditData> result = new Node<>(new EditData(exprLet, posStack.peek()));
 
         result.addChild(visitThis(exprLet.sub));
-        posStack.pop();
 
         return result;
     }
@@ -104,6 +98,7 @@ public class ExprToEditData extends VisitReturn<Node<EditData>> {
     @Override
     public Node<EditData> visit(ExprQt exprQt) throws Err {
         Pos topValidPos = pushValidPos(exprQt.pos);
+        posStack.pop();
 
         Node<EditData> bottom = visitThis(exprQt.sub);
         Expr bottomExpr = exprQt.sub;
@@ -120,7 +115,6 @@ public class ExprToEditData extends VisitReturn<Node<EditData>> {
             bottom = next;
         }
 
-        posStack.pop();
         return bottom;
     }
 
@@ -136,7 +130,7 @@ public class ExprToEditData extends VisitReturn<Node<EditData>> {
             }
         }
 
-        Node<EditData> result = new Node<>(new EditData(exprUnary, peekValidPos(exprUnary.pos)));
+        Node<EditData> result = new Node<>(new EditData(exprUnary, posStack.peek()));
         result.addChild(visitThis(exprUnary.sub));
         return result;
     }

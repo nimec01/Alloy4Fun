@@ -5,6 +5,7 @@ import at.unisalzburg.dbresearch.apted.node.NodeIndexer;
 import edu.mit.csail.sdg.ast.Expr;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -32,7 +33,7 @@ public class ASTEditDiff extends APTED<EditData, EditDataCostModel> {
         NodeIndexer<EditData, EditDataCostModel> it2 = this.getIndexer2();
 
         //Traversal through the first tree
-        mapping.sort((a, b) -> b[0] - a[0]);
+        mapping.sort(Comparator.comparingInt(a -> a[0]));
         mapping.forEach(e -> {
             if (e[0] != 0) {
                 if (e[1] == 0) {
@@ -47,7 +48,7 @@ public class ASTEditDiff extends APTED<EditData, EditDataCostModel> {
         });
 
         //Traversal through the second tree
-        mapping.sort((a, b) -> b[1] - a[1]);
+        mapping.sort(Comparator.comparingInt(a -> a[1]));
         mapping.forEach(e -> {
             if (e[0] == 0) {
                 EditData addition = it2.preL_to_node[e[1] - 1].getNodeData();
