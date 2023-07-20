@@ -13,7 +13,6 @@ import pt.haslab.specassistant.repositories.HintNodeRepository;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -39,10 +38,10 @@ public class PolicyManager {
             try {
                 List<CompletableFuture<List<PolicyContext>>> actionPool = targetIds.get(true)
                         .stream()
-                        .peek(PolicyContext::assignScore)
+                        .peek(PolicyContext::apply)
                         .map(x -> CompletableFuture.supplyAsync(() ->
-                                edgeRepo.streamByDestinationNodeIdAndAllScoreGT(x.nodeId(), x.cost)
-                                        .map(y -> x.scoreEdgeOrigin(y, nodeRepo::findById)).filter(Objects::nonNull).toList())).toList();
+                                edgeRepo.streamByDestinationNodeIdAndAllScoreGT(x.nodeId(), x.score)
+                                        .map(y -> x.nextContext(y, nodeRepo.findById(y.origin))).filter(Objects::nonNull).toList())).toList();
 
                 CompletableFuture.allOf(actionPool.toArray(CompletableFuture[]::new)).get();
 
@@ -52,7 +51,7 @@ public class PolicyManager {
                     result.add(l.get());
                 }
 
-                batch = List.copyOf(result.stream().flatMap(Collection::stream).collect(Collectors.toMap(PolicyContext::nodeId, x -> x, PolicyContext::bestScored)).values());
+                batch = List.copyOf(result.stream().flatMap(Collection::stream).collect(Collectors.toMap(PolicyContext::nodeId, x -> x, PolicyContext::min)).values());
 
             } catch (InterruptedException | ExecutionException e) {
                 LOG.error(e);
@@ -63,65 +62,76 @@ public class PolicyManager {
 
 
     public static class PolicyContext implements Comparable<PolicyContext> {
-        public HintNode node;
 
-        public Double cost;
+        public static Double policyDiscount = 0.99;
+
+        public HintNode node;
+        public Double score;
         public int distance;
+
+        public PolicyContext() {
+        }
+
+        PolicyContext(HintNode node) {
+            this.node = node;
+        }
 
         public static PolicyContext init(HintNode n) {
             PolicyContext result = new PolicyContext();
             result.node = n;
-            result.cost = 0.0;
+            result.score = 0.0;
             result.distance = 0;
             return result;
         }
 
-        public PolicyContext bestScored(PolicyContext policyContext) {
-            if (this.cost < policyContext.cost) return this;
-            return policyContext;
-        }
-
-        public PolicyContext scoreEdgeOrigin(HintEdge edge, Function<ObjectId, HintNode> nodeGetter) {
-            PolicyContext result = new PolicyContext();
-
-            result.node = nodeGetter.apply(edge.origin);
-
-            double prob;
-            //origin_node.leaves == 0 means that every edge of the node is an addition by an algorithm (ex: a mutation)
-            //In this case, the probability of it being traversed will be 0
-            if (result.node.leaves != 0)
-                prob = (double) edge.count / (double) result.node.leaves;
-            else
-                prob = 0.0;
-
-            edge.hopDistance = result.distance = distance + 1;
-
-            edge.score = result.cost = edge.computeImminentCost() + prob * this.cost;
-
-            edge.update();
-
-            return result;
-        }
-
-        @Override
-        public int compareTo(PolicyContext o) {
-            return this.cost.compareTo(o.cost);
-        }
-
-        @Override
-        public String toString() {
-            return "{cost=%s, distance=%d}".formatted(cost, distance);
+        public static PolicyContext min(PolicyContext a, PolicyContext b) {
+            if (a.compareTo(b) < 0) return a;
+            return b;
         }
 
         public ObjectId nodeId() {
             return node.id;
         }
 
-        public void assignScore() {
-            this.node.score = this.cost;
+        public void apply() {
+            this.node.score = this.score;
             this.node.persistOrUpdate();
         }
-    }
 
+        public Double computeImminentCost(HintEdge action) {
+            if (action.editDistance == null || action.hopDistance == null)
+                return Double.MAX_VALUE / 2;
+            return (double) (action.editDistance * action.hopDistance); // Imment score curve def
+        }
+
+        public Double computeActionProbability(HintEdge action) {
+            if (this.node.leaves > 0)
+                return (double) action.count / (double) this.node.leaves;
+            return 0.0;
+        }
+
+        public Double applyBellmanEquation(HintEdge action, Double followUpScore) {
+            return this.score = computeImminentCost(action) + policyDiscount * computeActionProbability(action) * followUpScore;
+        }
+
+
+        public PolicyContext nextContext(HintEdge action, HintNode previousState) {
+            PolicyContext next = new PolicyContext(previousState);
+            action.hopDistance = next.distance = distance + 1;
+            action.score = next.applyBellmanEquation(action, this.score);
+            action.update();
+            return next;
+        }
+
+        @Override
+        public int compareTo(PolicyContext o) {
+            return this.score.compareTo(o.score);
+        }
+
+        @Override
+        public String toString() {
+            return "{%s, score=%s, distance=%d}".formatted(node, score, distance);
+        }
+    }
 
 }

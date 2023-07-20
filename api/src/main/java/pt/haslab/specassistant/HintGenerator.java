@@ -149,10 +149,8 @@ public class HintGenerator {
         if (operation == null)
             return Optional.empty();
         return switch (operation.type) {
-            case "rename", "delete" ->
-                    Optional.of(HintMsg.from(operation.target().position(), "Try to change this declaration"));
-            case "insert" ->
-                    Optional.of(HintMsg.from(operation.target().position(), "Try adding something to this declaration"));
+            case "rename", "delete" -> Optional.of(HintMsg.from(operation.target().position(), "Try to change this declaration"));
+            case "insert" -> Optional.of(HintMsg.from(operation.target().position(), "Try adding something to this declaration"));
             default -> Optional.empty();
         };
     }

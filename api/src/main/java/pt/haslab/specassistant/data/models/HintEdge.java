@@ -33,16 +33,4 @@ public class HintEdge extends PanacheMongoEntity {
         count++;
         return this;
     }
-
-    public ObjectId oppositeId(ObjectId id) {
-        if (origin.equals(id))
-            return destination;
-        return origin;
-    }
-
-    public double computeImminentCost() {
-        if (editDistance == null || hopDistance == null)
-            return Double.MAX_VALUE / 2;
-        return editDistance * hopDistance;
-    }
 }
