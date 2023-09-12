@@ -1,19 +1,5 @@
 version: '3'
 services:
-#  meteor:
-#    build:
-#      context: ./meteor/
-#    ports:
-#      - "3010:3000"
-#    links:
-#      - mongo
-#      - api
-#    env_file:
-#      - .env
-#    depends_on:
-#      mongo:
-#        condition: service_healthy
-
   mongo:
     image: mongo:latest
     command: mongod --storageEngine=wiredTiger
@@ -29,3 +15,7 @@ services:
       - mongo
     environment:
       - QUARKUS_MONGODB_CONNECTION_STRING=mongodb://mongo:27017
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # for accessing the host from within the container
+
+    

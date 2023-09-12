@@ -10,23 +10,21 @@ import org.jboss.logging.Logger;
 import pt.haslab.alloy4fun.data.models.Session;
 import pt.haslab.alloy4fun.data.request.ExerciseForm;
 import pt.haslab.alloy4fun.data.request.HintRequest;
-import pt.haslab.alloy4fun.data.transfer.InstanceMsg;
 import pt.haslab.alloy4fun.data.request.YearRange;
-import pt.haslab.alloy4fun.services.SessionService;
-import pt.haslab.alloyaddons.Util;
-import pt.haslab.specassistant.GraphInjestor;
-import pt.haslab.specassistant.GraphManager;
-import pt.haslab.specassistant.HintGenerator;
-import pt.haslab.specassistant.PolicyManager;
+import pt.haslab.alloy4fun.data.transfer.InstanceMsg;
+import pt.haslab.alloy4fun.repositories.SessionRepository;
+import pt.haslab.alloyaddons.ParseUtil;
 import pt.haslab.specassistant.data.models.HintGraph;
 import pt.haslab.specassistant.data.transfer.HintMsg;
+import pt.haslab.specassistant.services.GraphInjestor;
+import pt.haslab.specassistant.services.GraphManager;
+import pt.haslab.specassistant.services.HintGenerator;
+import pt.haslab.specassistant.services.PolicyManager;
+import pt.haslab.specassistant.services.policy.ProbabilityEvaluation;
+import pt.haslab.specassistant.services.policy.RewardEvaluation;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 @Path("/hint")
@@ -45,13 +43,7 @@ public class AlloyHint {
     PolicyManager policyManager;
 
     @Inject
-    SessionService sessionManager;
-
-    private static ObjectId getAGraphID(Map<String, ObjectId> graphspace, String prefix, String label) {
-        if (!graphspace.containsKey(label))
-            graphspace.put(label, HintGraph.newGraph(prefix + "-" + label).id);
-        return graphspace.get(label);
-    }
+    SessionRepository sessionManager;
 
     @POST
     @Path("/group")
@@ -61,25 +53,6 @@ public class AlloyHint {
 
         forms.forEach(f -> graphManager.generateExercise(graph_id, f.modelId, f.secretCommandCount, f.cmd_n, f.targetFunctions));
         return Response.ok("Sucess").build();
-    }
-
-    @POST
-    @Path("/group-secrets")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response makeGraphAndExercisesFromCommands(List<String> model_ids, @DefaultValue("Unkown") @QueryParam("prefix") String prefix) {
-        Map<String, ObjectId> graphspace = new HashMap<>();
-
-        model_ids.forEach(id -> graphManager.generateExercisesWithGraphIdFromSecrets(l -> getAGraphID(graphspace, prefix, l), id));
-
-        return Response.ok("Sucess").build();
-    }
-
-    @GET
-    @Path("/stress-test-model")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response stressHints(@QueryParam("model_id") String model_id, @BeanParam YearRange yearRange) {
-        hintGenerator.testAllHintsOfModel(model_id, yearRange::testDate);
-        return Response.ok().build();
     }
 
     @GET
@@ -99,85 +72,6 @@ public class AlloyHint {
     }
 
     @GET
-    @Path("/compute-policy")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response computePolicy(@QueryParam("graph_id") String hex_string) {
-        ObjectId graphId = new ObjectId(hex_string);
-        policyManager.computePolicyForGraph(graphId);
-        graphManager.debloatGraph(graphId);
-        return Response.ok().build();
-    }
-
-    @GET
-    @Path("/compute-policy-for-model")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response computePolicyOnModel(@QueryParam("model_id") String modelid) {
-        graphManager.getModelGraphs(modelid).forEach(id -> {
-            policyManager.computePolicyForGraph(id);
-            graphManager.debloatGraph(id);
-        });
-        return Response.ok().build();
-    }
-
-    @GET
-    @Path("/full-test")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response computePolicyOnModel(List<String> model_ids, @DefaultValue("Unkown") @QueryParam("prefix") String prefix, @QueryParam("yearLower") Integer yearLower, @QueryParam("yearMiddle") Integer yearMiddle, @QueryParam("yearTop") Integer yearTop) {
-        CompletableFuture.runAsync(() -> { // Allows the task to survive even if the http request is canceled
-            long start = System.nanoTime();
-            LOG.info("Starting test for " + prefix + " with model ids " + model_ids);
-            graphManager.deleteExerciseByModelIDs(model_ids, true);
-            makeGraphAndExercisesFromCommands(model_ids, prefix).close();
-            LOG.debug("Scanning models");
-            try {
-                CompletableFuture.allOf(model_ids.stream().map(id -> graphInjestor.parseModelTree(id, new YearRange(yearLower, yearMiddle)::testDate)).toArray(CompletableFuture[]::new)).get();
-            } catch (InterruptedException | ExecutionException e) {
-                throw new RuntimeException(e);
-            }
-            LOG.debug("Computing policies");
-            graphManager.getModelGraphs(model_ids.get(0)).forEach(id -> {
-                policyManager.computePolicyForGraph(id);
-                graphManager.debloatGraph(id);
-            });
-            LOG.info("Stressing graph for hints");
-            model_ids.forEach(id -> stressHints(id, new YearRange(yearMiddle, yearTop)).close());
-            LOG.info("Completed test after " + 1e-9 * (System.nanoTime() - start) + " seconds");
-        }).whenComplete((nil, error) -> {
-            if (error != null)
-                error.printStackTrace();
-        });
-
-        return Response.ok("Test started").build();
-    }
-
-    /**
-     * This method is used to setup the graphs for the first time.
-     * It will generate the graphs from the exercises for the given models.
-     * It will also compute the policies for the graphs and debloat them.
-     */
-    @GET
-    @Path("/setup-graphs")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response genGraphs(List<String> model_ids, @DefaultValue("Unkown") @QueryParam("prefix") String prefix) {
-        LOG.info("Starting setup for model ids " + model_ids);
-        // Create graph
-        makeGraphAndExercisesFromCommands(model_ids, prefix).close();
-        // Fill graph
-        CompletableFuture.allOf(model_ids.stream().map(id -> graphInjestor.parseModelTree(id)).toArray(CompletableFuture[]::new))
-                // Then Compute policy
-                .thenAcceptAsync(nil -> graphManager.getModelGraphs(model_ids.get(0)).forEach(id -> {
-                    policyManager.computePolicyForGraph(id);
-                    graphManager.debloatGraph(id);
-                })).whenCompleteAsync((nil, error) -> {
-                    if (error != null)
-                        LOG.error(error);
-                    LOG.info("Setup Completed");
-                });
-        return Response.ok("Setup in progress.").build();
-    }
-
-
-    @GET
     @Path("/check")
     @Produces(MediaType.APPLICATION_JSON)
     public Response checkHint(HintRequest request) {
@@ -195,12 +89,9 @@ public class AlloyHint {
                 LOG.debug("NO HINT AVAILABLE FOR " + request.challenge);
 
             return Response.ok(response.map(InstanceMsg::from).orElseGet(() -> InstanceMsg.error("Unable to generate hint"))).build();
-        } catch (CancellationException | InterruptedException e) {
-            LOG.debug("HINT GEN Cancellation/Interruption");
-            return Response.ok(InstanceMsg.error("Hint is unavailable")).build();
-        } catch (ExecutionException e) {
+        } catch (InterruptedException | ExecutionException e) {
             LOG.error(e);
-            return Response.ok(InstanceMsg.error("Error when generating hint")).build();
+            return Response.ok(InstanceMsg.error(e instanceof ExecutionException ? "Error when generating hint" : "Hint is unavailable")).build();
         }
     }
 
@@ -208,23 +99,29 @@ public class AlloyHint {
     @Path("/get")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getHint(HintRequest request) {
-        Optional<HintMsg> result = hintGenerator.getHint(request.challenge, request.predicate, Util.parseModel(request.model));
+        Optional<HintMsg> result = hintGenerator.getHint(request.challenge, request.predicate, ParseUtil.parseModel(request.model));
         return result.map(r -> Response.ok(InstanceMsg.from(r))).orElseGet(() -> Response.status(Response.Status.NO_CONTENT)).build();
     }
 
-    @GET
-    @Path("/debug-drop-everything")
+    @POST
+    @Path("/compute-popular-edge-policy")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response debug() {
-        graphManager.dropEverything();
-        return Response.ok().build();
+    public Response computePopularEdgePolicy(@QueryParam("model_id") String modelid) {
+        graphManager.getModelGraphs(modelid).forEach(id -> {
+            policyManager.computePolicyForGraph(id, 1.0, RewardEvaluation.NONE, ProbabilityEvaluation.EDGE);
+        });
+        return Response.ok("Popular policy computed.").build();
     }
 
-    @GET
-    @Path("/debug-rm-hint-stats")
+    @POST
+    @Path("/compute-policy-for-model")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response debug1() {
-        HintGraph.removeAllHintStats();
-        return Response.ok().build();
+    public Response computeTedEdge(@QueryParam("model_id") String modelid) {
+        graphManager.getModelGraphs(modelid).forEach(id -> {
+            policyManager.computePolicyForGraph(id, 0.99, RewardEvaluation.TED, ProbabilityEvaluation.EDGE);
+        });
+        return Response.ok("Popular policy computed.").build();
     }
+
+
 }

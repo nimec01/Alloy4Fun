@@ -79,8 +79,9 @@
 ###
 FROM registry.access.redhat.com/ubi8/openjdk-17:1.14
 
-ENV LANGUAGE='en_US:en'
+RUN microdnf install -y  http://minisat.se/downloads/minisat-2.2.0.tar.gz
 
+ENV LANGUAGE='en_US:en'
 
 # We make four distinct layers so if there are application changes the library layers can be re-used
 COPY --chown=185 target/quarkus-app/lib/ /deployments/lib/

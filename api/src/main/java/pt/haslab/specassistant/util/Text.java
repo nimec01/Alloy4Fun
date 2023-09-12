@@ -10,7 +10,7 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static pt.haslab.alloyaddons.Util.offsetsToPos;
+import static pt.haslab.alloyaddons.AlloyUtil.offsetsToPos;
 
 public interface Text {
 

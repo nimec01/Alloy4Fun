@@ -2,6 +2,7 @@ package pt.haslab.specassistant.repositories;
 
 import io.quarkus.mongodb.panache.PanacheMongoRepository;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import pt.haslab.specassistant.data.models.HintEdge;
@@ -15,6 +16,12 @@ public class HintEdgeRepository implements PanacheMongoRepository<HintEdge> {
 
     public Optional<HintEdge> findByOriginAndDestination(ObjectId origin, ObjectId destination) {
         return find(new Document("origin", origin).append("destination", destination)).firstResultOptional();
+    }
+
+    public synchronized HintEdge incrementOrCreate(ObjectId graph_id, ObjectId origin, ObjectId destination) {
+        HintEdge edge = findByOriginAndDestination(origin, destination).orElseGet(() -> HintEdge.createEmpty(graph_id, origin, destination)).visit();
+        edge.persistOrUpdate();
+        return edge;
     }
 
     public Optional<HintEdge> findBestScoredByOriginNode(ObjectId origin_id) {
@@ -35,5 +42,9 @@ public class HintEdgeRepository implements PanacheMongoRepository<HintEdge> {
 
     public void deleteByScoreNull(ObjectId graph_id) {
         delete(new Document("score", null).append("graph_id", graph_id));
+    }
+
+    public void unsetAllScoresFrom(ObjectId graph_id) {
+        update(new Document("$unset", new Document("score", ""))).where("graph_id", graph_id);
     }
 }

@@ -29,17 +29,17 @@ public class ExprStringify {
             List<String> list = exprList.args.stream().map(this::visitThis).toList();
 
             return switch (exprList.op) {
-                case AND -> '(' + Util.lineCSV(" && ", list) + ')';
-                case OR -> '(' + Util.lineCSV(" || ", list) + ')';
-                case DISJOINT -> "disj[" + Util.lineCSV(",", list) + "]";
-                default -> exprList.op + "[" + Util.lineCSV(",", list) + "]";
+                case AND -> '(' + ParseUtil.lineCSV(" && ", list) + ')';
+                case OR -> '(' + ParseUtil.lineCSV(" || ", list) + ')';
+                case DISJOINT -> "disj[" + ParseUtil.lineCSV(",", list) + "]";
+                default -> exprList.op + "[" + ParseUtil.lineCSV(",", list) + "]";
             };
         }
 
         @Override
         public String visit(ExprCall exprCall) throws Err {
             List<String> arguments = exprCall.args.stream().map(this::visitThis).toList();
-            return exprCall.fun.label.replace("this/", "") + "[" + Util.lineCSV(",", arguments) + "]";
+            return exprCall.fun.label.replace("this/", "") + "[" + ParseUtil.lineCSV(",", arguments) + "]";
         }
 
         @Override
@@ -63,7 +63,7 @@ public class ExprStringify {
 
         @Override
         public String visit(ExprQt exprQt) throws Err {
-            String decString = Util.lineCSV(",", exprQt.decls.stream().map(e -> Util.lineCSV(",", e.names.stream().map(x -> x.label).toList()) + ":" + visitThis(e.expr)).toList());
+            String decString = ParseUtil.lineCSV(",", exprQt.decls.stream().map(e -> ParseUtil.lineCSV(",", e.names.stream().map(x -> x.label).toList()) + ":" + visitThis(e.expr)).toList());
             String sub = visitThis(exprQt.sub);
 
             if (exprQt.op == ExprQt.Op.COMPREHENSION)

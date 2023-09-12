@@ -21,10 +21,10 @@ import pt.haslab.alloy4fun.data.transfer.InstanceMsg;
 import pt.haslab.alloy4fun.data.transfer.InstanceResponse;
 import pt.haslab.alloy4fun.data.transfer.InstanceTrace;
 import pt.haslab.alloy4fun.data.request.InstancesRequest;
-import pt.haslab.alloy4fun.services.SessionService;
-import pt.haslab.alloyaddons.Util;
-import pt.haslab.alloyaddons.exceptions.UncheckedIOException;
-import pt.haslab.specassistant.HintGenerator;
+import pt.haslab.alloy4fun.repositories.SessionRepository;
+import pt.haslab.alloyaddons.ParseUtil;
+import pt.haslab.alloyaddons.UncheckedIOException;
+import pt.haslab.specassistant.services.HintGenerator;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -39,7 +39,7 @@ public class AlloyGetInstances {
     private static final Logger LOGGER = Logger.getLogger(AlloyGetInstances.class);
 
     @Inject
-    SessionService sessionManager;
+    SessionRepository sessionManager;
 
     @Inject
     HintGenerator hintGenerator;
@@ -78,10 +78,13 @@ public class AlloyGetInstances {
         Session result = sessionManager.findById(request.sessionId);
 
         if (result == null) {
-            CompModule world = Util.parseModel(request.model, rep);
+            CompModule world = ParseUtil.parseModel(request.model, rep);
             Command command = world.getAllCommands().get(request.commandIndex);
 
-            A4Options options = Util.defaultOptions(world);
+            A4Options options = new A4Options();
+            options.originalFilename = java.nio.file.Path.of(world.path()).getFileName().toString();
+            options.solver = A4Options.SatSolver.SAT4J;
+
             A4Solution ans = TranslateAlloyToKodkod.execute_command(rep, world.getAllReachableSigs(), command, options);
 
             result = Session.create(request.sessionId, ans, command, world.getAllFunc().makeConstList());
@@ -129,7 +132,7 @@ public class AlloyGetInstances {
         if (answer.satisfiable()) {
             result.loop = answer.getLoopState();
             try {
-                result.instance = Util.parseInstances(answer, answer.getTraceLength())
+                result.instance = ParseUtil.parseInstances(answer, answer.getTraceLength())
                         .stream()
                         .map(InstanceTrace::from)
                         .toList();

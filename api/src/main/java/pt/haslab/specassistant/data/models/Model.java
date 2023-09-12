@@ -6,7 +6,7 @@ import io.quarkus.mongodb.panache.PanacheMongoEntityBase;
 import io.quarkus.mongodb.panache.common.MongoEntity;
 import org.bson.codecs.pojo.annotations.BsonId;
 import org.bson.codecs.pojo.annotations.BsonIgnore;
-import pt.haslab.alloyaddons.Util;
+import pt.haslab.alloyaddons.ParseUtil;
 
 @MongoEntity(collection = "Model")
 public class Model extends PanacheMongoEntityBase {
@@ -66,16 +66,11 @@ public class Model extends PanacheMongoEntityBase {
     }
 
     public static CompModule getWorld(String model_id) {
-        return Util.parseModel(((Model) findById(model_id)).code);
+        return ParseUtil.parseModel(((Model) findById(model_id)).code);
     }
 
     @BsonIgnore
-    public boolean isOriginal_() {
-        return id.equals(original);
-    }
-
-    @BsonIgnore
-    public boolean isRoot() {
-        return derivationOf == null;
+    public boolean isValidExecution() {
+        return sat != null && sat >= 0;
     }
 }
