@@ -56,6 +56,10 @@ public class HintNode extends PanacheMongoEntity {
         return result;
     }
 
+    public Map<String, String> getFormula() {
+        return formula;
+    }
+
     public static Map<String, Expr> getNormalizedFormulaExprFrom(CompModule world, Set<String> functions) {
         return getNormalizedFormulaExprFrom(world.getAllFunc().makeConstList(), functions);
     }
@@ -83,21 +87,17 @@ public class HintNode extends PanacheMongoEntity {
             CompModule target_world = Optional.ofNullable(this.witness).map(Model::getWorld).orElse(world);
             return formula.entrySet().stream().collect(toMap(Map.Entry::getKey, x -> ParseUtil.parseOneExprFromString(target_world, x.getValue())));
         } catch (ErrorSyntax e) {
-            throw new IllegalStateException("Syntax Error While Reparsing Formula:\"" + this.formula.replace("\n", "") + '"', e);
+            throw new IllegalStateException("Syntax Error While Parsing Formula:\"" + this.getFormula().toString().replace("\n", "") + '"', e);
         } catch (Err e) {
-            throw new IllegalStateException("Alloy Error While Reparsing Formula:\"" + this.formula.replace("\n", "") + '"', e);
+            throw new IllegalStateException("Alloy Error While Parsing Formula:\"" + this.getFormula().toString().replace("\n", "") + '"', e);
         } catch (UncheckedIOException e) {
-            throw new IllegalStateException("IO Error While Reparsing Formula:\"" + this.formula.replace("\n", "") + '"', e);
+            throw new IllegalStateException("IO Error While Parsing Formula:\"" + this.getFormula().toString().replace("\n", "") + '"', e);
         }
     }
 
     public HintNode visit() {
         visits++;
         return this;
-    }
-
-    public boolean compareFormula(Map<String, String> x) {
-        return this.formula.equals(x);
     }
 
 }

@@ -2,7 +2,6 @@ package pt.haslab.specassistant.repositories;
 
 import io.quarkus.mongodb.panache.PanacheMongoRepository;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.transaction.Transactional;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import pt.haslab.specassistant.data.models.HintNode;
@@ -54,6 +53,9 @@ public class HintNodeRepository implements PanacheMongoRepository<HintNode> {
         delete(new Document("score", null).append("graph_id", graph_id));
     }
 
+    public Long getTotalVisitsFromScoredGraph(ObjectId graph_id) {
+        return find(new Document("graph_id", graph_id).append("score", new Document("$ne", null))).stream().map(x -> x.visits).map(Integer::longValue).reduce(0L, Long::sum);
+    }
     public Long getTotalVisitsFromGraph(ObjectId graph_id) {
         return find(new Document("graph_id", graph_id)).stream().map(x -> x.visits).map(Integer::longValue).reduce(0L, Long::sum);
     }

@@ -10,6 +10,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 public interface FutureUtil {
@@ -65,6 +66,10 @@ public interface FutureUtil {
         return CompletableFuture.allOf(stream.map(t -> CompletableFuture.runAsync(() -> consumer.accept(t))).toArray(CompletableFuture[]::new));
     }
 
+    static <V, R> CompletableFuture<Void> runEachAsync(Stream<V> stream, Function<V, CompletableFuture<R>> function) {
+        return CompletableFuture.allOf(stream.map(function).toArray(CompletableFuture[]::new));
+    }
+
     static <V> BiConsumer<V, Throwable> log(Logger logger) {
         return (nil, error) -> {
             if (error != null)
@@ -87,6 +92,15 @@ public interface FutureUtil {
                 logger.error(error);
             else
                 logger.info(msg);
+        };
+    }
+
+    static BiConsumer<? super Void,? super Throwable> logTrace(Logger logger, String msg) {
+        return (nil, error) -> {
+            if (error != null)
+                logger.error(error);
+            else
+                logger.trace(msg);
         };
     }
 }

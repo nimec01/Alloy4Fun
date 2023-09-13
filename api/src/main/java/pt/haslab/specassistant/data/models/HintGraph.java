@@ -24,20 +24,13 @@ public class HintGraph extends PanacheMongoEntity {
         return result;
     }
 
-    public static Optional<HintGraph> findById(String hex_string) {
-        return findByIdOptional(new ObjectId(hex_string));
+    public static void registerParsing(ObjectId graphId, String model_id, long parsedCount, long totalParsingTime) {
+        String nest = "parsing." + model_id + ".";
+        update(new Document("$set", new Document(nest + "time", 1e-9 * totalParsingTime).append(nest + "count", parsedCount))).where(new Document("_id", graphId));
     }
 
-    public static void setPolicySubmissionCount(ObjectId graphId, long submissionCount) {
-        update(new Document("$set", new Document("policyCount", submissionCount))).where(new Document("_id", graphId));
-    }
-
-    public static void registerParsing(ObjectId graphId, long parsedCount, long totalParsingTime) {
-        update(new Document("$inc", new Document("parsingTime", 1e-9 * totalParsingTime).append("parsedSubmissionCount", parsedCount))).where(new Document("_id", graphId));
-    }
-
-    public static void registerPolicyCalculationTime(ObjectId graphId, long policyCalculationTime) {
-        update(new Document("$inc", new Document("policyTime", 1e-9 * policyCalculationTime))).where(new Document("_id", graphId));
+    public static void registerPolicy(ObjectId graphId, long policyCalculationTime, long policyCount) {
+        update(new Document("$set", new Document("policy.time", 1e-9 * policyCalculationTime).append("policy.count", policyCount))).where(new Document("_id", graphId));
     }
 
     public static void removeAllPolicyStats(ObjectId id) {

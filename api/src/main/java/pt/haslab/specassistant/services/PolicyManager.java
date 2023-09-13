@@ -30,14 +30,9 @@ public class PolicyManager {
     public void debloatGraph(ObjectId graph_id) {
         edgeRepo.deleteByScoreNull(graph_id);
         nodeRepo.deleteByScoreNull(graph_id);
-        HintGraph.setPolicySubmissionCount(graph_id, nodeRepo.getTotalVisitsFromGraph(graph_id));
     }
 
-    public void computePolicyForGraph(ObjectId graph_id) {
-        computePolicyForGraph(graph_id, 0.99, RewardEvaluation.TED, ProbabilityEvaluation.EDGE);
-    }
-
-    public void computePolicyForDebloatedGraph(ObjectId graph_id) {
+    public void computePolicyAndDebloatGraph(ObjectId graph_id) {
         computePolicyForGraph(graph_id, 0.99, RewardEvaluation.TED, ProbabilityEvaluation.EDGE);
         debloatGraph(graph_id);
     }
@@ -78,6 +73,6 @@ public class PolicyManager {
             }
             batch = List.copyOf(result.stream().flatMap(Collection::stream).collect(Collectors.toMap(PolicyContext::nodeId, x -> x, Ordered::min)).values());
         }
-        HintGraph.registerPolicyCalculationTime(graph_id, System.nanoTime() - t);
+        HintGraph.registerPolicy(graph_id, System.nanoTime() - t, nodeRepo.getTotalVisitsFromScoredGraph(graph_id));
     }
 }

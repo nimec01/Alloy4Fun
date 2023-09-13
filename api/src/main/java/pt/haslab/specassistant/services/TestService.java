@@ -59,6 +59,7 @@ public class TestService {
     @Inject
     PolicyManager policyManager;
 
+    // TAR TESTS *******************************************************************************************
     private static final long TarTimeoutSeconds = 60;
 
     public CompletableFuture<Test.Data> doTarTest(CompModule world, HintExercise exercise) {
@@ -83,40 +84,39 @@ public class TestService {
 
         Map<String, HintExercise> exercises = exerciseRepo.findByModelIdAsCmdMap(modelId);
 
-        return FutureUtil.allFutures(modelRepo.streamByOriginalAndUnSat(modelId)
-                .filter(x -> testRepo.findById(x.id) != null)
-                .map(m -> ParseUtil.parseModelAsync(m.code + secrets)
+        return FutureUtil.runEachAsync(
+                modelRepo.streamByOriginalAndUnSat(modelId),
+                m -> ParseUtil
+                        .parseModelAsync(m.code + secrets)
                         .thenCompose(world -> this.doTarTest(world, exercises.get(m.cmd_n)))
-                        .thenAccept(d -> testRepo.register(m.id, exercises.get(m.cmd_n).graph_id, "TAR", d)))
+                        .thenAccept(d -> testRepo.updateOrCreate(new Test.ID(m.id, exercises.get(m.cmd_n).graph_id, "TAR"), d))
         ).whenComplete(FutureUtil.logDebug(LOG, "Completed TAR test of " + modelId));
     }
 
+    public CompletableFuture<Void> testAllChallengesWithTAR() {
+        return FutureUtil.allFutures(exerciseRepo.findAll().stream().map(x -> x.model_id).collect(Collectors.toSet()).stream().map(this::testChallengeWithTAR));
+    }
 
+    // SPEC TESTS ******************************************************************************************
     public Test.Data specTestMutation(CompModule world, HintExercise exercise) {
         long startTime = System.nanoTime();
         boolean b = hintGenerator.hintWithMutation(exercise, world).isPresent();
         return new Test.Data(b, System.nanoTime() - startTime);
     }
 
-    public Test.Data specTest(CompModule world, HintExercise exercise) {
+    public Test.Data specTestFull(CompModule world, HintExercise exercise) {
         long startTime = System.nanoTime();
         boolean b = hintGenerator.hintWithGraph(exercise, world).isPresent();
         return new Test.Data(b, System.nanoTime() - startTime);
     }
 
-
-    public CompletableFuture<Void> testAllChallenges() {
-        return FutureUtil.allFutures(exerciseRepo.findAll().stream().map(x -> x.model_id).collect(Collectors.toSet()).stream().map(this::testChallengeWithTAR));
-    }
-
-
-    public void specTest(String model_id, String code, String original, String cmd_n) {
+    public void specTestFull(String model_id, String code, String original, String cmd_n) {
         CompModule world = ParseUtil.parseModel(code);
         HintExercise exercise = exerciseRepo.findByModelIdAndCmdN(original, cmd_n).orElse(null);
 
         if (exercise != null) {
-            testRepo.register(model_id, exercise.graph_id, "SPEC", specTest(world, exercise));
-            testRepo.register(model_id, exercise.graph_id, "SPEC_MUTATION", specTestMutation(world, exercise));
+            testRepo.updateOrCreate(new Test.ID(model_id, exercise.graph_id, "SPEC"), specTestFull(world, exercise));
+            testRepo.updateOrCreate(new Test.ID(model_id, exercise.graph_id, "SPEC_MUTATION"), specTestMutation(world, exercise));
         }
     }
 
@@ -126,9 +126,11 @@ public class TestService {
 
         return FutureUtil.forEachAsync(
                         modelRepo.streamByOriginalAndUnSat(modelId).filter(x -> year_tester.test(Text.parseDate(x.time))),
-                        m -> this.specTest(m.id, m.code + secrets, m.original, m.cmd_n))
+                        m -> this.specTestFull(m.id, m.code + secrets, m.original, m.cmd_n))
                 .whenComplete(FutureUtil.logInfo(LOG, "Test Complete"));
     }
+
+    // AUTOSETUP *******************************************************************************************
 
     private static ObjectId getAGraphID(Map<String, ObjectId> graphspace, String prefix, String label) {
         if (!graphspace.containsKey(label))
@@ -151,7 +153,7 @@ public class TestService {
                 .thenRun(() -> LOG.trace("Scanning models"))
                 .thenCompose(nil -> FutureUtil.allFutures(model_ids.stream().map(id -> graphInjestor.parseModelTree(id, range::testDate))))
                 .thenRun(() -> LOG.trace("Computing policies"))
-                .thenRun(() -> graphManager.getModelGraphs(model_ids.get(0)).forEach(id -> policyManager.computePolicyForDebloatedGraph(id)))
+                .thenRun(() -> graphManager.getModelGraphs(model_ids.get(0)).forEach(id -> policyManager.computePolicyAndDebloatGraph(id)))
                 .thenRun(() -> LOG.debug("Completed setup after " + 1e-9 * (System.nanoTime() - start.get()) + " seconds"))
                 .whenComplete(FutureUtil.log(LOG));
     }

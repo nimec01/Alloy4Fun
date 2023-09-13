@@ -6,7 +6,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.jboss.logging.Logger;
 import pt.haslab.alloy4fun.data.request.YearRange;
-import pt.haslab.specassistant.data.models.HintGraph;
 import pt.haslab.specassistant.services.GraphManager;
 import pt.haslab.specassistant.services.TestService;
 
@@ -64,7 +63,7 @@ public class DebugHint {
     @Path("/do-tar-for-all")
     @Produces(MediaType.APPLICATION_JSON)
     public Response tar() {
-        testService.testAllChallenges();
+        testService.testAllChallengesWithTAR();
         return Response.ok("Test Started").build();
     }
 }

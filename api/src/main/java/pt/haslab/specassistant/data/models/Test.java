@@ -4,65 +4,34 @@ import io.quarkus.mongodb.panache.PanacheMongoEntityBase;
 import org.bson.codecs.pojo.annotations.BsonId;
 import org.bson.types.ObjectId;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
 
 public class Test extends PanacheMongoEntityBase {
 
     @BsonId
-    public String model_id;
+    public ID id;
 
-    public ObjectId graph_id;
 
-    public Map<String, Data> data;
-
+    public Data data;
 
     public Test() {
     }
 
-    public Test(String model_id, ObjectId graph_id) {
-        this.model_id = model_id;
-        this.graph_id = graph_id;
-        this.data = new HashMap<>();
+    public Test(ID id) {
+        this.id = id;
     }
 
-    public void register(String type, Test.Data _data) {
-        data.put(type, _data);
+    public Test setData(Data data) {
+        this.data = data;
+        return this;
     }
 
-    public Optional<Data> getData(String type) {
-        return Optional.ofNullable(data.get(type));
+    public record ID(String model_id, ObjectId graph_id, String type) {
     }
 
-
-    public static class Data {
-        private Boolean success;
-        private Long time;
-
-        public Data() {
-        }
-
-        public Data(Boolean success, Long time) {
-            this.success = success;
-            this.time = time;
-        }
-
-        public Boolean getSuccess() {
-            return success;
-        }
-
-        public Long getTime() {
-            return time;
-        }
-
-        public void setSuccess(Boolean success) {
-            this.success = success;
-        }
-
-        public void setTime(Long time) {
-            this.time = time;
+    public record Data(Boolean success, Double time) {
+        public Data(Boolean success, Long nano_time) {
+            this(success, nano_time * 1e-9);
         }
     }
+
 }
