@@ -14,6 +14,7 @@ import pt.haslab.alloyaddons.AlloyUtil;
 import pt.haslab.alloyaddons.ParseUtil;
 import pt.haslab.specassistant.data.models.HintExercise;
 import pt.haslab.specassistant.data.models.HintGraph;
+import pt.haslab.specassistant.data.models.Model;
 import pt.haslab.specassistant.data.models.Test;
 import pt.haslab.specassistant.repositories.HintExerciseRepository;
 import pt.haslab.specassistant.repositories.ModelRepository;
@@ -77,7 +78,7 @@ public class TestService {
     }
 
 
-    public CompletableFuture<Void> testChallengeWithTAR(String modelId) {
+    public CompletableFuture<Void> testChallengeWithTAR(String modelId, Predicate<LocalDateTime> year_tester) {
         final String secrets = "\n" + Text.extractSecrets(modelRepo.findById(modelId).code);
 
         LOG.debug("Starting TAR test for " + modelId);
@@ -85,16 +86,16 @@ public class TestService {
         Map<String, HintExercise> exercises = exerciseRepo.findByModelIdAsCmdMap(modelId);
 
         return FutureUtil.runEachAsync(
-                modelRepo.streamByOriginalAndUnSat(modelId),
+                modelRepo.streamByOriginalAndUnSat(modelId).filter(x -> year_tester.test(Text.parseDate(x.time))),
                 m -> ParseUtil
                         .parseModelAsync(m.code + secrets)
                         .thenCompose(world -> this.doTarTest(world, exercises.get(m.cmd_n)))
-                        .thenAccept(d -> testRepo.updateOrCreate(new Test.ID(m.id, exercises.get(m.cmd_n).graph_id, "TAR"), d))
+                        .thenAccept(d -> testRepo.updateOrCreate(new Test.ID(m.id, "TAR"), exercises.get(m.cmd_n).graph_id, d))
         ).whenComplete(FutureUtil.logDebug(LOG, "Completed TAR test of " + modelId));
     }
 
-    public CompletableFuture<Void> testAllChallengesWithTAR() {
-        return FutureUtil.allFutures(exerciseRepo.findAll().stream().map(x -> x.model_id).collect(Collectors.toSet()).stream().map(this::testChallengeWithTAR));
+    public CompletableFuture<Void> testAllChallengesWithTAR(Predicate<LocalDateTime> year_tester) {
+        return FutureUtil.allFutures(exerciseRepo.findAll().stream().map(x -> x.model_id).collect(Collectors.toSet()).stream().map(x -> this.testChallengeWithTAR(x, year_tester)));
     }
 
     // SPEC TESTS ******************************************************************************************
@@ -104,7 +105,7 @@ public class TestService {
         return new Test.Data(b, System.nanoTime() - startTime);
     }
 
-    public Test.Data specTestFull(CompModule world, HintExercise exercise) {
+    public Test.Data specTest(CompModule world, HintExercise exercise) {
         long startTime = System.nanoTime();
         boolean b = hintGenerator.hintWithGraph(exercise, world).isPresent();
         return new Test.Data(b, System.nanoTime() - startTime);
@@ -115,8 +116,8 @@ public class TestService {
         HintExercise exercise = exerciseRepo.findByModelIdAndCmdN(original, cmd_n).orElse(null);
 
         if (exercise != null) {
-            testRepo.updateOrCreate(new Test.ID(model_id, exercise.graph_id, "SPEC"), specTestFull(world, exercise));
-            testRepo.updateOrCreate(new Test.ID(model_id, exercise.graph_id, "SPEC_MUTATION"), specTestMutation(world, exercise));
+            testRepo.updateOrCreate(new Test.ID(model_id, "SPEC"), exercise.graph_id, specTest(world, exercise));
+            testRepo.updateOrCreate(new Test.ID(model_id, "SPEC_MUTATION"), exercise.graph_id, specTestMutation(world, exercise));
         }
     }
 
@@ -128,6 +129,10 @@ public class TestService {
                         modelRepo.streamByOriginalAndUnSat(modelId).filter(x -> year_tester.test(Text.parseDate(x.time))),
                         m -> this.specTestFull(m.id, m.code + secrets, m.original, m.cmd_n))
                 .whenComplete(FutureUtil.logInfo(LOG, "Test Complete"));
+    }
+
+    public CompletableFuture<Void> testAllChallengesWithSpec(Predicate<LocalDateTime> year_tester) {
+        return FutureUtil.allFutures(exerciseRepo.findAll().stream().map(x -> x.model_id).collect(Collectors.toSet()).stream().map(x -> this.specTestModel(x, year_tester)));
     }
 
     // AUTOSETUP *******************************************************************************************
@@ -159,4 +164,14 @@ public class TestService {
     }
 
 
+    public void fixTestGraphIds() {
+        FutureUtil.inlineRuntime(
+                FutureUtil.forEachAsync(
+                        testRepo.findAll().stream(),
+                        x -> {
+                            Model m = modelRepo.findById(x.id.model_id());
+                            x.setGraphId(exerciseRepo.findByModelIdAndCmdN(m.original, m.cmd_n).orElseThrow().getGraph_id()).persistOrUpdate();
+                        })
+        );
+    }
 }

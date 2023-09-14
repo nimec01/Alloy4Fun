@@ -2,6 +2,7 @@ package pt.haslab.specassistant.data.models;
 
 import io.quarkus.mongodb.panache.PanacheMongoEntityBase;
 import org.bson.codecs.pojo.annotations.BsonId;
+import org.bson.codecs.pojo.annotations.BsonIgnore;
 import org.bson.types.ObjectId;
 
 
@@ -10,6 +11,7 @@ public class Test extends PanacheMongoEntityBase {
     @BsonId
     public ID id;
 
+    public ObjectId graphId;
 
     public Data data;
 
@@ -25,7 +27,13 @@ public class Test extends PanacheMongoEntityBase {
         return this;
     }
 
-    public record ID(String model_id, ObjectId graph_id, String type) {
+    @BsonIgnore
+    public Test setGraphId(ObjectId graph_id) {
+        this.graphId = graph_id;
+        return this;
+    }
+
+    public record ID(String model_id, String type) {
     }
 
     public record Data(Boolean success, Double time) {

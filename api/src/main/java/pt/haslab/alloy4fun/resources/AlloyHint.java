@@ -48,8 +48,12 @@ public class AlloyHint {
     @POST
     @Path("/group")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response makeGraphAndExercises(List<ExerciseForm> forms, @QueryParam("graph_id") String graph_id_str, @DefaultValue("Unkown") @QueryParam("name") String graph_name) {
-        ObjectId graph_id = (graph_id_str == null || graph_id_str.isEmpty() ? HintGraph.newGraph(graph_name) : HintGraph.findById(graph_id_str).orElseThrow()).id;
+    public Response makeGraphAndExercises(List<ExerciseForm> forms, @QueryParam("graph_id") String hexstring, @DefaultValue("Unkown") @QueryParam("name") String graph_name) {
+        ObjectId graph_id;
+        if (hexstring == null || hexstring.isEmpty())
+            graph_id = HintGraph.newGraph(graph_name).id;
+        else
+            graph_id = new ObjectId(hexstring);
 
         forms.forEach(f -> graphManager.generateExercise(graph_id, f.modelId, f.secretCommandCount, f.cmd_n, f.targetFunctions));
         return Response.ok("Sucess").build();

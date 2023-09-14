@@ -3,12 +3,10 @@ package pt.haslab.specassistant.util;
 import org.jboss.logging.Logger;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -25,34 +23,11 @@ public interface FutureUtil {
 
     static <R> R inlineRuntime(CompletableFuture<R> future) {
         try {
-            return future.get();
-        } catch (ExecutionException e) {
-            try {
-                throw new RuntimeException(e.getCause());
-            } catch (Throwable ex) {
-                throw new RuntimeException(ex);
-            }
-        } catch (InterruptedException e) {
+            return inline(future);
+        } catch (Throwable e) {
             throw new RuntimeException(e);
         }
     }
-
-    static <R> void mergeFutures(Collection<CompletableFuture<R>> futures, Consumer<R> process) {
-        for (CompletableFuture<R> future : futures) {
-            process.accept(inlineRuntime(future));
-        }
-    }
-
-    static <K, V> Map<K, V> mergeFutureEntries(Collection<CompletableFuture<Map.Entry<K, V>>> futures) {
-        return mergeFutureEntries(futures, (a, b) -> b);
-    }
-
-    static <K, V> Map<K, V> mergeFutureEntries(Collection<CompletableFuture<Map.Entry<K, V>>> futures, BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
-        Map<K, V> result = new HashMap<>();
-        mergeFutures(futures, entry -> result.merge(entry.getKey(), entry.getValue(), remappingFunction));
-        return result;
-    }
-
 
     static <V> CompletableFuture<Void> allFutures(Stream<CompletableFuture<V>> futureStream) {
         return CompletableFuture.allOf(futureStream.toArray(CompletableFuture[]::new));
@@ -60,6 +35,18 @@ public interface FutureUtil {
 
     static <V> CompletableFuture<Void> allFutures(Collection<CompletableFuture<V>> futureStream) {
         return CompletableFuture.allOf(futureStream.toArray(CompletableFuture[]::new));
+    }
+
+    static <V, R> CompletableFuture<R> forEachOrderedAsync(Collection<V> elems, Function<V, CompletableFuture<R>> function) {
+        if (elems.isEmpty())
+            return CompletableFuture.completedFuture(null);
+        List<V> targets = List.copyOf(elems);
+        CompletableFuture<R> job = function.apply(targets.get(0));
+        for (int i = 1; i < targets.size(); i++) {
+            int finalI = i;
+            job = job.thenCompose(n -> function.apply(targets.get(finalI)));
+        }
+        return job;
     }
 
     static <V> CompletableFuture<Void> forEachAsync(Stream<V> stream, Consumer<V> consumer) {
@@ -95,7 +82,7 @@ public interface FutureUtil {
         };
     }
 
-    static BiConsumer<? super Void,? super Throwable> logTrace(Logger logger, String msg) {
+    static BiConsumer<? super Void, ? super Throwable> logTrace(Logger logger, String msg) {
         return (nil, error) -> {
             if (error != null)
                 logger.error(error);
