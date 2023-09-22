@@ -31,7 +31,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 
 @ApplicationScoped
@@ -65,37 +64,50 @@ public class TestService {
 
     public CompletableFuture<Test.Data> doTarTest(CompModule world, HintExercise exercise) {
         return CompletableFuture.supplyAsync(() -> {
-
             Collection<Func> repairTargets = AlloyUtil.getFuncsWithNames(world.getAllFunc().makeConstList(), exercise.targetFunctions);
             Command command = exercise.getValidCommand(world, exercise.cmd_n).orElseThrow();
             Repairer r = Repairer.make(world, command, repairTargets, 2);
 
             long t = System.nanoTime();
-            boolean b = r.repair(TarTimeoutSeconds * 100).isPresent();
+            boolean b = r.repair(TarTimeoutSeconds * 1000).isPresent();
 
             return new Test.Data(b, System.nanoTime() - t);
-        }).completeOnTimeout(new Test.Data(false, -1L), TarTimeoutSeconds, TimeUnit.SECONDS);
+        }).completeOnTimeout(new Test.Data(false, (double) TarTimeoutSeconds), TarTimeoutSeconds, TimeUnit.SECONDS);
     }
 
 
     public CompletableFuture<Void> testChallengeWithTAR(String modelId, Predicate<LocalDateTime> year_tester) {
-        final String secrets = "\n" + Text.extractSecrets(modelRepo.findById(modelId).code);
+        LOG.trace("Starting TAR test for challenge " + modelId);
 
-        LOG.debug("Starting TAR test for " + modelId);
+        final String secrets = "\n" + Text.extractSecrets(modelRepo.findById(modelId).code);
+        Repairer.opts.solver = A4Options.SatSolver.SAT4J;
 
         Map<String, HintExercise> exercises = exerciseRepo.findByModelIdAsCmdMap(modelId);
 
         return FutureUtil.runEachAsync(
-                modelRepo.streamByOriginalAndUnSat(modelId).filter(x -> year_tester.test(Text.parseDate(x.time))),
+                modelRepo.streamByOriginalAndUnSat(modelId)
+                        .filter(x -> testRepo.findByIdOptional(new Test.ID(x.id, "TAR")).isEmpty())
+                        .filter(x -> year_tester.test(Text.parseDate(x.time))),
                 m -> ParseUtil
                         .parseModelAsync(m.code + secrets)
-                        .thenCompose(world -> this.doTarTest(world, exercises.get(m.cmd_n)))
-                        .thenAccept(d -> testRepo.updateOrCreate(new Test.ID(m.id, "TAR"), exercises.get(m.cmd_n).graph_id, d))
-        ).whenComplete(FutureUtil.logDebug(LOG, "Completed TAR test of " + modelId));
+                        .exceptionally(FutureUtil.logException(LOG, "Error while parsing model " + m.id + ": "))
+                        .thenCompose(w -> {
+                            if (w != null) {
+                                HintExercise ex = exercises.get(m.cmd_n);
+                                if (ex != null && ex.isValidCommand(w, m.cmd_i)) {
+                                    return this.doTarTest(w, ex)
+                                            .thenAccept(d -> testRepo.updateOrCreate(new Test.ID(m.id, "TAR"), exercises.get(m.cmd_n).graph_id, d));
+                                }
+                            }
+                            return CompletableFuture.completedFuture(null);
+                        })
+                        .exceptionally(FutureUtil.logException(LOG, "Error while parsing model " + m.id + ": "))
+        ).whenComplete(FutureUtil.logTrace(LOG, "Completed TAR test on challenge " + modelId));
     }
 
     public CompletableFuture<Void> testAllChallengesWithTAR(Predicate<LocalDateTime> year_tester) {
-        return FutureUtil.allFutures(exerciseRepo.findAll().stream().map(x -> x.model_id).collect(Collectors.toSet()).stream().map(x -> this.testChallengeWithTAR(x, year_tester)));
+        return FutureUtil.forEachOrderedAsync(exerciseRepo.getAllModelIds(), x -> this.testChallengeWithTAR(x, year_tester))
+                .whenComplete(FutureUtil.logTrace(LOG, "Finished stressing all models with TAR"));
     }
 
     // SPEC TESTS ******************************************************************************************
@@ -111,28 +123,30 @@ public class TestService {
         return new Test.Data(b, System.nanoTime() - startTime);
     }
 
-    public void specTestFull(String model_id, String code, String original, String cmd_n) {
-        CompModule world = ParseUtil.parseModel(code);
-        HintExercise exercise = exerciseRepo.findByModelIdAndCmdN(original, cmd_n).orElse(null);
+    public void specTestFull(Model m) {
+        CompModule world = ParseUtil.parseModel(m.code);
+        HintExercise exercise = exerciseRepo.findByModelIdAndCmdN(m.original, m.cmd_n).orElse(null);
 
-        if (exercise != null) {
-            testRepo.updateOrCreate(new Test.ID(model_id, "SPEC"), exercise.graph_id, specTest(world, exercise));
-            testRepo.updateOrCreate(new Test.ID(model_id, "SPEC_MUTATION"), exercise.graph_id, specTestMutation(world, exercise));
+        if (exercise != null && exercise.isValidCommand(world, m.cmd_i)) {
+            testRepo.updateOrCreate(new Test.ID(m.id, "SPEC"), exercise.graph_id, specTest(world, exercise));
+            testRepo.updateOrCreate(new Test.ID(m.id, "SPEC_MUTATION"), exercise.graph_id, specTestMutation(world, exercise));
         }
     }
 
-    public CompletableFuture<Void> specTestModel(String modelId, Predicate<LocalDateTime> year_tester) {
-        Repairer.opts.solver = A4Options.SatSolver.MiniSatProverJNI;
-        final String secrets = "\n" + Text.extractSecrets(modelRepo.findById(modelId).code);
+    public CompletableFuture<Void> specTestChallenge(String challenge, Predicate<LocalDateTime> year_tester) {
+        LOG.trace("Starting SpecAssistant test for challenge " + challenge);
 
-        return FutureUtil.forEachAsync(
-                        modelRepo.streamByOriginalAndUnSat(modelId).filter(x -> year_tester.test(Text.parseDate(x.time))),
-                        m -> this.specTestFull(m.id, m.code + secrets, m.original, m.cmd_n))
-                .whenComplete(FutureUtil.logInfo(LOG, "Test Complete"));
+        return FutureUtil.forEachAsync(modelRepo.streamByOriginalAndUnSat(challenge).filter(x -> year_tester.test(Text.parseDate(x.time))), this::specTestFull)
+                .whenComplete(FutureUtil.logTrace(LOG, "Completed spec SpecAssistant with challenge " + challenge));
     }
 
     public CompletableFuture<Void> testAllChallengesWithSpec(Predicate<LocalDateTime> year_tester) {
-        return FutureUtil.allFutures(exerciseRepo.findAll().stream().map(x -> x.model_id).collect(Collectors.toSet()).stream().map(x -> this.specTestModel(x, year_tester)));
+        return FutureUtil.forEachOrderedAsync(exerciseRepo.getAllModelIds(), x -> this.specTestChallenge(x, year_tester));
+    }
+
+    public void deleteAllSpecTests() {
+        testRepo.deleteTestsByType("SPEC");
+        testRepo.deleteTestsByType("SPEC_MUTATION");
     }
 
     // AUTOSETUP *******************************************************************************************
@@ -155,11 +169,11 @@ public class TestService {
                 .thenRun(() -> LOG.debug("Starting setup for " + prefix + " with model ids " + model_ids))
                 .thenRun(() -> graphManager.deleteExerciseByModelIDs(model_ids, true))
                 .thenRun(() -> makeGraphAndExercisesFromCommands(model_ids, prefix))
-                .thenRun(() -> LOG.trace("Scanning models"))
+                .thenRun(() -> LOG.trace("Scanning models " + model_ids))
                 .thenCompose(nil -> FutureUtil.allFutures(model_ids.stream().map(id -> graphInjestor.parseModelTree(id, range::testDate))))
-                .thenRun(() -> LOG.trace("Computing policies"))
+                .thenRun(() -> LOG.trace("Computing policies for " + prefix))
                 .thenRun(() -> graphManager.getModelGraphs(model_ids.get(0)).forEach(id -> policyManager.computePolicyAndDebloatGraph(id)))
-                .thenRun(() -> LOG.debug("Completed setup after " + 1e-9 * (System.nanoTime() - start.get()) + " seconds"))
+                .thenRun(() -> LOG.debug("Completed setup for " + prefix + " with model ids " + model_ids + " in " + 1e-9 * (System.nanoTime() - start.get()) + " seconds"))
                 .whenComplete(FutureUtil.log(LOG));
     }
 

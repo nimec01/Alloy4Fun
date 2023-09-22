@@ -23,7 +23,7 @@ public interface Text {
 
     String pgp = "var|one|abstract|lone|some";
 
-    String pgd = "(?:(?:" + pgp + ")\\s+)?" + pgs;
+    String pgd = "(?:(?:" + pgp + ")\\s+)*?" + pgs;
 
     String comment = "/\\*(?:.|\\n)*?\\*/\\s*|//.*\\n|--.*\\n";
 

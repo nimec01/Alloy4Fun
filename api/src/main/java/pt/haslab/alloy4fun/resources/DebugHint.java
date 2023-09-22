@@ -77,7 +77,7 @@ public class DebugHint {
     @Path("/test-model")
     @Produces(MediaType.APPLICATION_JSON)
     public Response stressHints(@QueryParam("model_id") String model_id, @BeanParam YearRange yearRange) {
-        testService.specTestModel(model_id, yearRange::testDate);
+        testService.specTestChallenge(model_id, yearRange::testDate);
         return Response.ok().build();
     }
 
@@ -86,6 +86,14 @@ public class DebugHint {
     @Produces(MediaType.APPLICATION_JSON)
     public Response stressAll(@BeanParam YearRange yearRange) {
         testService.testAllChallengesWithSpec(yearRange::testDate);
+        return Response.ok().build();
+    }
+
+    @GET
+    @Path("/delete-all-spec-test")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deleteSpec() {
+        testService.deleteAllSpecTests();
         return Response.ok().build();
     }
 }

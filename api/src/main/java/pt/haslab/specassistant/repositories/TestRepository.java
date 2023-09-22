@@ -2,6 +2,7 @@ package pt.haslab.specassistant.repositories;
 
 import io.quarkus.mongodb.panache.PanacheMongoRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
+import org.bson.Document;
 import org.bson.types.ObjectId;
 import pt.haslab.specassistant.data.models.Test;
 
@@ -14,5 +15,9 @@ public class TestRepository implements PanacheMongoRepositoryBase<Test, Test.ID>
 
     public void updateOrCreate(Test.ID id, ObjectId graph_id, Test.Data data) {
         findOrCreate(id).setData(data).setGraphId(graph_id).persistOrUpdate();
+    }
+
+    public void deleteTestsByType(String type) {
+        delete(new Document("_id.type", type));
     }
 }

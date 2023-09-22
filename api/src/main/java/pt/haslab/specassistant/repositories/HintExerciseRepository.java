@@ -9,6 +9,7 @@ import pt.haslab.specassistant.data.models.HintExercise;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -45,5 +46,9 @@ public class HintExerciseRepository implements PanacheMongoRepository<HintExerci
 
     public Map<String, HintExercise> findByModelIdAsCmdMap(String modelId) {
         return find(new Document("model_id", modelId)).stream().collect(Collectors.toMap(x -> x.cmd_n, x -> x));
+    }
+
+    public Set<String> getAllModelIds() {
+        return findAll().stream().map(x -> x.model_id).collect(Collectors.toSet());
     }
 }

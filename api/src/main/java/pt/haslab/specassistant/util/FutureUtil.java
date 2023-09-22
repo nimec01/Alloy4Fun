@@ -57,6 +57,13 @@ public interface FutureUtil {
         return CompletableFuture.allOf(stream.map(function).toArray(CompletableFuture[]::new));
     }
 
+    static <V> Function<Throwable, V> logException(Logger logger, String msg) {
+        return (error) -> {
+            logger.error(msg + " " +  error.getMessage());
+            return null;
+        };
+    }
+
     static <V> BiConsumer<V, Throwable> log(Logger logger) {
         return (nil, error) -> {
             if (error != null)

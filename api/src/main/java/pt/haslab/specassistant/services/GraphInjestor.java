@@ -1,5 +1,6 @@
 package pt.haslab.specassistant.services;
 
+import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.ast.Expr;
 import edu.mit.csail.sdg.parser.CompModule;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -88,6 +89,8 @@ public class GraphInjestor {
 
                     ObjectId new_node_id = nodeRepo.incrementOrCreate(formula, valid, exercise.graph_id, modified ? current.id : null).id;
 
+                    nodeRepo.setDebug(current.id, new_node_id);
+
                     if (!old_node_id.equals(new_node_id)) { // No laces
                         nodeRepo.incrementLeaveById(old_node_id);
                         context = new HashMap<>(context); // Make a new context based on the previous one
@@ -98,6 +101,8 @@ public class GraphInjestor {
             }
         } catch (UncheckedIOException e) {
             LOG.warn(e);
+        } catch (Err e) {
+            LOG.warn("Error parsing model, skipping " + current.id + " : " + e.getMessage());
         }
         return context;
     }
@@ -124,9 +129,11 @@ public class GraphInjestor {
 
     public CompletableFuture<Void> classifyAllEdges(CompModule world, ObjectId graph_id) {
         return FutureUtil.forEachAsync(edgeRepo.streamByGraphId(graph_id), e -> {
+            HintNode destNode = nodeRepo.findById(e.destination);
+            HintNode originNode = nodeRepo.findById(e.origin);
             try {
-                Map<String, Expr> peerParsed = nodeRepo.findById(e.destination).getParsedFormula(world);
-                Map<String, Expr> originParsed = nodeRepo.findById(e.origin).getParsedFormula(world);
+                Map<String, Expr> peerParsed = destNode.getParsedFormula(world);
+                Map<String, Expr> originParsed = originNode.getParsedFormula(world);
 
                 e.editDistance = ASTEditDiff.getFormulaDistanceDiff(originParsed, peerParsed);
                 e.update();

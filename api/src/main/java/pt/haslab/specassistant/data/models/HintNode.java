@@ -40,6 +40,7 @@ public class HintNode extends PanacheMongoEntity {
 
     public Double score;
 
+    public String debug;
 
     public HintNode() {
     }
@@ -87,11 +88,11 @@ public class HintNode extends PanacheMongoEntity {
             CompModule target_world = Optional.ofNullable(this.witness).map(Model::getWorld).orElse(world);
             return formula.entrySet().stream().collect(toMap(Map.Entry::getKey, x -> ParseUtil.parseOneExprFromString(target_world, x.getValue())));
         } catch (ErrorSyntax e) {
-            throw new IllegalStateException("Syntax Error While Parsing Formula:\"" + this.getFormula().toString().replace("\n", "") + '"', e);
+            throw new IllegalStateException("Syntax Error While Parsing Formula:\"" + this.getFormula().toString().replace("\n", "") + "\" " + e.pos.toString() + " " + e.getMessage(), e);
         } catch (Err e) {
-            throw new IllegalStateException("Alloy Error While Parsing Formula:\"" + this.getFormula().toString().replace("\n", "") + '"', e);
+            throw new IllegalStateException("Alloy Error While Parsing Formula:\"" + this.getFormula().toString().replace("\n", "") + "\" "+ e.pos.toString() + " "  + e.getMessage(), e);
         } catch (UncheckedIOException e) {
-            throw new IllegalStateException("IO Error While Parsing Formula:\"" + this.getFormula().toString().replace("\n", "") + '"', e);
+            throw new IllegalStateException("IO Error While Parsing Formula:\"" + this.getFormula().toString().replace("\n", "") + "\" " + e.getMessage(), e);
         }
     }
 

@@ -2,8 +2,10 @@ package pt.haslab.alloyaddons;
 
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.ast.*;
+import io.quarkus.logging.Log;
 
 import java.util.List;
+import java.util.Objects;
 
 public class ExprStringify {
     public static String rawStringify(Expr e) {
@@ -39,7 +41,11 @@ public class ExprStringify {
         @Override
         public String visit(ExprCall exprCall) throws Err {
             List<String> arguments = exprCall.args.stream().map(this::visitThis).toList();
-            return exprCall.fun.label.replace("this/", "") + "[" + ParseUtil.lineCSV(",", arguments) + "]";
+            String label = exprCall.fun.label.replace("this/", "");
+            String res = label + "[" + ParseUtil.lineCSV(",", arguments) + "]";
+            if (label.contains("/"))
+                return "(" + res + ")";
+            return res;
         }
 
         @Override
@@ -67,8 +73,19 @@ public class ExprStringify {
             String sub = visitThis(exprQt.sub);
 
             if (exprQt.op == ExprQt.Op.COMPREHENSION)
-                return "{" + decString + "|" + sub + "}";
+                if (Objects.equals(sub.strip(), "true"))
+                    return "{" + decString + "}";
+                else return "{" + decString + "|" + sub + "}";
             else return "(" + exprQt.op + " " + decString + "|" + sub + ")";
+        }
+
+        public boolean isInt(String s) {
+            try {
+                Integer.parseInt(s);
+                return true;
+            } catch (NumberFormatException e) {
+                return false;
+            }
         }
 
         @Override
@@ -80,8 +97,8 @@ public class ExprStringify {
                 case ONEOF -> "(one " + sub + ')';
                 case SETOF -> "(set " + sub + ')';
                 case EXACTLYOF -> "(exactly " + sub + ')';
-                case CAST2INT -> "int[" + sub + "]";
-                case CAST2SIGINT -> "Int[" + sub + "]";
+                case CAST2INT -> isInt(sub) ? sub : "int[" + sub + "]";
+                case CAST2SIGINT -> isInt(sub) ? sub : "Int[" + sub + "]";
                 case PRIME -> "(" + sub + ")'";
                 case NOOP -> sub;
                 default -> '(' + exprUnary.op.toString() + ' ' + sub + ")";

@@ -56,11 +56,16 @@ public class HintNodeRepository implements PanacheMongoRepository<HintNode> {
     public Long getTotalVisitsFromScoredGraph(ObjectId graph_id) {
         return find(new Document("graph_id", graph_id).append("score", new Document("$ne", null))).stream().map(x -> x.visits).map(Integer::longValue).reduce(0L, Long::sum);
     }
+
     public Long getTotalVisitsFromGraph(ObjectId graph_id) {
         return find(new Document("graph_id", graph_id)).stream().map(x -> x.visits).map(Integer::longValue).reduce(0L, Long::sum);
     }
 
     public void unsetAllScoresFrom(ObjectId graph_id) {
         update(new Document("$unset", new Document("score", null))).where("graph_id", graph_id);
+    }
+
+    public void setDebug(Object debug, ObjectId node_id) {
+        update(new Document("$set", new Document("debug", debug))).where(new Document("_id", node_id));
     }
 }
