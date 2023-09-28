@@ -36,7 +36,8 @@ import java.util.concurrent.CompletableFuture;
 @RequestScoped
 public class AlloyGetInstances {
 
-    private static final Logger LOGGER = Logger.getLogger(AlloyGetInstances.class);
+    @Inject
+    Logger log;
 
     @Inject
     SessionRepository sessionManager;
@@ -48,10 +49,10 @@ public class AlloyGetInstances {
     @Produces(MediaType.APPLICATION_JSON)
     public Response doPost(InstancesRequest request) {
 
-        LOGGER.info("Received request for session: " + request.sessionId + "with parent (" + request.parentId + ")");
+        log.info("Received request for session: " + request.sessionId + "with parent (" + request.parentId + ")");
 
         if (sessionManager.deleteById(request.parentId))
-            LOGGER.debug("Deleted parent session (" + request.parentId + ").");
+            log.debug("Deleted parent session (" + request.parentId + ").");
 
         try {
 
@@ -66,10 +67,10 @@ public class AlloyGetInstances {
 
             return Response.ok(batchAdd(request.numberOfInstances, session, warnings)).build();
         } catch (Err e) {
-            LOGGER.info("Responding with an alloy error.");
+            log.info("Responding with an alloy error.");
             return Response.ok(InstanceMsg.from(e)).build();
         } catch (IOException e) {
-            LOGGER.info("Responding with an error message.");
+            log.info("Responding with an error message.");
             return Response.ok(InstanceMsg.error(e.getMessage())).build();
         }
     }
@@ -137,10 +138,10 @@ public class AlloyGetInstances {
                         .map(InstanceTrace::from)
                         .toList();
             } catch (Err e) {
-                LOGGER.error("Alloy errored during solution parsing.", e);
+                log.error("Alloy errored during solution parsing.", e);
                 return InstanceResponse.err(e);
             } catch (UncheckedIOException e) {
-                LOGGER.error("IO error during solution parsing.", e);
+                log.error("IO error during solution parsing.", e);
             }
         }
 

@@ -9,8 +9,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.jboss.logging.Logger;
 import pt.haslab.alloy4fun.data.models.Session;
 import pt.haslab.alloy4fun.data.transfer.InstanceTrace;
 import pt.haslab.alloy4fun.repositories.SessionRepository;
@@ -25,7 +24,8 @@ import java.util.Map;
 @Path("/getProjection")
 public class AlloyGetProjection {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AlloyGetProjection.class);
+    @Inject
+    Logger log;
     @Inject
     SessionRepository sessionManager;
 
@@ -55,11 +55,11 @@ public class AlloyGetProjection {
             AlloyProjection currentProjection = new AlloyProjection(map);
             AlloyInstance projected = StaticProjector.project(instance, currentProjection);
 
-            LOGGER.debug(projected.toString());
+            log.debug(projected.toString());
 
             return Response.ok(List.of(InstanceTrace.from(projected))).build();
         } catch (Err | UncheckedIOException e) {
-            LOGGER.error("Error during parsing.", e);
+            log.error("Error during parsing.", e);
             return Response.ok("").build();
         }
     }

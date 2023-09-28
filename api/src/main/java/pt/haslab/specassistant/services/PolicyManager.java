@@ -21,7 +21,8 @@ import java.util.stream.Collectors;
 @ApplicationScoped
 public class PolicyManager {
 
-    private static final Logger LOG = Logger.getLogger(PolicyManager.class);
+    @Inject
+    Logger log;
     @Inject
     HintNodeRepository nodeRepo;
     @Inject
@@ -59,7 +60,7 @@ public class PolicyManager {
             try {
                 FutureUtil.allFutures(actionPool).get();
             } catch (InterruptedException | ExecutionException e) {
-                LOG.warn("Failed to process batch, skipping " + targetIds.size() + " endpoints");
+                log.warn("Failed to process batch, skipping " + targetIds.size() + " endpoints");
             }
 
             List<List<PolicyContext>> result = new ArrayList<>();
@@ -68,7 +69,7 @@ public class PolicyManager {
                 try {
                     result.add(l.get());
                 } catch (InterruptedException | ExecutionException e) {
-                    LOG.warn("Failed to process a node's neighbours, skipping...");
+                    log.warn("Failed to process a node's neighbours, skipping...");
                 }
             }
             batch = List.copyOf(result.stream().flatMap(Collection::stream).collect(Collectors.toMap(PolicyContext::nodeId, x -> x, Ordered::min)).values());

@@ -30,7 +30,8 @@ import java.util.concurrent.ExecutionException;
 @Path("/hint")
 public class AlloyHint {
 
-    private static final Logger LOG = Logger.getLogger(AlloyHint.class);
+    @Inject
+    Logger log;
 
     @Inject
     GraphManager graphManager;
@@ -79,7 +80,7 @@ public class AlloyHint {
     @Path("/check")
     @Produces(MediaType.APPLICATION_JSON)
     public Response checkHint(HintRequest request) {
-        LOG.info("Hint requested for session " + request.challenge);
+        log.info("Hint requested for session " + request.challenge);
 
         Session session = sessionManager.findById(request.challenge);
 
@@ -90,11 +91,11 @@ public class AlloyHint {
             Optional<HintMsg> response = session.hintRequest.get();
 
             if (response.isEmpty())
-                LOG.debug("NO HINT AVAILABLE FOR " + request.challenge);
+                log.debug("NO HINT AVAILABLE FOR " + request.challenge);
 
             return Response.ok(response.map(InstanceMsg::from).orElseGet(() -> InstanceMsg.error("Unable to generate hint"))).build();
         } catch (InterruptedException | ExecutionException e) {
-            LOG.error(e);
+            log.error(e);
             return Response.ok(InstanceMsg.error(e instanceof ExecutionException ? "Error when generating hint" : "Hint is unavailable")).build();
         }
     }
@@ -127,5 +128,15 @@ public class AlloyHint {
         return Response.ok("Popular policy computed.").build();
     }
 
+
+    @POST
+    @Path("/compute-popular-ted-policy")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response computeTedPolicy(@QueryParam("model_id") String modelid) {
+        graphManager.getModelGraphs(modelid).forEach(id -> {
+            policyManager.computePolicyForGraph(id, 1.0, RewardEvaluation.TED, ProbabilityEvaluation.NONE);
+        });
+        return Response.ok("Popular policy computed.").build();
+    }
 
 }

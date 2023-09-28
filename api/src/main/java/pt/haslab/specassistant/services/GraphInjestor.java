@@ -37,7 +37,8 @@ import java.util.stream.Stream;
 @ApplicationScoped
 public class GraphInjestor {
 
-    private static final Logger LOG = Logger.getLogger(GraphInjestor.class);
+    @Inject
+    Logger log;
 
     @Inject
     ModelRepository modelRepo;
@@ -100,9 +101,9 @@ public class GraphInjestor {
                 }
             }
         } catch (UncheckedIOException e) {
-            LOG.warn(e);
+            log.warn(e);
         } catch (Err e) {
-            LOG.warn("Error parsing model, skipping " + current.id + " : " + e.getMessage());
+            log.warn("Error parsing model, skipping " + current.id + " : " + e.getMessage());
         }
         return context;
     }
@@ -138,7 +139,7 @@ public class GraphInjestor {
                 e.editDistance = ASTEditDiff.getFormulaDistanceDiff(originParsed, peerParsed);
                 e.update();
             } catch (IllegalStateException e1) {
-                LOG.warn(e1.getMessage());
+                log.warn(e1.getMessage());
             }
         });
     }
@@ -161,6 +162,6 @@ public class GraphInjestor {
                                             nodeRepo.getTotalVisitsFromGraph(ex.graph_id) - count.getOrDefault(ex.graph_id, 0L),
                                             parsingTime.get() + System.nanoTime() - st));
                         }))
-                .whenComplete(FutureUtil.logTrace(LOG, "Finished parsing model " + model_id));
+                .whenComplete(FutureUtil.logTrace(log, "Finished parsing model " + model_id));
     }
 }

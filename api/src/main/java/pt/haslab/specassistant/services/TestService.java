@@ -35,8 +35,8 @@ import java.util.function.Predicate;
 
 @ApplicationScoped
 public class TestService {
-
-    private static final Logger LOG = Logger.getLogger(TestService.class);
+    @Inject
+    Logger log;
 
     @Inject
     ModelRepository modelRepo;
@@ -77,7 +77,7 @@ public class TestService {
 
 
     public CompletableFuture<Void> testChallengeWithTAR(String modelId, Predicate<LocalDateTime> year_tester) {
-        LOG.trace("Starting TAR test for challenge " + modelId);
+        log.trace("Starting TAR test for challenge " + modelId);
 
         final String secrets = "\n" + Text.extractSecrets(modelRepo.findById(modelId).code);
         Repairer.opts.solver = A4Options.SatSolver.SAT4J;
@@ -90,7 +90,7 @@ public class TestService {
                         .filter(x -> year_tester.test(Text.parseDate(x.time))),
                 m -> ParseUtil
                         .parseModelAsync(m.code + secrets)
-                        .exceptionally(FutureUtil.logException(LOG, "Error while parsing model " + m.id + ": "))
+                        .exceptionally(FutureUtil.errorLog(log, "Error while parsing model " + m.id + ": "))
                         .thenCompose(w -> {
                             if (w != null) {
                                 HintExercise ex = exercises.get(m.cmd_n);
@@ -101,26 +101,30 @@ public class TestService {
                             }
                             return CompletableFuture.completedFuture(null);
                         })
-                        .exceptionally(FutureUtil.logException(LOG, "Error while parsing model " + m.id + ": "))
-        ).whenComplete(FutureUtil.logTrace(LOG, "Completed TAR test on challenge " + modelId));
+                        .exceptionally(FutureUtil.errorLog(log, "Error while parsing model " + m.id + ": "))
+        ).whenComplete(FutureUtil.logTrace(log, "Completed TAR test on challenge " + modelId));
     }
 
     public CompletableFuture<Void> testAllChallengesWithTAR(Predicate<LocalDateTime> year_tester) {
         return FutureUtil.forEachOrderedAsync(exerciseRepo.getAllModelIds(), x -> this.testChallengeWithTAR(x, year_tester))
-                .whenComplete(FutureUtil.logTrace(LOG, "Finished stressing all models with TAR"));
+                .whenComplete(FutureUtil.logTrace(log, "Finished stressing all models with TAR"));
     }
 
     // SPEC TESTS ******************************************************************************************
     public Test.Data specTestMutation(CompModule world, HintExercise exercise) {
-        long startTime = System.nanoTime();
+        long time = System.nanoTime();
         boolean b = hintGenerator.hintWithMutation(exercise, world).isPresent();
-        return new Test.Data(b, System.nanoTime() - startTime);
+        time = System.nanoTime() - time;
+        Integer hintDistance = hintGenerator.mutatedNextState(exercise, world).map(x -> x.hopDistance).orElse(null);
+        return new Test.Data(b, time, hintDistance);
     }
 
     public Test.Data specTest(CompModule world, HintExercise exercise) {
-        long startTime = System.nanoTime();
+        long time = System.nanoTime();
         boolean b = hintGenerator.hintWithGraph(exercise, world).isPresent();
-        return new Test.Data(b, System.nanoTime() - startTime);
+        time = System.nanoTime() - time;
+        Integer hintDistance = hintGenerator.nextState(exercise, world).map(x -> x.hopDistance).orElse(null);
+        return new Test.Data(b, time, hintDistance);
     }
 
     public void specTestFull(Model m) {
@@ -134,10 +138,10 @@ public class TestService {
     }
 
     public CompletableFuture<Void> specTestChallenge(String challenge, Predicate<LocalDateTime> year_tester) {
-        LOG.trace("Starting SpecAssistant test for challenge " + challenge);
+        log.trace("Starting SpecAssistant test for challenge " + challenge);
 
         return FutureUtil.forEachAsync(modelRepo.streamByOriginalAndUnSat(challenge).filter(x -> year_tester.test(Text.parseDate(x.time))), this::specTestFull)
-                .whenComplete(FutureUtil.logTrace(LOG, "Completed spec SpecAssistant with challenge " + challenge));
+                .whenComplete(FutureUtil.logTrace(log, "Completed spec SpecAssistant with challenge " + challenge));
     }
 
     public CompletableFuture<Void> testAllChallengesWithSpec(Predicate<LocalDateTime> year_tester) {
@@ -166,15 +170,15 @@ public class TestService {
         AtomicLong start = new AtomicLong();
         return CompletableFuture
                 .runAsync(() -> start.set(System.nanoTime()))
-                .thenRun(() -> LOG.debug("Starting setup for " + prefix + " with model ids " + model_ids))
+                .thenRun(() -> log.debug("Starting setup for " + prefix + " with model ids " + model_ids))
                 .thenRun(() -> graphManager.deleteExerciseByModelIDs(model_ids, true))
                 .thenRun(() -> makeGraphAndExercisesFromCommands(model_ids, prefix))
-                .thenRun(() -> LOG.trace("Scanning models " + model_ids))
+                .thenRun(() -> log.trace("Scanning models " + model_ids))
                 .thenCompose(nil -> FutureUtil.allFutures(model_ids.stream().map(id -> graphInjestor.parseModelTree(id, range::testDate))))
-                .thenRun(() -> LOG.trace("Computing policies for " + prefix))
+                .thenRun(() -> log.trace("Computing policies for " + prefix))
                 .thenRun(() -> graphManager.getModelGraphs(model_ids.get(0)).forEach(id -> policyManager.computePolicyAndDebloatGraph(id)))
-                .thenRun(() -> LOG.debug("Completed setup for " + prefix + " with model ids " + model_ids + " in " + 1e-9 * (System.nanoTime() - start.get()) + " seconds"))
-                .whenComplete(FutureUtil.log(LOG));
+                .thenRun(() -> log.debug("Completed setup for " + prefix + " with model ids " + model_ids + " in " + 1e-9 * (System.nanoTime() - start.get()) + " seconds"))
+                .whenComplete(FutureUtil.log(log));
     }
 
 

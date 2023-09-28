@@ -10,9 +10,9 @@ import org.bson.types.ObjectId;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 import pt.haslab.Repairer;
+import pt.haslab.alloyaddons.AlloyUtil;
 import pt.haslab.alloyaddons.ExprNormalizer;
 import pt.haslab.alloyaddons.ExprStringify;
-import pt.haslab.alloyaddons.AlloyUtil;
 import pt.haslab.mutation.Candidate;
 import pt.haslab.mutation.mutator.Mutator;
 import pt.haslab.specassistant.data.models.HintEdge;
@@ -35,7 +35,8 @@ import static pt.haslab.specassistant.util.DataUtil.getCombinations;
 @ApplicationScoped
 public class HintGenerator {
 
-    private static final Logger LOG = Logger.getLogger(HintGenerator.class);
+    @Inject
+    Logger log;
 
     @ConfigProperty(name = "hint.mutations", defaultValue = "true")
     boolean mutationsEnabled;
@@ -92,11 +93,27 @@ public class HintGenerator {
         return Optional.empty();
     }
 
+    public Optional<HintNode> nextState(HintExercise exercise, CompModule world) {
+        Map<String, Expr> formulaExpr = HintNode.getNormalizedFormulaExprFrom(world, exercise.targetFunctions);
+        Map<String, String> formula = formulaExprToString(formulaExpr);
+
+        return nextState(exercise.graph_id, formula);
+    }
+
     public Optional<HintMsg> hintWithGraph(HintExercise exercise, CompModule world) {
         Map<String, Expr> formulaExpr = HintNode.getNormalizedFormulaExprFrom(world, exercise.targetFunctions);
         Map<String, String> formula = formulaExprToString(formulaExpr);
 
         return nextState(exercise.graph_id, formula).map(x -> firstHint(formulaExpr, x.getParsedFormula(world)));
+    }
+
+
+    public Optional<HintNode> mutatedNextState(HintExercise exercise, CompModule world) {
+        List<Map<String, Candidate>> candidateFormulas = mkAllMutatedFormula(HintNode.getFormulaExprFrom(world.getAllFunc().makeConstList(), exercise.targetFunctions), world.getAllReachableSigs(), 1);
+
+        List<Map<String, String>> mutatedFormulas = candidateFormulas.stream().map(m -> DataUtil.mapValues(m, f -> ExprStringify.stringify(ExprNormalizer.normalize(f.mutated)))).toList();
+
+        return nodeRepo.findBestByGraphIdAndFormulaIn(exercise.graph_id, mutatedFormulas);
     }
 
     public Optional<HintMsg> hintWithMutation(HintExercise exercise, CompModule world) {
@@ -128,13 +145,13 @@ public class HintGenerator {
         HintExercise exercise = exerciseRepo.findByModelIdAndCmdN(original_id, command_label).orElse(null);
 
         if (exercise == null) {
-            LOG.debug("No exercise found for original=" + original_id + " && command_label=" + command_label);
+            log.debug("No exercise found for original=" + original_id + " && command_label=" + command_label);
             return Optional.empty();
         }
 
         Set<String> availableFuncs = AlloyUtil.streamFuncsNamesWithNames(world.getAllFunc().makeConstList(), exercise.targetFunctions).collect(Collectors.toSet());
         if (!availableFuncs.containsAll(exercise.targetFunctions)) {
-            LOG.debug("Some of the targeted functions are not contained within provided world, missing " + new HashSet<>(exercise.targetFunctions).removeAll(availableFuncs));
+            log.debug("Some of the targeted functions are not contained within provided world, missing " + new HashSet<>(exercise.targetFunctions).removeAll(availableFuncs));
             return Optional.empty();
         }
 

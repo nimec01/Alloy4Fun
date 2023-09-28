@@ -90,7 +90,7 @@ public class HintNode extends PanacheMongoEntity {
         } catch (ErrorSyntax e) {
             throw new IllegalStateException("Syntax Error While Parsing Formula:\"" + this.getFormula().toString().replace("\n", "") + "\" " + e.pos.toString() + " " + e.getMessage(), e);
         } catch (Err e) {
-            throw new IllegalStateException("Alloy Error While Parsing Formula:\"" + this.getFormula().toString().replace("\n", "") + "\" "+ e.pos.toString() + " "  + e.getMessage(), e);
+            throw new IllegalStateException("Alloy Error While Parsing Formula:\"" + this.getFormula().toString().replace("\n", "") + "\" " + e.pos.toString() + " " + e.getMessage(), e);
         } catch (UncheckedIOException e) {
             throw new IllegalStateException("IO Error While Parsing Formula:\"" + this.getFormula().toString().replace("\n", "") + "\" " + e.getMessage(), e);
         }

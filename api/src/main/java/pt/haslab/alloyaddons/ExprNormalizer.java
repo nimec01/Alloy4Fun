@@ -158,13 +158,10 @@ public class ExprNormalizer {
             List<Decl> disjunctions = new ArrayList<>();
 
             while (true) {
-                while (current instanceof ExprUnary && ((ExprUnary) current).op == NOOP)
-                    current = ((ExprUnary) current).sub;
-
-                if (current instanceof ExprQt) {
-                    ExprQt.Op op = ((ExprQt) current).op;
-
-                    for (Decl decl : ((ExprQt) current).decls) {
+                while (current instanceof ExprUnary exprUnary && exprUnary.op == NOOP)
+                    current = exprUnary.sub;
+                if (current instanceof ExprQt currentExprQT) {
+                    for (Decl decl : currentExprQT.decls) {
                         Set<String> dependentFields = new StreamFieldNames().visitThis(decl.expr).collect(Collectors.toSet());
                         if (decl.disjoint != null)
                             disjunctions.add(decl);
@@ -177,10 +174,10 @@ public class ExprNormalizer {
                                     depth = Integer.max(depth, q.depth + 1);
                                 }
                             }
-                            quantifiers.add(new QuantifierDecl(depth, name, decl.expr, op));
+                            quantifiers.add(new QuantifierDecl(depth, name, decl.expr, currentExprQT.op));
                         });
                     }
-                    current = ((ExprQt) current).sub;
+                    current = currentExprQT.sub;
                 } else
                     break;
             }
