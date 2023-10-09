@@ -2,7 +2,6 @@ package pt.haslab.alloyaddons;
 
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.ast.*;
-import io.quarkus.logging.Log;
 
 import java.util.List;
 import java.util.Objects;

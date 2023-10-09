@@ -40,8 +40,6 @@ public class HintNode extends PanacheMongoEntity {
 
     public Double score;
 
-    public String debug;
-
     public HintNode() {
     }
 

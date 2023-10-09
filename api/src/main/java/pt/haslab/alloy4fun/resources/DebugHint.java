@@ -7,6 +7,8 @@ import jakarta.ws.rs.core.Response;
 import pt.haslab.alloy4fun.data.request.YearRange;
 import pt.haslab.specassistant.services.GraphManager;
 import pt.haslab.specassistant.services.TestService;
+import pt.haslab.specassistant.services.policy.ProbabilityEvaluation;
+import pt.haslab.specassistant.services.policy.RewardEvaluation;
 import pt.haslab.specassistant.util.FutureUtil;
 
 import java.util.List;
@@ -95,5 +97,17 @@ public class DebugHint {
     public Response deleteSpec() {
         testService.deleteAllSpecTests();
         return Response.ok().build();
+    }
+
+    @POST
+    @Path("/compute-policy-for-all-models")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response computeTedEdge(@QueryParam("discount") @DefaultValue("0.99") Double discount, @QueryParam("reward") @DefaultValue("TED") String reward, @QueryParam("probability") @DefaultValue("EDGE") String probability) {
+        RewardEvaluation eval = RewardEvaluation.valueOf(reward);
+        ProbabilityEvaluation prob = ProbabilityEvaluation.valueOf(probability);
+
+        testService.computePoliciesForAll(discount, eval, prob);
+
+        return Response.ok("Policy computation started.").build();
     }
 }

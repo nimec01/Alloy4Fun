@@ -19,6 +19,8 @@ import pt.haslab.specassistant.data.models.Test;
 import pt.haslab.specassistant.repositories.HintExerciseRepository;
 import pt.haslab.specassistant.repositories.ModelRepository;
 import pt.haslab.specassistant.repositories.TestRepository;
+import pt.haslab.specassistant.services.policy.ProbabilityEvaluation;
+import pt.haslab.specassistant.services.policy.RewardEvaluation;
 import pt.haslab.specassistant.util.FutureUtil;
 import pt.haslab.specassistant.util.Text;
 
@@ -176,7 +178,7 @@ public class TestService {
                 .thenRun(() -> log.trace("Scanning models " + model_ids))
                 .thenCompose(nil -> FutureUtil.allFutures(model_ids.stream().map(id -> graphInjestor.parseModelTree(id, range::testDate))))
                 .thenRun(() -> log.trace("Computing policies for " + prefix))
-                .thenRun(() -> graphManager.getModelGraphs(model_ids.get(0)).forEach(id -> policyManager.computePolicyAndDebloatGraph(id)))
+                .thenRun(() -> graphManager.getModelGraphs(model_ids.get(0)).forEach(id -> policyManager.computePolicyForGraph(id, 0.99, RewardEvaluation.TED, ProbabilityEvaluation.EDGE)))
                 .thenRun(() -> log.debug("Completed setup for " + prefix + " with model ids " + model_ids + " in " + 1e-9 * (System.nanoTime() - start.get()) + " seconds"))
                 .whenComplete(FutureUtil.log(log));
     }
@@ -191,5 +193,10 @@ public class TestService {
                             x.setGraphId(exerciseRepo.findByModelIdAndCmdN(m.original, m.cmd_n).orElseThrow().getGraph_id()).persistOrUpdate();
                         })
         );
+    }
+
+    public void computePoliciesForAll(Double discount, RewardEvaluation eval, ProbabilityEvaluation prob) {
+        FutureUtil.forEachAsync(HintGraph.findAll().stream().map(x -> (HintGraph) x), x -> policyManager.computePolicyForGraph(x.id, discount, eval, prob))
+                .whenComplete(FutureUtil.logTrace(log,"Finished computing policies"));
     }
 }

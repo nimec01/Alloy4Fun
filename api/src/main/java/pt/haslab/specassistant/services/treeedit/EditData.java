@@ -2,9 +2,9 @@ package pt.haslab.specassistant.services.treeedit;
 
 import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.ast.Expr;
+import pt.haslab.alloyaddons.AlloyUtil;
 import pt.haslab.alloyaddons.ExprNodeEquals;
 import pt.haslab.alloyaddons.ExprNodeStringify;
-import pt.haslab.alloyaddons.AlloyUtil;
 
 public record EditData(Expr node, Pos position) {
 

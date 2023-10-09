@@ -90,7 +90,7 @@ public class GraphInjestor {
 
                     ObjectId new_node_id = nodeRepo.incrementOrCreate(formula, valid, exercise.graph_id, modified ? current.id : null).id;
 
-                    nodeRepo.setDebug(current.id, new_node_id);
+                    // nodeRepo.setDebug(current.id, new_node_id);
 
                     if (!old_node_id.equals(new_node_id)) { // No laces
                         nodeRepo.incrementLeaveById(old_node_id);

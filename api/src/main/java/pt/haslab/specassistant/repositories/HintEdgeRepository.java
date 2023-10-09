@@ -2,7 +2,6 @@ package pt.haslab.specassistant.repositories;
 
 import io.quarkus.mongodb.panache.PanacheMongoRepository;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.transaction.Transactional;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import pt.haslab.specassistant.data.models.HintEdge;

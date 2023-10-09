@@ -5,14 +5,12 @@ import io.quarkus.mongodb.panache.common.MongoEntity;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
-import java.util.Optional;
-
 @MongoEntity(collection = "HintGraph")
 public class HintGraph extends PanacheMongoEntity {
 
     public String name;
 
-    HintGraph() {
+    public HintGraph() {
     }
 
     public static HintGraph newGraph(String name) {
