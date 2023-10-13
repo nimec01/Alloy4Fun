@@ -5,7 +5,7 @@ import pt.haslab.specassistant.data.models.HintNode;
 
 import java.util.function.BiFunction;
 
-public enum ProbabilityEvaluation implements BiFunction<HintNode, HintEdge, Double> {
+public enum Probability implements BiFunction<HintNode, HintEdge, Double> {
     NONE,
     EDGE,
     ;

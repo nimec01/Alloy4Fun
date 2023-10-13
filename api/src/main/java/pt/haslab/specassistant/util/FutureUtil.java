@@ -4,6 +4,7 @@ import org.jboss.logging.Logger;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.BiConsumer;
@@ -18,6 +19,14 @@ public interface FutureUtil {
             return future.get();
         } catch (ExecutionException e) {
             throw e.getCause();
+        }
+    }
+
+    static <R> Optional<R> inlineOptional(CompletableFuture<R> future) {
+        try {
+            return Optional.of(inline(future));
+        } catch (Throwable e) {
+            return Optional.empty();
         }
     }
 

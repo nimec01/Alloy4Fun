@@ -23,6 +23,7 @@ import pt.haslab.specassistant.util.Text;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -144,6 +145,13 @@ public class GraphInjestor {
         });
     }
 
+    public void trimDeparturesFromValidNodes(ObjectId graph_id) {
+        List<HintNode> nodes = nodeRepo.streamByGraphIdAndValid(graph_id).filter(x -> x.leaves > 0).peek(x -> x.leaves = 0).toList();
+        edgeRepo.deleteByOriginIn(nodes.stream().map(x -> x.id).toList());
+        nodeRepo.persistOrUpdate(nodes);
+    }
+
+
     public CompletableFuture<Void> parseModelTree(String model_id, Predicate<LocalDateTime> year_tester) {
         Model model = modelRepo.findById(model_id);
 
@@ -157,10 +165,11 @@ public class GraphInjestor {
                 .thenCompose(nil -> FutureUtil.runEachAsync(exerciseRepo.streamByModelId(model.id),
                         ex -> {
                             long st = System.nanoTime();
+                            AtomicLong local_count = new AtomicLong();
                             return classifyAllEdges(base_world, ex.graph_id)
-                                    .thenRun(() -> HintGraph.registerParsing(ex.graph_id, model_id,
-                                            nodeRepo.getTotalVisitsFromGraph(ex.graph_id) - count.getOrDefault(ex.graph_id, 0L),
-                                            parsingTime.get() + System.nanoTime() - st));
+                                    .thenRun(() -> trimDeparturesFromValidNodes(ex.graph_id))
+                                    .thenRun(() -> local_count.set(nodeRepo.getTotalVisitsFromGraph(ex.graph_id)))
+                                    .thenRun(() -> HintGraph.registerParsing(ex.graph_id, model_id, local_count.get() - count.getOrDefault(ex.graph_id, 0L), parsingTime.get() + System.nanoTime() - st));
                         }))
                 .whenComplete(FutureUtil.logTrace(log, "Finished parsing model " + model_id));
     }

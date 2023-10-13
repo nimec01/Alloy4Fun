@@ -84,7 +84,7 @@ public class HintGenerator {
 
         if (node_opt.isPresent()) {
             HintNode origin_node = node_opt.orElseThrow();
-            Optional<HintEdge> edge_opt = edgeRepo.findBestScoredByOriginNode(origin_node.id);
+            Optional<HintEdge> edge_opt = edgeRepo.policyByOriginNode(origin_node.id);
             if (edge_opt.isPresent()) {
                 HintEdge edge = edge_opt.orElseThrow();
                 return nodeRepo.findByIdOptional(edge.destination);

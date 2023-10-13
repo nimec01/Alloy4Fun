@@ -6,7 +6,9 @@ import org.bson.Document;
 import org.bson.types.ObjectId;
 import pt.haslab.specassistant.data.models.HintEdge;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -23,27 +25,52 @@ public class HintEdgeRepository implements PanacheMongoRepository<HintEdge> {
         return edge;
     }
 
-    public Optional<HintEdge> findBestScoredByOriginNode(ObjectId origin_id) {
-        return find(new Document("origin", origin_id).append("score", new Document("$ne", null)), new Document("score", 1)).firstResultOptional();
+    public Optional<HintEdge> policyByOriginNode(ObjectId origin_id) {
+        return find(new Document("origin", origin_id).append("policy", true)).firstResultOptional();
     }
 
-    public Stream<HintEdge> streamByDestinationNodeIdAndAllScoreGT(ObjectId destination, Double score) {
-        return find(new Document("$or", List.of(new Document("score", new Document("$gt", score)), new Document("score", null))).append("destination", destination).append("origin", new Document("$ne", destination))).stream();
+    public Stream<HintEdge> streamByOriginAndPolicy(ObjectId destination) {
+        return find(new Document("origin", destination).append("policy", true)).stream();
+    }
+
+    public Stream<HintEdge> streamGraphPolicy(ObjectId graph_id) {
+        return find(new Document("graph_id", graph_id).append("policy", true)).stream();
+    }
+
+    public Stream<HintEdge> streamByOrigin(ObjectId origin) {
+        return find(new Document("origin", origin)).stream();
     }
 
     public void deleteByGraphId(ObjectId graph_id) {
         delete(new Document("graph_id", graph_id));
     }
 
+    public void deleteByOriginIn(Collection<ObjectId> origin) {
+        delete(new Document("origin", new Document("$in", origin)));
+    }
+
     public Stream<HintEdge> streamByGraphId(ObjectId graphId) {
         return find(new Document("graph_id", graphId)).stream();
     }
 
-    public void deleteByScoreNull(ObjectId graph_id) {
-        delete(new Document("score", null).append("graph_id", graph_id));
+    public void clearPolicyFromGraph(ObjectId graph_id) {
+        update(new Document("$unset", new Document("policy", null))).where("graph_id", graph_id);
     }
 
-    public void unsetAllScoresFrom(ObjectId graph_id) {
-        update(new Document("$unset", new Document("score", ""))).where("graph_id", graph_id);
+    public void setAsPolicy(ObjectId id) {
+        update(new Document("$set", new Document("policy", true))).where("_id", id);
+    }
+
+    public void removeFromPolicy(ObjectId id) {
+        update(new Document("$unset", new Document("policy", true))).where("_id", id);
+    }
+
+    public Stream<HintEdge> streamByDestinationInAndPolicy(List<ObjectId> destinations) {
+        return find(new Document("destination", new Document("$in", destinations)).append("policy", true)).stream();
+    }
+
+
+    public void clearPolicyFromOrigins(List<ObjectId> origins) {
+        update(new Document("$unset", new Document("policy", null))).where(new Document("origin", new Document("$in", origins)));
     }
 }

@@ -12,23 +12,17 @@ import pt.haslab.Repairer;
 import pt.haslab.alloy4fun.data.request.YearRange;
 import pt.haslab.alloyaddons.AlloyUtil;
 import pt.haslab.alloyaddons.ParseUtil;
-import pt.haslab.specassistant.data.models.HintExercise;
-import pt.haslab.specassistant.data.models.HintGraph;
-import pt.haslab.specassistant.data.models.Model;
-import pt.haslab.specassistant.data.models.Test;
+import pt.haslab.specassistant.data.models.*;
 import pt.haslab.specassistant.repositories.HintExerciseRepository;
 import pt.haslab.specassistant.repositories.ModelRepository;
 import pt.haslab.specassistant.repositories.TestRepository;
-import pt.haslab.specassistant.services.policy.ProbabilityEvaluation;
-import pt.haslab.specassistant.services.policy.RewardEvaluation;
+import pt.haslab.specassistant.services.policy.Probability;
+import pt.haslab.specassistant.services.policy.Reward;
 import pt.haslab.specassistant.util.FutureUtil;
 import pt.haslab.specassistant.util.Text;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -115,18 +109,16 @@ public class TestService {
     // SPEC TESTS ******************************************************************************************
     public Test.Data specTestMutation(CompModule world, HintExercise exercise) {
         long time = System.nanoTime();
-        boolean b = hintGenerator.hintWithMutation(exercise, world).isPresent();
+        Optional<HintNode> node = hintGenerator.mutatedNextState(exercise, world);
         time = System.nanoTime() - time;
-        Integer hintDistance = hintGenerator.mutatedNextState(exercise, world).map(x -> x.hopDistance).orElse(null);
-        return new Test.Data(b, time, hintDistance);
+        return new Test.Data(node.isPresent(), time, node.map(x -> x.hopDistance).orElse(null));
     }
 
     public Test.Data specTest(CompModule world, HintExercise exercise) {
         long time = System.nanoTime();
-        boolean b = hintGenerator.hintWithGraph(exercise, world).isPresent();
+        Optional<HintNode> node = hintGenerator.nextState(exercise, world);
         time = System.nanoTime() - time;
-        Integer hintDistance = hintGenerator.nextState(exercise, world).map(x -> x.hopDistance).orElse(null);
-        return new Test.Data(b, time, hintDistance);
+        return new Test.Data(node.isPresent(), time, node.map(x -> x.hopDistance).orElse(null));
     }
 
     public void specTestFull(Model m) {
@@ -178,7 +170,7 @@ public class TestService {
                 .thenRun(() -> log.trace("Scanning models " + model_ids))
                 .thenCompose(nil -> FutureUtil.allFutures(model_ids.stream().map(id -> graphInjestor.parseModelTree(id, range::testDate))))
                 .thenRun(() -> log.trace("Computing policies for " + prefix))
-                .thenRun(() -> graphManager.getModelGraphs(model_ids.get(0)).forEach(id -> policyManager.computePolicyForGraph(id, 0.99, RewardEvaluation.TED, ProbabilityEvaluation.EDGE)))
+                .thenRun(() -> graphManager.getModelGraphs(model_ids.get(0)).forEach(id -> policyManager.computePolicyForGraph(id, 0.99, Reward.COST_TED, Probability.EDGE)))
                 .thenRun(() -> log.debug("Completed setup for " + prefix + " with model ids " + model_ids + " in " + 1e-9 * (System.nanoTime() - start.get()) + " seconds"))
                 .whenComplete(FutureUtil.log(log));
     }
@@ -195,8 +187,8 @@ public class TestService {
         );
     }
 
-    public void computePoliciesForAll(Double discount, RewardEvaluation eval, ProbabilityEvaluation prob) {
-        FutureUtil.forEachAsync(HintGraph.findAll().stream().map(x -> (HintGraph) x), x -> policyManager.computePolicyForGraph(x.id, discount, eval, prob))
-                .whenComplete(FutureUtil.logTrace(log,"Finished computing policies"));
+    public void computePoliciesForAll(Double discount, Reward eval, Probability prob) {
+        HintGraph.findAll().stream().map(x -> (HintGraph) x).forEach(x -> policyManager.computePolicyForGraph(x.id, discount, eval, prob));
+        //FutureUtil.forEachAsync(   .whenComplete(FutureUtil.logTrace(log, "Finished computing policies"));
     }
 }

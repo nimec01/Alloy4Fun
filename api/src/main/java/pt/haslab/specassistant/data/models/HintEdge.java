@@ -13,7 +13,7 @@ public class HintEdge extends PanacheMongoEntity {
 
     public Integer count;
 
-    public Double score;
+    public Boolean policy;
 
 
     public static HintEdge createEmpty(ObjectId graph_id, ObjectId originNodeId, ObjectId destinationNodeId) {
@@ -30,5 +30,9 @@ public class HintEdge extends PanacheMongoEntity {
     public HintEdge visit() {
         count++;
         return this;
+    }
+
+    public Boolean getPolicy() {
+        return policy != null && policy;
     }
 }

@@ -20,8 +20,8 @@ import pt.haslab.specassistant.services.GraphInjestor;
 import pt.haslab.specassistant.services.GraphManager;
 import pt.haslab.specassistant.services.HintGenerator;
 import pt.haslab.specassistant.services.PolicyManager;
-import pt.haslab.specassistant.services.policy.ProbabilityEvaluation;
-import pt.haslab.specassistant.services.policy.RewardEvaluation;
+import pt.haslab.specassistant.services.policy.Probability;
+import pt.haslab.specassistant.services.policy.Reward;
 
 import java.util.HashSet;
 import java.util.List;
@@ -113,7 +113,7 @@ public class AlloyHint {
     @Path("/compute-popular-edge-policy")
     @Produces(MediaType.APPLICATION_JSON)
     public Response computePopularEdgePolicy(@QueryParam("model_id") String modelid) {
-        graphManager.getModelGraphs(modelid).forEach(id -> policyManager.computePolicyForGraph(id, 0.99, RewardEvaluation.NONE, ProbabilityEvaluation.EDGE));
+        graphManager.getModelGraphs(modelid).forEach(id -> policyManager.computePolicyForGraph(id, 0.99, Reward.NONE, Probability.EDGE));
         return Response.ok("Popular policy computed.").build();
     }
 
@@ -121,7 +121,7 @@ public class AlloyHint {
     @Path("/compute-policy-for-model")
     @Produces(MediaType.APPLICATION_JSON)
     public Response computeTedEdge(@QueryParam("model_id") String modelid) {
-        graphManager.getModelGraphs(modelid).forEach(id -> policyManager.computePolicyForGraph(id, 0.99, RewardEvaluation.TED, ProbabilityEvaluation.EDGE));
+        graphManager.getModelGraphs(modelid).forEach(id -> policyManager.computePolicyForGraph(id, 0.99, Reward.COST_TED, Probability.EDGE));
         return Response.ok("Popular policy computed.").build();
     }
 
@@ -130,9 +130,8 @@ public class AlloyHint {
     @Path("/compute-policy-for-all-models")
     @Produces(MediaType.APPLICATION_JSON)
     public Response computeTedEdge(List<String> modelids, @QueryParam("discount") @DefaultValue("0.99") Double discount, @QueryParam("reward") @DefaultValue("TED") String reward, @QueryParam("probability") @DefaultValue("EDGE") String probability) {
-
-        RewardEvaluation eval = RewardEvaluation.valueOf(reward);
-        ProbabilityEvaluation prob = ProbabilityEvaluation.valueOf(probability);
+        Reward eval = Reward.valueOf(reward);
+        Probability prob = Probability.valueOf(probability);
 
         new HashSet<>(modelids).forEach(modelid ->
                 graphManager.getModelGraphs(modelid)
@@ -144,7 +143,7 @@ public class AlloyHint {
     @Path("/compute-popular-ted-policy")
     @Produces(MediaType.APPLICATION_JSON)
     public Response computeTedPolicy(@QueryParam("model_id") String modelid) {
-        graphManager.getModelGraphs(modelid).forEach(id -> policyManager.computePolicyForGraph(id, 0.99, RewardEvaluation.TED, ProbabilityEvaluation.NONE));
+        graphManager.getModelGraphs(modelid).forEach(id -> policyManager.computePolicyForGraph(id, 0.99, Reward.COST_TED, Probability.NONE));
         return Response.ok("Popular policy computed.").build();
     }
 
@@ -152,7 +151,7 @@ public class AlloyHint {
     @Path("/compute-popular-one")
     @Produces(MediaType.APPLICATION_JSON)
     public Response computeOnePolicy(@QueryParam("model_id") String modelid) {
-        graphManager.getModelGraphs(modelid).forEach(id -> policyManager.computePolicyForGraph(id, 0.99, RewardEvaluation.ONE, ProbabilityEvaluation.NONE));
+        graphManager.getModelGraphs(modelid).forEach(id -> policyManager.computePolicyForGraph(id, 0.99, Reward.REWARD_ONE, Probability.NONE));
         return Response.ok("Popular policy computed.").build();
     }
 
