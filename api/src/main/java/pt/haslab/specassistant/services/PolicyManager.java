@@ -129,10 +129,11 @@ public class PolicyManager {
     public void computePolicyHopDistance(ObjectId graph_id) {
         int distance = 0;
         nodeRepo.unsetHopDistanceInGraph(graph_id);
-        List<ObjectId> node_batch = nodeRepo.streamByGraphIdAndInvalidAndHopNull(graph_id).map(x -> x.id).toList();
+        List<ObjectId> node_batch = nodeRepo.streamByGraphIdAndValid(graph_id).map(x -> x.id).toList();
         while (!node_batch.isEmpty()) {
             nodeRepo.setHopDistanceInNodes(node_batch, distance++);
-            node_batch = nodeRepo.streamByIdInAndHopNull(edgeRepo.streamByDestinationInAndPolicy(node_batch).map(x -> x.origin).toList()).map(x -> x.id).toList();
+            List<ObjectId> list = edgeRepo.streamByDestinationInAndPolicy(node_batch).map(x -> x.origin).toList();
+            node_batch = nodeRepo.streamByIdInAndHopNull(list).map(x -> x.id).toList();
         }
     }
 

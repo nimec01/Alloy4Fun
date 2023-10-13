@@ -33,10 +33,6 @@ public class HintNodeRepository implements PanacheMongoRepository<HintNode> {
         return find(new Document("graph_id", graph_id).append("valid", false)).stream();
     }
 
-    public Stream<HintNode> streamByGraphIdAndInvalidAndHopNull(ObjectId graph_id) {
-        return find(new Document("graph_id", graph_id).append("valid", false).append("hopDistance", null)).stream();
-    }
-
 
     public synchronized HintNode incrementOrCreate(Map<String, String> formula, Boolean valid, ObjectId graph_id, String witness) {
         HintNode res = findByGraphIdAndFormula(graph_id, formula).orElseGet(() -> HintNode.create(graph_id, formula, valid, witness)).visit();
@@ -89,7 +85,7 @@ public class HintNodeRepository implements PanacheMongoRepository<HintNode> {
     }
 
     public Stream<HintNode> streamByIdInAndHopNull(Collection<ObjectId> graph_id) {
-        return find(new Document("_id", graph_id).append("hopDistance", null)).stream();
+        return find(new Document("_id", new Document("$in", graph_id)).append("hopDistance", null)).stream();
     }
 
     public void unsetPolicyByGraphIdAndHopNull(ObjectId graph_id) {
