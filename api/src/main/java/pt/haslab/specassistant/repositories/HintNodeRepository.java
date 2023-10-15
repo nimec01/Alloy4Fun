@@ -110,11 +110,11 @@ public class HintNodeRepository implements PanacheMongoRepository<HintNode> {
         return new Document("$function",
                 new Document("lang", "js")
                         .append("args", List.of(action, previous, nextScore))
-                        .append("body", "function(action,previous,nextScore):{return " + p.jsApply("previous", "action") + " * (" + r.jsApply("previous", "action") + " + " + gamma + " * nextScore)}"));
+                        .append("body", "function(action,previous,nextScore){return " + p.jsApply("previous", "action") + " * (" + r.jsApply("previous", "action") + " + " + gamma + " * nextScore)}"));
     }
 
     public void policyImprovemenentInnerLoop(ObjectId graph_id, Double gamma, Reward r, Probability p) {
-        mongoCollection().aggregate(List.of(
+        List<Document> pipeline = List.of(
                 new Document("$match", new Document("graph_id", graph_id)),
                 new Document("$lookup",
                         new Document("from", "HintEdge")
@@ -129,16 +129,20 @@ public class HintNodeRepository implements PanacheMongoRepository<HintNode> {
                                                         .append("localField", "destination")
                                                         .append("foreignField", "_id")
                                                         .append("as", "nextScore")
-                                                        .append("pipeline", List.of(new Document("$replaceRoot", new Document("newRoot", "$score"))))),
-                                        new Document("$replaceRoot",
-                                                new Document(bellmanAsBsonFunction(gamma, r, p, "$previous", "$action", new Document("$first", "$nextScore")
-                                                ))
+                                                        .append("pipeline", List.of(new Document("$replaceRoot", new Document("newRoot", new Document("v", "$score")))))),
+                                        new Document("$group",
+                                                new Document("_id", 0)
+                                                        .append("v",
+                                                                new Document("$sum", new Document(bellmanAsBsonFunction(gamma, r, p, "$$ROOT", "$$previous", new Document("$first", "$nextScore.v")
+                                                                ))))
                                         )
                                 ))
                 ),
-                new Document("$project", new Document("_id", "$_id").append("score", new Document("$sum", "$bellman")).append("delta", new Document("$abs", new Document("$subtract", List.of("$score", new Document("$sum", "$bellman")))))),
+                new Document("$unwind", "$bellman"),
+                new Document("$project", new Document("_id", "$_id").append("score", "$bellman.v").append("delta", new Document("$abs", new Document("$subtract", List.of("$score", "$bellman.v"))))),
                 new Document("$merge", new Document("into", "HintNode").append("on", "_id").append("whenMatched", "merge").append("whenNotMatched", "discard"))
-        )).allowDiskUse(true);
+        );
+        mongoCollection().aggregate(pipeline, HintNode.class).allowDiskUse(true).toCollection();
     }
 
     public void unsetDelta(ObjectId graph_id) {
