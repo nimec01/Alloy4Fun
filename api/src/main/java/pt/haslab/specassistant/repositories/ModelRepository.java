@@ -7,6 +7,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import org.bson.Document;
 import pt.haslab.specassistant.data.models.Model;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -17,6 +18,14 @@ public class ModelRepository implements PanacheMongoRepositoryBase<Model, String
         return find("derivationOf = ?1 and original = ?2", derivationOf, original).stream();
     }
 
+    public Stream<Model> streamByDerivationOfInAndOriginal(Collection<String> derivationOf, String original) {
+        return find(new Document("derivationOf", new Document("$in", derivationOf)).append("original", original)).stream();
+    }
+
+    public Stream<Model> streamByDerivationOf(String derivationOf) {
+        return find(new Document("derivationOf", derivationOf)).stream();
+    }
+
     public Stream<Model> streamByOriginalAndUnSat(String original_id) {
         return ByOriginalAndUnSat(original_id).stream();
     }
@@ -24,12 +33,12 @@ public class ModelRepository implements PanacheMongoRepositoryBase<Model, String
     public List<Model> getPageByOriginalAndUnSat(String original_id, Page page) {
         return ByOriginalAndUnSat(original_id).page(page).list();
     }
-    
+
     public String getOriginalById(String model_id) {
         return findById(model_id).original;
     }
 
-    private PanacheQuery<Model> ByOriginalAndUnSat(String original_id) {
+    public PanacheQuery<Model> ByOriginalAndUnSat(String original_id) {
         return find(new Document("original", original_id).append("sat", 1));
     }
 

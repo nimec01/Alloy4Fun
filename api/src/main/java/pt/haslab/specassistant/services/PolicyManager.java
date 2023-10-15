@@ -58,7 +58,7 @@ public class PolicyManager {
 
     public void policy_evaluation(ObjectId graph_id, Double gamma, Reward r, Probability p) {
         AtomicReference<Double> delta = new AtomicReference<>(Double.POSITIVE_INFINITY);
-        while (delta.get() > r.getRequiredPrecision()) {
+        do {
             delta.set(0.0);
             FutureUtil.inlineRuntime(FutureUtil.forEachAsync(
                     nodeRepo.streamByGraphIdAndInvalid(graph_id), n -> {
@@ -70,15 +70,15 @@ public class PolicyManager {
                         n.persistOrUpdate();
                     }
             ));
-        }
+        } while (delta.get() > r.getRequiredPrecision());
     }
 
     // A LOT FASTER SINCE IT PULLS EVERYTHIONG FROM THE DATABASE AT THE START, 3 queries instead of iter*n^2*e
     public void policy_evaluation_heap_eager(ObjectId graph_id, Double gamma, Reward r, Probability p) {
-        AtomicReference<Double> delta = new AtomicReference<>(Double.POSITIVE_INFINITY);
+        AtomicReference<Double> delta = new AtomicReference<>();
         Map<ObjectId, HintNode> nodes = nodeRepo.mapByGraphId(graph_id);
         Map<ObjectId, HintEdge> policy = edgeRepo.streamGraphPolicy(graph_id).collect(Collectors.toMap(x -> x.origin, x -> x));
-        while (delta.get() > r.getRequiredPrecision()) {
+        do {
             delta.set(0.0);
             FutureUtil.inlineRuntime(FutureUtil.forEachAsync(
                     List.copyOf(nodes.values()).stream(), n -> {
@@ -88,11 +88,19 @@ public class PolicyManager {
                         delta.updateAndGet(x -> Double.max(x, Math.abs(v - n.score)));
                     }
             ));
-        }
+        } while (delta.get() > r.getRequiredPrecision());
         nodeRepo.persistOrUpdate(nodes.values());
     }
 
+    public void policy_evaluation_mongo_pipeline(ObjectId graph_id, Double gamma, Reward r, Probability p) {
+        do {
+            nodeRepo.unsetDelta(graph_id);
+            nodeRepo.policyImprovemenentInnerLoop(graph_id, gamma, r, p);
+        } while (nodeRepo.getHightestDelta(graph_id).map(x -> x.delta > r.getRequiredPrecision()).orElse(false));
+    }
+
     public CompletableFuture<Void> randoomPolicy(ObjectId graph_id) {
+        clearPolicy(graph_id);
         return FutureUtil.forEachAsync(nodeRepo.streamByGraphIdAndInvalid(graph_id), n -> {
             List<HintEdge> list = edgeRepo.streamByOrigin(n.id).toList();
             try {

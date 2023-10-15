@@ -62,7 +62,7 @@ public class HintEdgeRepository implements PanacheMongoRepository<HintEdge> {
     }
 
     public void removeFromPolicy(ObjectId id) {
-        update(new Document("$unset", new Document("policy", true))).where("_id", id);
+        update(new Document("$unset", new Document("policy", null))).where("_id", id);
     }
 
     public Stream<HintEdge> streamByDestinationInAndPolicy(List<ObjectId> destinations) {
@@ -71,6 +71,10 @@ public class HintEdgeRepository implements PanacheMongoRepository<HintEdge> {
 
 
     public void clearPolicyFromOrigins(List<ObjectId> origins) {
+        update(new Document("$unset", new Document("policy", null))).where(new Document("origin", new Document("$in", origins)));
+    }
+
+    public void clearPolicyFromDestinations(List<ObjectId> origins) {
         update(new Document("$unset", new Document("policy", null))).where(new Document("origin", new Document("$in", origins)));
     }
 }

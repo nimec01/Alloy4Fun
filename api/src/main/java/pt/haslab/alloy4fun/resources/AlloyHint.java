@@ -22,6 +22,7 @@ import pt.haslab.specassistant.services.HintGenerator;
 import pt.haslab.specassistant.services.PolicyManager;
 import pt.haslab.specassistant.services.policy.Probability;
 import pt.haslab.specassistant.services.policy.Reward;
+import pt.haslab.specassistant.util.Text;
 
 import java.util.HashSet;
 import java.util.List;
@@ -65,7 +66,7 @@ public class AlloyHint {
     @Path("/scan-model")
     @Produces(MediaType.APPLICATION_JSON)
     public Response scanModel(@QueryParam("model_id") String model_id, @BeanParam YearRange yearRange) {
-        graphInjestor.parseModelTree(model_id, yearRange::testDate);
+        graphInjestor.parseModelTree(model_id, x -> yearRange.testDate(Text.parseDate(x.time)));
         return Response.ok().build();
     }
 
@@ -73,7 +74,7 @@ public class AlloyHint {
     @Path("/scan-models")
     @Produces(MediaType.APPLICATION_JSON)
     public Response scanModels(List<String> model_ids, @BeanParam YearRange yearRange) {
-        model_ids.forEach(id -> graphInjestor.parseModelTree(id, yearRange::testDate));
+        model_ids.forEach(id -> graphInjestor.parseModelTree(id, x -> yearRange.testDate(Text.parseDate(x.time))));
         return Response.ok().build();
     }
 

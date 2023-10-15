@@ -58,6 +58,18 @@ public interface FutureUtil {
         return job;
     }
 
+    static <V, R> CompletableFuture<R> forEachOrderedAsync(Collection<V> elems, Function<V, CompletableFuture<R>> function, Function<Throwable, R> exceptions) {
+        if (elems.isEmpty())
+            return CompletableFuture.completedFuture(null);
+        List<V> targets = List.copyOf(elems);
+        CompletableFuture<R> job = function.apply(targets.get(0));
+        for (int i = 1; i < targets.size(); i++) {
+            int finalI = i;
+            job = job.thenCompose(n -> function.apply(targets.get(finalI))).exceptionally(exceptions);
+        }
+        return job;
+    }
+
     static <V> CompletableFuture<Void> forEachAsync(Stream<V> stream, Consumer<V> consumer) {
         return CompletableFuture.allOf(stream.map(t -> CompletableFuture.runAsync(() -> consumer.accept(t))).toArray(CompletableFuture[]::new));
     }
@@ -66,9 +78,13 @@ public interface FutureUtil {
         return CompletableFuture.allOf(stream.map(function).toArray(CompletableFuture[]::new));
     }
 
+    static <V, R> CompletableFuture<Void> runEachAsync(Stream<V> stream, Function<V, CompletableFuture<R>> function, Function<Throwable, R> exception) {
+        return CompletableFuture.allOf(stream.map(function).map(x -> x.exceptionally(exception)).toArray(CompletableFuture[]::new));
+    }
+
     static <V> Function<Throwable, V> errorLog(Logger logger, String error_msg) {
         return (error) -> {
-            logger.error(error_msg + " " +  error.getMessage());
+            logger.error(error_msg + ": " + error.getClass().getSimpleName() + ":" + error.getMessage());
             return null;
         };
     }

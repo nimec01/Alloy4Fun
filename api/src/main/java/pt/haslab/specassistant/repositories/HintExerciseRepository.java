@@ -51,4 +51,8 @@ public class HintExerciseRepository implements PanacheMongoRepository<HintExerci
     public Set<String> getAllModelIds() {
         return findAll().stream().map(x -> x.model_id).collect(Collectors.toSet());
     }
+
+    public Stream<HintExercise> streamByGraphId(ObjectId graph_id) {
+        return find(new Document("graph_id", graph_id)).stream();
+    }
 }

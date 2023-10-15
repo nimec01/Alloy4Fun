@@ -54,6 +54,12 @@ public interface Text {
         return result.toString();
     }
 
+    static boolean containsSecrets(String code) {
+        Pattern p = Pattern.compile(secret);
+        Matcher m = p.matcher(code);
+        return  m.find();
+    }
+
     static LocalDateTime parseDate(String dateString) {
         dateString = dateString.replaceAll(",", "").replaceAll("/", "-").strip();
         if (dateString.matches(".*?(?i:pm|am)")) {
@@ -65,7 +71,7 @@ public interface Text {
         } else {
             if (dateString.matches("^\\d{4}.*")) { //Start With Year
                 return LocalDateTime.parse(dateString, DateTimeFormatter.ofPattern("yyyy-M-d H:m:s"));
-            } else if (dateString.matches("\\d{1,2}.*")) { //Start With day
+            } else if (dateString.matches("\\d{1,2}.*")) { //Start With Month
                 return LocalDateTime.parse(dateString, DateTimeFormatter.ofPattern("M-d-yyyy H:m:s"));
             }
         }

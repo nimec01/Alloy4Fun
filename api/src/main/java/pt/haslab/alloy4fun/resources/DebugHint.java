@@ -12,8 +12,10 @@ import pt.haslab.specassistant.services.TestService;
 import pt.haslab.specassistant.services.policy.Probability;
 import pt.haslab.specassistant.services.policy.Reward;
 import pt.haslab.specassistant.util.FutureUtil;
+import pt.haslab.specassistant.util.Text;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 @Path("/debug-hint")
 public class DebugHint {
@@ -28,7 +30,7 @@ public class DebugHint {
     @GET
     public Response debug() {
 
-        policyManager.computePolicyForGraph(new ObjectId("6515a63750e414688cb8a1ef"),1.0,Reward.REWARD_ONE,Probability.EDGE);
+        policyManager.computePolicyForGraph(new ObjectId("6515a63750e414688cb8a1ef"), 1.0, Reward.REWARD_ONE, Probability.EDGE);
 
         return Response.ok().build();
     }
@@ -67,7 +69,7 @@ public class DebugHint {
     @Path("/do-tar-for-model")
     @Produces(MediaType.APPLICATION_JSON)
     public Response tarModel(@QueryParam("model_id") String model_id, @BeanParam YearRange yearRange) {
-        testService.testChallengeWithTAR(model_id, yearRange::testDate);
+        testService.testChallengeWithTAR(model_id, x -> yearRange.testDate(Text.parseDate(x.time)));
         return Response.ok("Test Started").build();
     }
 
@@ -79,11 +81,28 @@ public class DebugHint {
         return Response.ok().build();
     }
 
+
+    @GET
+    @Path("/setup-exercises")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response setUpExercises(Map<String, List<String>> model_ids) {
+        model_ids.forEach(testService::makeGraphAndExercisesFromCommands);
+        return Response.ok().build();
+    }
+
     @GET
     @Path("/do-tar-for-all")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response tar(@BeanParam YearRange yearRange) {
-        testService.testAllChallengesWithTAR(yearRange::testDate);
+    public Response tarALL() {
+        testService.testAllChallengesWithTAR(x -> true);
+        return Response.ok("Test Started").build();
+    }
+
+    @GET
+    @Path("/do-tar-for-all-date")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response tarALLDATE(@BeanParam YearRange yearRange) {
+        testService.testAllChallengesWithTAR(x -> yearRange.testDate(Text.parseDate(x.time)));
         return Response.ok("Test Started").build();
     }
 
@@ -91,7 +110,7 @@ public class DebugHint {
     @Path("/test-model")
     @Produces(MediaType.APPLICATION_JSON)
     public Response stressHints(@QueryParam("model_id") String model_id, @BeanParam YearRange yearRange) {
-        testService.specTestChallenge(model_id, yearRange::testDate);
+        testService.specTestChallenge(model_id,x ->  yearRange.testDate(Text.parseDate(x.time)));
         return Response.ok().build();
     }
 
@@ -99,7 +118,7 @@ public class DebugHint {
     @Path("/test-all-models")
     @Produces(MediaType.APPLICATION_JSON)
     public Response stressAll(@BeanParam YearRange yearRange) {
-        testService.testAllChallengesWithSpec(yearRange::testDate);
+        testService.testAllChallengesWithSpec(x -> yearRange.testDate(Text.parseDate(x.time)));
         return Response.ok().build();
     }
 

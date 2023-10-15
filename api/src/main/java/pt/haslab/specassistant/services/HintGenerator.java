@@ -19,6 +19,7 @@ import pt.haslab.specassistant.data.models.HintEdge;
 import pt.haslab.specassistant.data.models.HintExercise;
 import pt.haslab.specassistant.data.models.HintNode;
 import pt.haslab.specassistant.data.transfer.HintMsg;
+import pt.haslab.specassistant.data.transfer.Transition;
 import pt.haslab.specassistant.repositories.HintEdgeRepository;
 import pt.haslab.specassistant.repositories.HintExerciseRepository;
 import pt.haslab.specassistant.repositories.HintNodeRepository;
@@ -79,7 +80,7 @@ public class HintGenerator {
         return null;
     }
 
-    public Optional<HintNode> nextState(ObjectId graph_id, Map<String, String> formula) {
+    public Optional<Transition> formulaTransition(ObjectId graph_id, Map<String, String> formula) {
         Optional<HintNode> node_opt = nodeRepo.findByGraphIdAndFormula(graph_id, formula);
 
         if (node_opt.isPresent()) {
@@ -87,24 +88,25 @@ public class HintGenerator {
             Optional<HintEdge> edge_opt = edgeRepo.policyByOriginNode(origin_node.id);
             if (edge_opt.isPresent()) {
                 HintEdge edge = edge_opt.orElseThrow();
-                return nodeRepo.findByIdOptional(edge.destination);
+                HintNode destination = nodeRepo.findByIdOptional(edge.destination).orElseThrow();
+                return Optional.of(new Transition(edge, origin_node, destination));
             }
         }
         return Optional.empty();
     }
 
-    public Optional<HintNode> nextState(HintExercise exercise, CompModule world) {
+    public Optional<Transition> worldTransition(HintExercise exercise, CompModule world) {
         Map<String, Expr> formulaExpr = HintNode.getNormalizedFormulaExprFrom(world, exercise.targetFunctions);
         Map<String, String> formula = formulaExprToString(formulaExpr);
 
-        return nextState(exercise.graph_id, formula);
+        return formulaTransition(exercise.graph_id, formula);
     }
 
     public Optional<HintMsg> hintWithGraph(HintExercise exercise, CompModule world) {
         Map<String, Expr> formulaExpr = HintNode.getNormalizedFormulaExprFrom(world, exercise.targetFunctions);
         Map<String, String> formula = formulaExprToString(formulaExpr);
 
-        return nextState(exercise.graph_id, formula).map(x -> firstHint(formulaExpr, x.getParsedFormula(world)));
+        return formulaTransition(exercise.graph_id, formula).map(x -> firstHint(formulaExpr, x.to.getParsedFormula(world)));
     }
 
 

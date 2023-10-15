@@ -6,14 +6,21 @@ import pt.haslab.specassistant.data.models.HintNode;
 import java.util.function.BiFunction;
 
 public enum Probability implements BiFunction<HintNode, HintEdge, Double> {
-    NONE,
-    EDGE,
+    NONE, EDGE,
     ;
 
 
     public Double apply(HintNode state, HintEdge action) {
-        if (this == EDGE)
-            return (double) action.count / (double) state.leaves;
-        return 1.0;
+        return switch (this) {
+            case NONE -> 1.0;
+            case EDGE -> (double) action.count / (double) state.leaves;
+        };
+    }
+
+    public String jsApply(String state_field, String action_field) {
+        return switch (this) {
+            case NONE -> "0";
+            case EDGE -> action_field + ".count/" + state_field + ".leaves";
+        };
     }
 }

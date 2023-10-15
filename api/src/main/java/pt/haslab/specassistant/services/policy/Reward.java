@@ -27,6 +27,18 @@ public enum Reward implements BiFunction<HintNode, HintEdge, Double> {
         };
     }
 
+    public String jsApply(String state_field, String action_field) {
+        return switch (this) {
+            case NONE -> "0";
+            case REWARD_ONE -> "1";
+            case COST_ONE -> "-1";
+            case COST_TED -> "-" + action_field + ".editDistance";
+            case REWARD_VISITS -> state_field + ".visits";
+            case REWARD_LEAVES -> state_field + ".leaves";
+            case COST_COMPLEXITY -> "-" + state_field+".complexity";
+        };
+    }
+
     public Double getRequiredPrecision() {
         return switch (this) {
             case NONE, REWARD_ONE, COST_ONE -> 1e-4;

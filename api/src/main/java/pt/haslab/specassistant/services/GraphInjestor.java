@@ -19,9 +19,7 @@ import pt.haslab.specassistant.repositories.HintNodeRepository;
 import pt.haslab.specassistant.repositories.ModelRepository;
 import pt.haslab.specassistant.services.treeedit.ASTEditDiff;
 import pt.haslab.specassistant.util.FutureUtil;
-import pt.haslab.specassistant.util.Text;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,7 +60,7 @@ public class GraphInjestor {
      * @param <C>         Context Class
      * @return CompletableFuture of the traversal job
      */
-    private static <C> CompletableFuture<Void> walkModelTree(BiFunction<Model, C, C> step, Function<Model, Stream<Model>> modelGetter, C ctx, Model current) {
+    public static <C> CompletableFuture<Void> walkModelTree(BiFunction<Model, C, C> step, Function<Model, Stream<Model>> modelGetter, C ctx, Model current) {
         return CompletableFuture.supplyAsync(() -> step.apply(current, ctx)).thenCompose(nextCtx -> FutureUtil.runEachAsync(modelGetter.apply(current), child -> walkModelTree(step, modelGetter, nextCtx, child)));
     }
 
@@ -109,7 +107,7 @@ public class GraphInjestor {
         return context;
     }
 
-    public CompletableFuture<Void> walkModelTree(Model root, Predicate<LocalDateTime> dateFilter) {
+    public CompletableFuture<Void> walkModelTree(Model root, Predicate<Model> model_filter) {
         Map<String, HintExercise> cmdToExercise = exerciseRepo.streamByModelId(root.id).collect(Collectors.toUnmodifiableMap(x -> x.cmd_n, x -> x));
 
         if (cmdToExercise.isEmpty())
@@ -124,7 +122,7 @@ public class GraphInjestor {
             initCtx.put(exercise.id, nodeRepo.incrementOrCreate(formula, false, exercise.graph_id, null).id);
         });
 
-        Function<Model, Stream<Model>> modelGetter = model -> modelRepo.streamByDerivationOfAndOriginal(model.id, model.original).filter(x -> dateFilter.test(Text.parseDate(x.time)));
+        Function<Model, Stream<Model>> modelGetter = model -> modelRepo.streamByDerivationOfAndOriginal(model.id, model.original).filter(model_filter);
 
         return walkModelTree((m, ctx) -> walkModelTreeStep(cmdToExercise, w -> testSpecModifications(world, w), m, ctx), modelGetter, initCtx, root);
     }
@@ -152,7 +150,7 @@ public class GraphInjestor {
     }
 
 
-    public CompletableFuture<Void> parseModelTree(String model_id, Predicate<LocalDateTime> year_tester) {
+    public CompletableFuture<Void> parseModelTree(String model_id, Predicate<Model> model_filter) {
         Model model = modelRepo.findById(model_id);
 
         CompModule base_world = ParseUtil.parseModel(model.code);
@@ -160,7 +158,7 @@ public class GraphInjestor {
         AtomicLong parsingTime = new AtomicLong(System.nanoTime());
         Map<ObjectId, Long> count = exerciseRepo.streamByModelId(model.id).map(x -> x.graph_id).collect(Collectors.toMap(x -> x, x -> nodeRepo.getTotalVisitsFromGraph(x)));
 
-        return walkModelTree(model, year_tester)
+        return walkModelTree(model, model_filter)
                 .thenRun(() -> parsingTime.updateAndGet(l -> System.nanoTime() - l))
                 .thenCompose(nil -> FutureUtil.runEachAsync(exerciseRepo.streamByModelId(model.id),
                         ex -> {
