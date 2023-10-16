@@ -61,7 +61,6 @@ public class Model extends PanacheMongoEntityBase {
      * the timestamp.
      */
     public String time;
-
     public Model() {
     }
 

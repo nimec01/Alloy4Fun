@@ -6,13 +6,13 @@ import pt.haslab.specassistant.data.models.HintNode;
 import java.util.function.BiFunction;
 
 public enum Reward implements BiFunction<HintNode, HintEdge, Double> {
+    COST_TED,
+    COST_COMPLEXITY,
+    COST_ONE,
     NONE,
     REWARD_ONE,
-    COST_TED,
-    REWARD_VISITS,
     REWARD_LEAVES,
-    COST_ONE,
-    COST_COMPLEXITY;
+    REWARD_VISITS;
 
     public Double apply(HintNode state, HintEdge action) {
 
@@ -35,7 +35,7 @@ public enum Reward implements BiFunction<HintNode, HintEdge, Double> {
             case COST_TED -> "-" + action_field + ".editDistance";
             case REWARD_VISITS -> state_field + ".visits";
             case REWARD_LEAVES -> state_field + ".leaves";
-            case COST_COMPLEXITY -> "-" + state_field+".complexity";
+            case COST_COMPLEXITY -> "-" + state_field + ".complexity";
         };
     }
 

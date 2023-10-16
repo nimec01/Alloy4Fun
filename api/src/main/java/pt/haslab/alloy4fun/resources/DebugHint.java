@@ -5,6 +5,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.bson.types.ObjectId;
+import org.jboss.logging.Logger;
 import pt.haslab.alloy4fun.data.request.YearRange;
 import pt.haslab.specassistant.services.GraphManager;
 import pt.haslab.specassistant.services.PolicyManager;
@@ -16,9 +17,13 @@ import pt.haslab.specassistant.util.Text;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @Path("/debug-hint")
 public class DebugHint {
+
+    @Inject
+    Logger log;
     @Inject
     GraphManager graphManager;
     @Inject
@@ -106,30 +111,6 @@ public class DebugHint {
         return Response.ok("Test Started").build();
     }
 
-    @GET
-    @Path("/test-model")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response stressHints(@QueryParam("model_id") String model_id, @BeanParam YearRange yearRange) {
-        testService.specTestChallenge(model_id,x ->  yearRange.testDate(Text.parseDate(x.time)));
-        return Response.ok().build();
-    }
-
-    @GET
-    @Path("/test-all-models")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response stressAll(@BeanParam YearRange yearRange) {
-        testService.testAllChallengesWithSpec(x -> yearRange.testDate(Text.parseDate(x.time)));
-        return Response.ok().build();
-    }
-
-    @GET
-    @Path("/delete-all-spec-test")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response deleteSpec() {
-        testService.deleteAllSpecTests();
-        return Response.ok().build();
-    }
-
     @POST
     @Path("/compute-policy-for-all-models")
     @Produces(MediaType.APPLICATION_JSON)
@@ -142,4 +123,20 @@ public class DebugHint {
         return Response.ok("Policy computation started.").build();
     }
 
+
+    @GET
+    @Path("/spec-test-default")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response specSplitDefault(Map<String, List<String>> model_ids) {
+        CompletableFuture.runAsync(() -> testService.specTestDefaultPolicies(model_ids));
+        return Response.ok("Started.").build();
+    }
+
+    @GET
+    @Path("/spec-test-all")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response specSplitAll(Map<String, List<String>> model_ids) {
+        CompletableFuture.runAsync(() -> testService.specTestAllPolicies(model_ids));
+        return Response.ok("Started.").build();
+    }
 }

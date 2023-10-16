@@ -7,6 +7,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.bson.types.ObjectId;
 import org.jboss.logging.Logger;
+import pt.haslab.alloyaddons.ExprComplexity;
 import pt.haslab.alloyaddons.ParseUtil;
 import pt.haslab.alloyaddons.UncheckedIOException;
 import pt.haslab.specassistant.data.models.HintExercise;
@@ -20,10 +21,7 @@ import pt.haslab.specassistant.repositories.ModelRepository;
 import pt.haslab.specassistant.services.treeedit.ASTEditDiff;
 import pt.haslab.specassistant.util.FutureUtil;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
@@ -31,10 +29,11 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 
 @ApplicationScoped
-public class GraphInjestor {
+public class GraphIngestor {
 
     @Inject
     Logger log;
@@ -136,10 +135,11 @@ public class GraphInjestor {
                 Map<String, Expr> originParsed = originNode.getParsedFormula(world);
 
                 e.editDistance = ASTEditDiff.getFormulaDistanceDiff(originParsed, peerParsed);
-                e.update();
             } catch (IllegalStateException e1) {
-                log.warn(e1.getMessage());
+                log.warn("Error in edge classification, editDistance will be set to infinity: " + e1.getClass().getSimpleName() + ":" + e1.getMessage());
+                e.editDistance = Float.POSITIVE_INFINITY;
             }
+            e.update();
         });
     }
 
@@ -149,6 +149,23 @@ public class GraphInjestor {
         nodeRepo.persistOrUpdate(nodes);
     }
 
+    public void assignComplexityToGraphNodes(ObjectId graph_id, CompModule world) {
+        FutureUtil.forEachAsync(nodeRepo.streamByGraphId(graph_id),
+                n -> {
+                    try {
+                        n.complexity = n.getParsedFormula(world).values().stream().map(f -> {
+                            ExprComplexity c = new ExprComplexity();
+                            c.visitThis(f);
+                            return c.getComplexity();
+                        }).reduce(0.0, Double::sum);
+                    } catch (IllegalStateException e1) {
+                        log.warn("Error in node classification, complexity will be set to infinity: " + e1.getClass().getSimpleName() + ":" + e1.getMessage());
+                        n.complexity = Double.POSITIVE_INFINITY;
+                    }
+                    n.update();
+                }
+        );
+    }
 
     public CompletableFuture<Void> parseModelTree(String model_id, Predicate<Model> model_filter) {
         Model model = modelRepo.findById(model_id);
@@ -165,6 +182,7 @@ public class GraphInjestor {
                             long st = System.nanoTime();
                             AtomicLong local_count = new AtomicLong();
                             return classifyAllEdges(base_world, ex.graph_id)
+                                    .thenRun(() -> assignComplexityToGraphNodes(ex.graph_id, base_world))
                                     .thenRun(() -> trimDeparturesFromValidNodes(ex.graph_id))
                                     .thenRun(() -> local_count.set(nodeRepo.getTotalVisitsFromGraph(ex.graph_id)))
                                     .thenRun(() -> HintGraph.registerParsing(ex.graph_id, model_id, local_count.get() - count.getOrDefault(ex.graph_id, 0L), parsingTime.get() + System.nanoTime() - st));

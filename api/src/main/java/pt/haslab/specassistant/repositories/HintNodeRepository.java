@@ -58,6 +58,10 @@ public class HintNodeRepository implements PanacheMongoRepository<HintNode> {
         return find(new Document("graph_id", graphId).append("valid", true)).stream();
     }
 
+    public Stream<HintNode> streamByGraphId(ObjectId graphId) {
+        return find(new Document("graph_id", graphId)).stream();
+    }
+
     public Long getTotalVisitsFromScoredGraph(ObjectId graph_id) {
         return find(new Document("graph_id", graph_id).append("score", new Document("$ne", null))).stream().map(x -> x.visits).map(Integer::longValue).reduce(0L, Long::sum);
     }
@@ -106,10 +110,10 @@ public class HintNodeRepository implements PanacheMongoRepository<HintNode> {
         return find(new Document("graph_id", graph_id)).stream().collect(Collectors.toMap(x -> x.id, x -> x));
     }
 
-    private Document bellmanAsBsonFunction(Double gamma, Reward r, Probability p, String action, String previous, Document nextScore) {
+    private Document bellmanAsBsonFunction(Double gamma, Reward r, Probability p) {
         return new Document("$function",
                 new Document("lang", "js")
-                        .append("args", List.of(action, previous, nextScore))
+                        .append("args", List.of("$$action", "$$previous", "$score"))
                         .append("body", "function(action,previous,nextScore){return " + p.jsApply("previous", "action") + " * (" + r.jsApply("previous", "action") + " + " + gamma + " * nextScore)}"));
     }
 
@@ -129,15 +133,9 @@ public class HintNodeRepository implements PanacheMongoRepository<HintNode> {
                                                         .append("localField", "destination")
                                                         .append("foreignField", "_id")
                                                         .append("as", "nextScore")
-                                                        .append("pipeline", List.of(new Document("$replaceRoot", new Document("newRoot", new Document("v", "$score")))))),
-                                        new Document("$group",
-                                                new Document("_id", 0)
-                                                        .append("v",
-                                                                new Document("$sum", new Document(bellmanAsBsonFunction(gamma, r, p, "$$ROOT", "$$previous", new Document("$first", "$nextScore.v")
-                                                                ))))
-                                        )
-                                ))
-                ),
+                                                        .append("let", new Document("previous", "$$previous").append("action", "$$ROOT"))
+                                                        .append("pipeline", List.of(new Document("$project", new Document("value", new Document(bellmanAsBsonFunction(gamma, r, p))))))),
+                                        new Document("$group", new Document("_id", 0).append("v", new Document("$sum", "$nextScore.value")))))),
                 new Document("$unwind", "$bellman"),
                 new Document("$project", new Document("_id", "$_id").append("score", "$bellman.v").append("delta", new Document("$abs", new Document("$subtract", List.of("$score", "$bellman.v"))))),
                 new Document("$merge", new Document("into", "HintNode").append("on", "_id").append("whenMatched", "merge").append("whenNotMatched", "discard"))

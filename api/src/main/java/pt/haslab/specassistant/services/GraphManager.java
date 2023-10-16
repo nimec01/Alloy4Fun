@@ -74,6 +74,10 @@ public class GraphManager {
         return exerciseRepo.streamByModelId(modelid).map(x -> x.graph_id).collect(Collectors.toSet());
     }
 
+    public void deleteAllGraphStructures() {
+        nodeRepo.deleteAll();
+        edgeRepo.deleteAll();
+    }
 
     public void deleteExerciseByModelIDs(List<String> ids, boolean cascadeToGraphs) {
         if (!cascadeToGraphs) {

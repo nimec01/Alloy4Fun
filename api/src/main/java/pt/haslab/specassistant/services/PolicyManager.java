@@ -12,10 +12,7 @@ import pt.haslab.specassistant.services.policy.Probability;
 import pt.haslab.specassistant.services.policy.Reward;
 import pt.haslab.specassistant.util.FutureUtil;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -120,6 +117,8 @@ public class PolicyManager {
                 n -> {
                     List<HintEdge> actions = edgeRepo.streamByOrigin(n.id).toList();
                     if (!actions.isEmpty()) {
+                        try {
+
                         HintEdge old_ = actions.stream().filter(HintEdge::getPolicy).findFirst().orElseThrow();
                         HintEdge new_ = actions.stream().max(Comparator.comparingDouble(x -> bellman(gamma, r, p, x, n, nodeRepo.findById(x.destination)))).orElseThrow();
 
@@ -127,6 +126,9 @@ public class PolicyManager {
                             edgeRepo.removeFromPolicy(old_.id);
                             edgeRepo.setAsPolicy(new_.id);
                             improved.set(true);
+                        }
+                        }catch (NoSuchElementException e){
+                            throw e;
                         }
                     }
                 }

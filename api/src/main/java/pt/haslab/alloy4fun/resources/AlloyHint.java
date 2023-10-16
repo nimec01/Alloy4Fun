@@ -16,7 +16,7 @@ import pt.haslab.alloy4fun.repositories.SessionRepository;
 import pt.haslab.alloyaddons.ParseUtil;
 import pt.haslab.specassistant.data.models.HintGraph;
 import pt.haslab.specassistant.data.transfer.HintMsg;
-import pt.haslab.specassistant.services.GraphInjestor;
+import pt.haslab.specassistant.services.GraphIngestor;
 import pt.haslab.specassistant.services.GraphManager;
 import pt.haslab.specassistant.services.HintGenerator;
 import pt.haslab.specassistant.services.PolicyManager;
@@ -41,7 +41,7 @@ public class AlloyHint {
     @Inject
     HintGenerator hintGenerator;
     @Inject
-    GraphInjestor graphInjestor;
+    GraphIngestor graphIngestor;
     @Inject
     PolicyManager policyManager;
 
@@ -66,7 +66,7 @@ public class AlloyHint {
     @Path("/scan-model")
     @Produces(MediaType.APPLICATION_JSON)
     public Response scanModel(@QueryParam("model_id") String model_id, @BeanParam YearRange yearRange) {
-        graphInjestor.parseModelTree(model_id, x -> yearRange.testDate(Text.parseDate(x.time)));
+        graphIngestor.parseModelTree(model_id, x -> yearRange.testDate(Text.parseDate(x.time)));
         return Response.ok().build();
     }
 
@@ -74,7 +74,7 @@ public class AlloyHint {
     @Path("/scan-models")
     @Produces(MediaType.APPLICATION_JSON)
     public Response scanModels(List<String> model_ids, @BeanParam YearRange yearRange) {
-        model_ids.forEach(id -> graphInjestor.parseModelTree(id, x -> yearRange.testDate(Text.parseDate(x.time))));
+        model_ids.forEach(id -> graphIngestor.parseModelTree(id, x -> yearRange.testDate(Text.parseDate(x.time))));
         return Response.ok().build();
     }
 

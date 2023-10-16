@@ -20,4 +20,8 @@ public class TestRepository implements PanacheMongoRepositoryBase<Test, Test.ID>
     public void deleteTestsByType(String type) {
         delete(new Document("_id.type", type));
     }
+
+    public void deleteTestsByNotType(String type) {
+        delete(new Document("_id.type", new Document("$neq", type)));
+    }
 }

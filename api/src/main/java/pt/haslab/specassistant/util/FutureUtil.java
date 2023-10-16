@@ -70,6 +70,10 @@ public interface FutureUtil {
         return job;
     }
 
+    static <V> CompletableFuture<Void> forEachAsync(Collection<V> collection, Consumer<V> consumer) {
+        return forEachAsync(collection.stream(), consumer);
+    }
+
     static <V> CompletableFuture<Void> forEachAsync(Stream<V> stream, Consumer<V> consumer) {
         return CompletableFuture.allOf(stream.map(t -> CompletableFuture.runAsync(() -> consumer.accept(t))).toArray(CompletableFuture[]::new));
     }

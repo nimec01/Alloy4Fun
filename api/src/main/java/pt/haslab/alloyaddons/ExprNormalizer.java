@@ -151,16 +151,25 @@ public class ExprNormalizer {
         }
 
 
+        public int typeFormatInt(Type t) {
+            boolean isFormula = t.is_bool;
+            boolean isInt = t.is_small_int() || t.is_int();
+            boolean isSet = t.is_small_int() || t.is_int() || t.size() > 0;
+
+            return (isFormula ? 1 : 0) | (isInt ? 2 : 0) | (isSet ? 4 : 0);
+        }
+
         @Override
         public Expr visit(ExprQt exprQt) throws Err {
             Expr current = exprQt;
+            int typeAsint = typeFormatInt(exprQt.type());
             List<QuantifierDecl> quantifiers = new ArrayList<>();
             List<Decl> disjunctions = new ArrayList<>();
 
             while (true) {
                 while (current instanceof ExprUnary exprUnary && exprUnary.op == NOOP)
                     current = exprUnary.sub;
-                if (current instanceof ExprQt currentExprQT) {
+                if (current instanceof ExprQt currentExprQT && typeAsint == typeFormatInt(currentExprQT.type())) {
                     for (Decl decl : currentExprQT.decls) {
                         Set<String> dependentFields = new StreamFieldNames().visitThis(decl.expr).collect(Collectors.toSet());
                         if (decl.disjoint != null)
@@ -213,17 +222,24 @@ public class ExprNormalizer {
                         ).sorted(Comparator.comparing(Expr::toString)), Stream.of(result)).toList());
             }
 
-            for (int i = quantifiers.size() - 1; i >= 0; i--) {
-                QuantifierDecl qtfDecl = quantifiers.get(i);
-                Map.Entry<String, Expr> rollback = name_rollbacks.get(i);
-                if (rollback != null) {
-                    var_context.put(rollback.getKey(), rollback.getValue());
-                }
-                Expr normalizedType = visitThis(qtfDecl.type);
+            for (int i = quantifiers.size() - 1; i >= 0; ) {
+                QuantifierDecl qtfDecl;
+                List<Decl> decs = new ArrayList<>();
 
-                Decl d = new Decl(null, null, null, null, List.of(qtfDecl.name), normalizedType);
+                do {
+                    qtfDecl = quantifiers.get(i);
 
-                result = qtfDecl.quantifier.make(null, null, List.of(d), result);
+                    Map.Entry<String, Expr> rollback = name_rollbacks.get(i);
+                    if (rollback != null) {
+                        var_context.put(rollback.getKey(), rollback.getValue());
+                    }
+                    Expr normalizedType = visitThis(qtfDecl.type);
+
+                    decs.add(0, new Decl(null, null, null, null, List.of(qtfDecl.name), normalizedType));
+                    i--;
+                } while (qtfDecl.quantifier == ExprQt.Op.COMPREHENSION && i >= 0);
+
+                result = qtfDecl.quantifier.make(null, null, decs, result);
             }
 
             return result;
