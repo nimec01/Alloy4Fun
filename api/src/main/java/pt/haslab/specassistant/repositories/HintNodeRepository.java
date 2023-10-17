@@ -4,6 +4,7 @@ import io.quarkus.mongodb.panache.PanacheMongoRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.bson.Document;
 import org.bson.types.ObjectId;
+import pt.haslab.specassistant.data.aggregation.EntityDouble;
 import pt.haslab.specassistant.data.models.HintNode;
 import pt.haslab.specassistant.services.policy.Probability;
 import pt.haslab.specassistant.services.policy.Reward;
@@ -147,7 +148,7 @@ public class HintNodeRepository implements PanacheMongoRepository<HintNode> {
         update(new Document("$unset", new Document("delta", null))).where("graph_id", graph_id);
     }
 
-    public Optional<HintNode> getHightestDelta(ObjectId graph_id) {
-        return find(new Document("graph_id", graph_id), new Document("delta", -1)).firstResultOptional();
+    public Optional<Double> getHightestDelta(ObjectId graph_id) {
+        return Optional.of(mongoCollection().aggregate(List.of(new Document("$match", new Document("graph_id", graph_id)), new Document("$project", new Document("d", "$delta")), new Document("$sort", new Document("delta", -1))), EntityDouble.class).iterator().next()).map(d -> d.d);
     }
 }

@@ -42,6 +42,31 @@ public class PolicyManager {
         edgeRepo.clearPolicyFromGraph(graph_id);
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
     public void policy_iteration(ObjectId graph_id, Double gamma, Reward r, Probability p) {
         boolean unstable = true;
         FutureUtil.inlineRuntime(randoomPolicy(graph_id));
@@ -93,7 +118,7 @@ public class PolicyManager {
         do {
             nodeRepo.unsetDelta(graph_id);
             nodeRepo.policyImprovemenentInnerLoop(graph_id, gamma, r, p);
-        } while (nodeRepo.getHightestDelta(graph_id).map(x -> x.delta > r.getRequiredPrecision()).orElse(false));
+        } while (nodeRepo.getHightestDelta(graph_id).map(delta -> delta > r.getRequiredPrecision()).orElse(false));
     }
 
     public CompletableFuture<Void> randoomPolicy(ObjectId graph_id) {
@@ -119,15 +144,15 @@ public class PolicyManager {
                     if (!actions.isEmpty()) {
                         try {
 
-                        HintEdge old_ = actions.stream().filter(HintEdge::getPolicy).findFirst().orElseThrow();
-                        HintEdge new_ = actions.stream().max(Comparator.comparingDouble(x -> bellman(gamma, r, p, x, n, nodeRepo.findById(x.destination)))).orElseThrow();
+                            HintEdge old_ = actions.stream().filter(HintEdge::getPolicy).findFirst().orElseThrow();
+                            HintEdge new_ = actions.stream().max(Comparator.comparingDouble(x -> bellman(gamma, r, p, x, n, nodeRepo.findById(x.destination)))).orElseThrow();
 
-                        if (!Objects.equals(old_.id, new_.id)) {
-                            edgeRepo.removeFromPolicy(old_.id);
-                            edgeRepo.setAsPolicy(new_.id);
-                            improved.set(true);
-                        }
-                        }catch (NoSuchElementException e){
+                            if (!Objects.equals(old_.id, new_.id)) {
+                                edgeRepo.removeFromPolicy(old_.id);
+                                edgeRepo.setAsPolicy(new_.id);
+                                improved.set(true);
+                            }
+                        } catch (NoSuchElementException e) {
                             throw e;
                         }
                     }

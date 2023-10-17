@@ -1,4 +1,4 @@
-package pt.haslab.specassistant.data.transfer;
+package pt.haslab.specassistant.data.aggregation;
 
 public class EntityStringLong {
     public String s;

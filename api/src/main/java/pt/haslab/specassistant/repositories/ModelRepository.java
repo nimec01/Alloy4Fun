@@ -7,7 +7,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import pt.haslab.specassistant.data.models.Model;
-import pt.haslab.specassistant.data.transfer.EntityStringLong;
+import pt.haslab.specassistant.data.aggregation.EntityStringLong;
 
 import java.util.Collection;
 import java.util.Collections;
