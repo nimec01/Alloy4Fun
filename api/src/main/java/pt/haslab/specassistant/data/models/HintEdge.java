@@ -3,6 +3,7 @@ package pt.haslab.specassistant.data.models;
 
 import io.quarkus.mongodb.panache.PanacheMongoEntity;
 import io.quarkus.mongodb.panache.common.MongoEntity;
+import org.bson.codecs.pojo.annotations.BsonIgnore;
 import org.bson.types.ObjectId;
 
 @MongoEntity(collection = "HintEdge")
@@ -30,6 +31,13 @@ public class HintEdge extends PanacheMongoEntity {
     public HintEdge visit() {
         count++;
         return this;
+    }
+
+    @BsonIgnore
+    public Float getEditDistance() {
+        if (editDistance == null)
+            return Float.POSITIVE_INFINITY;
+        return editDistance;
     }
 
     public Boolean getPolicy() {

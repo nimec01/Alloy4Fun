@@ -135,11 +135,10 @@ public class GraphIngestor {
                 Map<String, Expr> originParsed = originNode.getParsedFormula(world);
 
                 e.editDistance = ASTEditDiff.getFormulaDistanceDiff(originParsed, peerParsed);
+                e.update();
             } catch (IllegalStateException e1) {
                 log.warn("Error in edge classification, editDistance will be set to infinity: " + e1.getClass().getSimpleName() + ":" + e1.getMessage());
-                e.editDistance = Float.POSITIVE_INFINITY;
             }
-            e.update();
         });
     }
 
@@ -158,11 +157,10 @@ public class GraphIngestor {
                             c.visitThis(f);
                             return c.getComplexity();
                         }).reduce(0.0, Double::sum);
+                        n.update();
                     } catch (IllegalStateException e1) {
                         log.warn("Error in node classification, complexity will be set to infinity: " + e1.getClass().getSimpleName() + ":" + e1.getMessage());
-                        n.complexity = Double.POSITIVE_INFINITY;
                     }
-                    n.update();
                 }
         );
     }

@@ -124,7 +124,7 @@ public class TestService {
         long time = System.nanoTime();
         Optional<Transition> t = hintGenerator.worldTransition(exercise, world);
         time = System.nanoTime() - time;
-        return new Test.Data(t.isPresent(), time, t.map(x -> x.to.hopDistance).orElse(null), t.map(x -> x.action.editDistance).orElse(null));
+        return new Test.Data(t.isPresent(), time, t.map(x -> x.to.hopDistance).orElse(null), t.map(x -> x.action.getEditDistance()).filter(x -> !x.isInfinite()).orElse(null), t.map(x -> x.to.getComplexity() - x.from.getComplexity()).filter(x -> !x.isInfinite()).orElse(null));
     }
 
 
@@ -159,13 +159,14 @@ public class TestService {
             Set<String> test_roots = challenges.stream().map(x -> modelRepo.sampleSubTreeRootsBySize(0.3, x).map(y -> y.id).toList()).flatMap(Collection::stream).collect(Collectors.toSet());
             log.trace("Parsing models for " + name);
             FutureUtil.inlineRuntime(FutureUtil.forEachOrderedAsync(challenges, e -> graphIngestor.parseModelTree(e, m1 -> !test_roots.contains(m1.id)).exceptionally(FutureUtil.errorLog(log, "Failed at ingesting a challenge " + e))));
-            log.trace("Computing policy for " + name);
-            FutureUtil.inlineRuntime(FutureUtil.forEachAsync(exerciseRepo.streamByModelIdIn(challenges).map(x -> x.graph_id).collect(Collectors.toSet()), x -> policyManager.computePolicyForGraph(x, 0.99, Reward.COST_TED, Probability.EDGE)));
 
-            log.trace("Starting tests for " + name);
-            FutureUtil.inlineRuntime(FutureUtil.forEachAsync(modelRepo.streamSubTreesByIdInAndChallengeIn(test_roots, challenges), m -> {
-                specTest(m, Reward.COST_TED + "-" + Probability.EDGE);
-                specTestMutation(m);
+            List<Model> test_data = modelRepo.streamSubTreesByIdInAndChallengeIn(test_roots, challenges).toList();
+            Map.of(Reward.COST_TED, List.of(Probability.EDGE)).forEach((r, ps) -> ps.forEach(p -> {
+                log.trace("Computing policy for " + name + " with " + r + " and " + p);
+                FutureUtil.inlineRuntime(FutureUtil.forEachAsync(exerciseRepo.streamByModelIdIn(challenges).map(x -> x.graph_id).collect(Collectors.toSet()), x -> policyManager.computePolicyForGraph(x, 1.0, r, p)));
+
+                log.trace("Starting tests for " + name + " with " + r + " and " + p);
+                FutureUtil.inlineRuntime(FutureUtil.forEachAsync(test_data, m -> specTest(m, r + "-" + p)));
             }));
         });
     }
@@ -177,15 +178,19 @@ public class TestService {
             Set<String> test_roots = challenges.stream().map(x -> modelRepo.sampleSubTreeRootsBySize(0.3, x).map(y -> y.id).toList()).flatMap(Collection::stream).collect(Collectors.toSet());
             log.trace("Parsing models for " + name);
             FutureUtil.inlineRuntime(FutureUtil.forEachOrderedAsync(challenges, e -> graphIngestor.parseModelTree(e, m1 -> !test_roots.contains(m1.id)).exceptionally(FutureUtil.errorLog(log, "Failed at ingesting a challenge " + e))));
-            for (Reward r : Reward.values()) {
-                for (Probability p : Probability.values()) {
-                    log.trace("Computing policy for " + name + " with " + r + " and " + p);
-                    FutureUtil.inlineRuntime(FutureUtil.forEachAsync(exerciseRepo.streamByModelIdIn(challenges).map(x -> x.graph_id).collect(Collectors.toSet()), x -> policyManager.computePolicyForGraph(x, 1.0, r, p)));
 
-                    log.trace("Starting tests for " + name + " with " + r + " and " + p);
-                    FutureUtil.inlineRuntime(FutureUtil.forEachAsync(modelRepo.streamSubTreesByIdInAndChallengeIn(test_roots, challenges), m -> specTest(m, r + "-" + p)));
-                }
-            }
+            Map.of(
+                    Reward.COST_COMPLEXITY, List.of(Probability.NONE, Probability.EDGE),
+                    Reward.COST_TED, List.of(Probability.NONE, Probability.EDGE),
+                    Reward.COST_ONE, List.of(Probability.NONE),
+                    Reward.NONE, List.of(Probability.EDGE)
+            ).forEach((r, ps) -> ps.forEach(p -> {
+                log.trace("Computing policy for " + name + " with " + r + " and " + p);
+                FutureUtil.inlineRuntime(FutureUtil.forEachAsync(exerciseRepo.streamByModelIdIn(challenges).map(x -> x.graph_id).collect(Collectors.toSet()), x -> policyManager.computePolicyForGraph(x, 0.8, r, p)));
+
+                log.trace("Starting tests for " + name + " with " + r + " and " + p);
+                FutureUtil.inlineRuntime(FutureUtil.forEachAsync(modelRepo.streamSubTreesByIdInAndChallengeIn(test_roots, challenges), m -> specTest(m, r + "-" + p), e -> log.error(e)));
+            }));
         });
     }
 

@@ -3,9 +3,11 @@ package pt.haslab.alloyaddons;
 import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.Pos;
 import edu.mit.csail.sdg.ast.*;
+import io.quarkus.logging.Log;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static edu.mit.csail.sdg.ast.ExprBinary.Op.*;
@@ -20,49 +22,6 @@ public class ExprNormalizer {
         return new ExprVisitReturn().visitThis(func.getBody());
     }
 
-    private static class QuantifierDecl implements Comparable<QuantifierDecl> {
-        public int depth;
-        public ExprHasName name;
-
-        public Expr type;
-        public ExprQt.Op quantifier;
-
-        public QuantifierDecl(int depth, ExprHasName name, Expr type, ExprQt.Op quantifier) {
-            this.depth = depth;
-            this.name = name;
-            this.type = type;
-            this.quantifier = quantifier;
-        }
-
-        public String fieldName() {
-            return name.label;
-        }
-
-        public String migrateName(String new_label) {
-            if (name instanceof ExprVar) {
-                String result = name.label;
-                name = ExprVar.make(name.pos, new_label);
-                return result;
-            }
-            return null;
-        }
-
-        public int compareTo(QuantifierDecl o) {
-            int t0 = Integer.compare(depth, o.depth);
-            if (t0 != 0)
-                return t0;
-            return quantifier.compareTo(o.quantifier);
-        }
-
-        public boolean canMigrateName() {
-            return name instanceof ExprVar;
-        }
-
-        @Override
-        public String toString() {
-            return "#" + depth + " " + quantifier.toString() + " " + name + ":" + type;
-        }
-    }
 
     private static class ExprVisitReturn extends VisitReturn<Expr> {
 
@@ -110,7 +69,12 @@ public class ExprNormalizer {
             List<Expr> args = exprCall.args.stream().map(this::visitThis).toList();
 
             if (!exprCall.fun.pos.sameFile(exprCall.pos)) {
-                return ExprCall.make(exprCall.pos(), exprCall.closingBracket, exprCall.fun, args, exprCall.extraWeight);
+
+                Expr make = ExprCall.make(exprCall.pos(), exprCall.closingBracket, exprCall.fun, args, exprCall.extraWeight);
+
+                if (ExprStringify.stringify(make).equals("(ordering/max[(Person . (c . (Course <: grades)))])"))
+                    Log.info("dfs");
+                return make;
             }
 
             Map<String, Expr> backup = new HashMap<>(var_context);
@@ -162,86 +126,68 @@ public class ExprNormalizer {
         @Override
         public Expr visit(ExprQt exprQt) throws Err {
             Expr current = exprQt;
-            int typeAsint = typeFormatInt(exprQt.type());
-            List<QuantifierDecl> quantifiers = new ArrayList<>();
-            List<Decl> disjunctions = new ArrayList<>();
+            ExprQt.Op op = exprQt.op;
 
-            while (true) {
-                while (current instanceof ExprUnary exprUnary && exprUnary.op == NOOP)
-                    current = exprUnary.sub;
-                if (current instanceof ExprQt currentExprQT && typeAsint == typeFormatInt(currentExprQT.type())) {
+            Map<Integer, List<Decl>> identifiers = new HashMap<>();
+            Map<String, Integer> namedeps = new HashMap<>();
+
+            if (op == ExprQt.Op.SUM)
+                IntStream.range(0, exprQt.decls.size()).forEach(i -> identifiers.put(i, List.of(exprQt.decls.get(i))));
+            else
+                while (current instanceof ExprQt currentExprQT && currentExprQT.op.equals(op)) {
                     for (Decl decl : currentExprQT.decls) {
-                        Set<String> dependentFields = new StreamFieldNames().visitThis(decl.expr).collect(Collectors.toSet());
-                        if (decl.disjoint != null)
-                            disjunctions.add(decl);
-
-                        decl.names.forEach(name -> {
-                            int depth = 0;
-
-                            for (QuantifierDecl q : quantifiers) {
-                                if (dependentFields.contains(q.fieldName())) {
-                                    depth = Integer.max(depth, q.depth + 1);
-                                }
-                            }
-                            quantifiers.add(new QuantifierDecl(depth, name, decl.expr, currentExprQT.op));
-                        });
+                        int depth = new StreamFieldNames().visitThis(decl.expr).collect(Collectors.toSet()).stream().map(namedeps::get).filter(Objects::nonNull).map(i -> i + 1).reduce(0, Integer::max);
+                        decl.names.stream().map(x -> x.label).forEach(name -> namedeps.put(name, depth));
+                        List<Decl> t = identifiers.getOrDefault(depth, new ArrayList<>());
+                        t.add(decl);
+                        identifiers.put(depth, t);
                     }
                     current = currentExprQT.sub;
-                } else
-                    break;
-            }
-
-            Collections.sort(quantifiers);
-
-            List<Map.Entry<String, Expr>> name_rollbacks = new ArrayList<>();
-
-            quantifiers.forEach(x -> {
-                if (x.canMigrateName()) {
-                    String new_label = "ref" + var_counter++;
-                    String old_label = x.migrateName(new_label);
-                    if (old_label != null) {
-                        Expr old = var_context.put(old_label, x.name);
-                        if (old == null)
-                            name_rollbacks.add(null);
-                        else name_rollbacks.add(Map.entry(old_label, old));
-                    }
+                    while (current instanceof ExprUnary exprUnary && exprUnary.op == NOOP)
+                        current = exprUnary.sub;
                 }
+
+
+            Map<String, Expr> rollbacks = new HashMap<>();
+            List<Decl> sortedDecls = new ArrayList<>();
+            List<Expr> disjoints = new ArrayList<>();
+
+            identifiers.entrySet()
+                    .stream()
+                    .sorted(Comparator.comparingInt(Map.Entry::getKey))
+                    .map(Map.Entry::getValue).forEach(ds -> ds.stream()
+                            .map(d -> Map.entry(this.visitThis(d.expr), d))
+                            .sorted(Comparator.comparing(x -> x.getKey().toString()))
+                            .forEach(e -> {
+                                List<ExprVar> replacements = e.getValue().names.stream().filter(x -> x instanceof ExprVar).map(x -> {
+                                    ExprVar replacement = ExprVar.make(x.pos(), "ref" + var_counter++);
+                                    rollbacks.putIfAbsent(x.label, var_context.put(x.label, replacement));
+                                    return replacement;
+                                }).toList();
+
+                                if (e.getValue().disjoint != null)
+                                    disjoints.add(ExprList.make(e.getValue().disjoint, e.getValue().disjoint2, ExprList.Op.DISJOINT, replacements));
+
+                                sortedDecls.addAll(replacements.stream().map(x -> new Decl(e.getValue().isPrivate, null, null, e.getValue().isVar, List.of(x), e.getKey())).toList());
+                            }));
+
+
+            Expr result = visitThis(current);
+
+            if (!disjoints.isEmpty())
+                result = switch (op) {
+                    case COMPREHENSION, ALL, NO ->
+                            ExprList.make(Pos.UNKNOWN, Pos.UNKNOWN, ExprList.Op.OR, Stream.concat(disjoints.stream().map(x -> ExprUnary.Op.NOT.make(x.pos(), x)), Stream.of(result)).sorted(Comparator.comparing(Expr::toString)).toList());
+                    case LONE, ONE, SOME, SUM ->
+                            ExprList.make(Pos.UNKNOWN, Pos.UNKNOWN, ExprList.Op.AND, Stream.concat(disjoints.stream(), Stream.of(result)).sorted(Comparator.comparing(Expr::toString)).toList());
+                };
+
+            result = op.make(exprQt.pos, exprQt.closingBracket, sortedDecls, result);
+
+            rollbacks.forEach((key, value) -> {
+                if (value == null) var_context.remove(key);
+                else var_context.put(key, value);
             });
-
-            Expr result = this.visitThis(current);
-            if (!disjunctions.isEmpty()) {
-                result = ExprList.make(Pos.UNKNOWN, Pos.UNKNOWN, ExprList.Op.AND, Stream.concat(
-                        disjunctions.stream().map(
-                                dec -> ExprList.make(
-                                        dec.disjoint, dec.disjoint2,
-                                        ExprList.Op.DISJOINT,
-                                        dec.names.stream()
-                                                .map(this::visitThis)
-                                                .sorted(Comparator.comparing(Expr::toString))
-                                                .toList())
-                        ).sorted(Comparator.comparing(Expr::toString)), Stream.of(result)).toList());
-            }
-
-            for (int i = quantifiers.size() - 1; i >= 0; ) {
-                QuantifierDecl qtfDecl;
-                List<Decl> decs = new ArrayList<>();
-
-                do {
-                    qtfDecl = quantifiers.get(i);
-
-                    Map.Entry<String, Expr> rollback = name_rollbacks.get(i);
-                    if (rollback != null) {
-                        var_context.put(rollback.getKey(), rollback.getValue());
-                    }
-                    Expr normalizedType = visitThis(qtfDecl.type);
-
-                    decs.add(0, new Decl(null, null, null, null, List.of(qtfDecl.name), normalizedType));
-                    i--;
-                } while (qtfDecl.quantifier == ExprQt.Op.COMPREHENSION && i >= 0);
-
-                result = qtfDecl.quantifier.make(null, null, decs, result);
-            }
-
             return result;
         }
 
@@ -281,9 +227,7 @@ public class ExprNormalizer {
 
         @Override
         public Stream<String> visit(ExprCall exprCall) throws Err {
-            if (exprCall.fun.pos.sameFile(exprCall.pos))
-                return visitThis(exprCall.fun.getBody());
-            return Stream.of();
+            return exprCall.args.stream().flatMap(this::visitThis);
         }
 
         @Override

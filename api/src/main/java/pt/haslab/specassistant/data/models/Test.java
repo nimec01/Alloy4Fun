@@ -36,22 +36,27 @@ public class Test extends PanacheMongoEntityBase {
     public record ID(String model_id, String type) {
     }
 
-    public record Data(Boolean success, Double time, Integer hintDistance, Float editDistance) {
+    public record Data(Boolean success, Double time, Integer hintDistance, Float editDistance, Double complexDiff) {
         public Data(Boolean success, Double time) {
-            this(success, time, null, null);
+            this(success, time, null, null, null);
         }
 
         public Data(Boolean success, Long nano_time) {
-            this(success, nano_time * 1e-9, null, null);
+            this(success, nano_time * 1e-9, null, null, null);
         }
 
         public Data(Boolean success, Long nano_time, Integer hintDistance) {
-            this(success, nano_time * 1e-9, hintDistance, null);
+            this(success, nano_time * 1e-9, hintDistance, null, null);
         }
 
         public Data(Boolean success, Long nano_time, Integer hintDistance, Float editDistance) {
-            this(success, nano_time * 1e-9, hintDistance, editDistance);
+            this(success, nano_time * 1e-9, hintDistance, editDistance, null);
         }
+
+        public Data(Boolean success, Long nano_time, Integer hintDistance, Float editDistance, Double complexDiff) {
+            this(success, nano_time * 1e-9, hintDistance, editDistance, complexDiff);
+        }
+
     }
 
 }

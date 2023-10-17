@@ -76,28 +76,29 @@ public class ModelRepository implements PanacheMongoRepositoryBase<Model, String
 
     public Stream<EntityStringLong> countSubTreeSizesByValidDerivationOfChallenge(String challengeId) {
         return StreamSupport.stream(mongoCollection().aggregate(List.of(
-                new Document("$match", new Document("derivationOf", challengeId).append("_id", new Document("$new", challengeId))),
+                new Document("$match", new Document("derivationOf", challengeId).append("_id", new Document("$ne", challengeId))),
                 new Document("$graphLookup",
-                        new Document("from", "Model").append("startWith", "$_id").append("connectFromField", "derivationOf").append("connectToField", "_id").append("as", "subnodes").append("restrictSearchWithMatch", new Document("original", challengeId).append("sat", new Document("gte", 0)))
+                        new Document("from", "Model").append("startWith", "$_id").append("connectFromField", "_id").append("connectToField", "derivationOf").append("as", "subnodes").append("restrictSearchWithMatch", new Document("original", challengeId).append("sat", new Document("$gte", 0)))
                 ),
-                new Document("$project", new Document("s", "$_id").append("l", new Document("$count", "$subnodes")))
+                new Document("$project", new Document("s", "$_id").append("l", new Document("$size", "$subnodes")))
         ), EntityStringLong.class).allowDiskUse(true).spliterator(), false);
     }
 
     public Stream<Model> streamSubTreesByIdInAndChallengeIn(Collection<String> roots, Collection<String> challengeId) {
         return StreamSupport.stream(mongoCollection().aggregate(List.of(
                 new Document("$match", new Document("original", new Document("$in", challengeId)).append("_id", new Document("$in", roots))),
-                new Document("$addFields", new Document("root", "[$$ROOT]")),
+                new Document("$addFields", new Document("root", List.of("$$ROOT"))),
                 new Document("$graphLookup",
                         new Document("from", "Model")
                                 .append("startWith", "$_id")
-                                .append("connectFromField", "derivationOf")
-                                .append("connectToField", "_id")
+                                .append("connectFromField", "_id")
+                                .append("connectToField", "derivationOf")
                                 .append("as", "subnodes")
-                                .append("restrictSearchWithMatch", new Document("original", new Document("$in", challengeId)).append("sat", new Document("gte", 0)))
+                                .append("restrictSearchWithMatch", new Document("original", new Document("$in", challengeId)).append("sat", 1))
                 ),
                 new Document("$project", new Document("result", new Document("$concatArrays", List.of("$root", "$subnodes")))),
-                new Document("$unwind", "$result")
+                new Document("$unwind", "$result"),
+                new Document("$replaceRoot", new Document("newRoot", "$result"))
         ), Model.class).allowDiskUse(true).spliterator(), false);
     }
 

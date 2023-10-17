@@ -20,10 +20,10 @@ public enum Reward implements BiFunction<HintNode, HintEdge, Double> {
             case NONE -> 0.0;
             case REWARD_ONE -> 1.0;
             case COST_ONE -> -1;
-            case COST_TED -> -action.editDistance;
+            case COST_TED -> -action.getEditDistance();
             case REWARD_VISITS -> state.visits;
             case REWARD_LEAVES -> state.leaves;
-            case COST_COMPLEXITY -> -state.complexity;
+            case COST_COMPLEXITY -> -state.getComplexity();
         };
     }
 

@@ -74,8 +74,20 @@ public interface FutureUtil {
         return forEachAsync(collection.stream(), consumer);
     }
 
+
     static <V> CompletableFuture<Void> forEachAsync(Stream<V> stream, Consumer<V> consumer) {
         return CompletableFuture.allOf(stream.map(t -> CompletableFuture.runAsync(() -> consumer.accept(t))).toArray(CompletableFuture[]::new));
+    }
+
+    static <V> CompletableFuture<Void> forEachAsync(Collection<V> collection, Consumer<V> consumer, Consumer<Throwable> exception) {
+        return forEachAsync(collection.stream(), consumer, exception);
+    }
+
+    static <V> CompletableFuture<Void> forEachAsync(Stream<V> stream, Consumer<V> consumer, Consumer<Throwable> exception) {
+        return CompletableFuture.allOf(stream.map(t -> CompletableFuture.runAsync(() -> consumer.accept(t)).exceptionally((error) -> {
+            exception.accept(error);
+            return null;
+        })).toArray(CompletableFuture[]::new));
     }
 
     static <V, R> CompletableFuture<Void> runEachAsync(Stream<V> stream, Function<V, CompletableFuture<R>> function) {

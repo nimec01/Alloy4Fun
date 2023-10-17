@@ -8,6 +8,7 @@ import edu.mit.csail.sdg.ast.Func;
 import edu.mit.csail.sdg.parser.CompModule;
 import io.quarkus.mongodb.panache.PanacheMongoEntity;
 import io.quarkus.mongodb.panache.common.MongoEntity;
+import org.bson.codecs.pojo.annotations.BsonIgnore;
 import org.bson.types.ObjectId;
 import pt.haslab.alloyaddons.*;
 
@@ -43,6 +44,13 @@ public class HintNode extends PanacheMongoEntity {
     public Double delta;
 
     public HintNode() {
+    }
+
+    @BsonIgnore
+    public Double getComplexity() {
+        if (complexity == null)
+            return Double.POSITIVE_INFINITY;
+        return complexity;
     }
 
     public static HintNode create(ObjectId graph_id, Map<String, String> formula, Boolean sat, String witness) {

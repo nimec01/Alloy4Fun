@@ -136,7 +136,7 @@ public class DebugHint {
     @Path("/spec-test-all")
     @Produces({MediaType.APPLICATION_JSON})
     public Response specSplitAll(Map<String, List<String>> model_ids) {
-        CompletableFuture.runAsync(() -> testService.specTestAllPolicies(model_ids));
+        testService.specTestAllPolicies(model_ids);
         return Response.ok("Started.").build();
     }
 }
