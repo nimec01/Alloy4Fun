@@ -4,7 +4,7 @@ import io.quarkus.mongodb.panache.PanacheMongoRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.bson.Document;
 import org.bson.types.ObjectId;
-import pt.haslab.specassistant.data.models.HintExercise;
+import pt.haslab.specassistant.data.models.Challenge;
 
 import java.util.Collection;
 import java.util.Map;
@@ -14,17 +14,17 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @ApplicationScoped
-public class HintExerciseRepository implements PanacheMongoRepository<HintExercise> {
+public class ChallengeRepository implements PanacheMongoRepository<Challenge> {
 
-    public Stream<HintExercise> streamByModelId(String model_id) {
+    public Stream<Challenge> streamByModelId(String model_id) {
         return find("model_id = ?1", model_id).stream();
     }
 
-    public Stream<HintExercise> streamByModelIdIn(Collection<String> model_id) {
+    public Stream<Challenge> streamByModelIdIn(Collection<String> model_id) {
         return find(new Document("model_id", new Document("$in", model_id))).stream();
     }
 
-    public Optional<HintExercise> findByModelIdAndCmdN(String model_id, String cmd_n) {
+    public Optional<Challenge> findByModelIdAndCmdN(String model_id, String cmd_n) {
         return find("model_id = ?1 and cmd_n = ?2", model_id, cmd_n).firstResultOptional();
     }
 
@@ -44,15 +44,15 @@ public class HintExerciseRepository implements PanacheMongoRepository<HintExerci
         return find(new Document("graph_id", graph_id)).firstResultOptional().isPresent();
     }
 
-    public Map<String, HintExercise> findByModelIdAsCmdMap(String modelId) {
-        return find(new Document("model_id", modelId)).stream().collect(Collectors.toMap(x -> x.cmd_n, x -> x));
+    public Map<String, Challenge> findByModelIdAsCmdMap(String modelId) {
+        return find(new Document("model_id", modelId)).stream().collect(Collectors.toMap(Challenge::getCmd_n, x -> x));
     }
 
     public Set<String> getAllModelIds() {
-        return findAll().stream().map(x -> x.model_id).collect(Collectors.toSet());
+        return findAll().stream().map(Challenge::getModel_id).collect(Collectors.toSet());
     }
 
-    public Stream<HintExercise> streamByGraphId(ObjectId graph_id) {
+    public Stream<Challenge> streamByGraphId(ObjectId graph_id) {
         return find(new Document("graph_id", graph_id)).stream();
     }
 }

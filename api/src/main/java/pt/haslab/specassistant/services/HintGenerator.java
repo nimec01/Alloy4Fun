@@ -15,14 +15,14 @@ import pt.haslab.alloyaddons.ExprNormalizer;
 import pt.haslab.alloyaddons.ExprStringify;
 import pt.haslab.mutation.Candidate;
 import pt.haslab.mutation.mutator.Mutator;
-import pt.haslab.specassistant.data.models.HintEdge;
-import pt.haslab.specassistant.data.models.HintExercise;
-import pt.haslab.specassistant.data.models.HintNode;
+import pt.haslab.specassistant.data.models.Edge;
+import pt.haslab.specassistant.data.models.Challenge;
+import pt.haslab.specassistant.data.models.Node;
+import pt.haslab.specassistant.data.aggregation.Transition;
 import pt.haslab.specassistant.data.transfer.HintMsg;
-import pt.haslab.specassistant.data.transfer.Transition;
-import pt.haslab.specassistant.repositories.HintEdgeRepository;
-import pt.haslab.specassistant.repositories.HintExerciseRepository;
-import pt.haslab.specassistant.repositories.HintNodeRepository;
+import pt.haslab.specassistant.repositories.EdgeRepository;
+import pt.haslab.specassistant.repositories.ChallengeRepository;
+import pt.haslab.specassistant.repositories.NodeRepository;
 import pt.haslab.specassistant.repositories.ModelRepository;
 import pt.haslab.specassistant.services.treeedit.ASTEditDiff;
 import pt.haslab.specassistant.util.DataUtil;
@@ -30,7 +30,7 @@ import pt.haslab.specassistant.util.DataUtil;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static pt.haslab.specassistant.data.models.HintNode.formulaExprToString;
+import static pt.haslab.specassistant.data.models.Node.formulaExprToString;
 import static pt.haslab.specassistant.util.DataUtil.getCombinations;
 
 @ApplicationScoped
@@ -45,11 +45,11 @@ public class HintGenerator {
     @Inject
     ModelRepository modelRepo;
     @Inject
-    HintNodeRepository nodeRepo;
+    NodeRepository nodeRepo;
     @Inject
-    HintEdgeRepository edgeRepo;
+    EdgeRepository edgeRepo;
     @Inject
-    HintExerciseRepository exerciseRepo;
+    ChallengeRepository exerciseRepo;
 
     public static <ID> List<Map<ID, Candidate>> mkAllMutatedFormula(Map<ID, Expr> formula, ConstList<Sig> sigs, int maxDepth) {
         Map<ID, Candidate> unchanged = new HashMap<>();
@@ -81,53 +81,53 @@ public class HintGenerator {
     }
 
     public Optional<Transition> formulaTransition(ObjectId graph_id, Map<String, String> formula) {
-        Optional<HintNode> node_opt = nodeRepo.findByGraphIdAndFormula(graph_id, formula);
+        Optional<Node> node_opt = nodeRepo.findByGraphIdAndFormula(graph_id, formula);
 
         if (node_opt.isPresent()) {
-            HintNode origin_node = node_opt.orElseThrow();
-            Optional<HintEdge> edge_opt = edgeRepo.policyByOriginNode(origin_node.id);
+            Node origin_node = node_opt.orElseThrow();
+            Optional<Edge> edge_opt = edgeRepo.policyByOriginNode(origin_node.id);
             if (edge_opt.isPresent()) {
-                HintEdge edge = edge_opt.orElseThrow();
-                HintNode destination = nodeRepo.findByIdOptional(edge.destination).orElseThrow();
-                return Optional.of(new Transition(edge, origin_node, destination));
+                Edge edge = edge_opt.orElseThrow();
+                Node destination = nodeRepo.findByIdOptional(edge.getDestination()).orElseThrow();
+                return Optional.of(new Transition(origin_node, edge, destination));
             }
         }
         return Optional.empty();
     }
 
-    public Optional<Transition> worldTransition(HintExercise exercise, CompModule world) {
-        Map<String, Expr> formulaExpr = HintNode.getNormalizedFormulaExprFrom(world, exercise.targetFunctions);
+    public Optional<Transition> worldTransition(Challenge exercise, CompModule world) {
+        Map<String, Expr> formulaExpr = Node.getNormalizedFormulaExprFrom(world, exercise.getTargetFunctions());
         Map<String, String> formula = formulaExprToString(formulaExpr);
 
-        return formulaTransition(exercise.graph_id, formula);
+        return formulaTransition(exercise.getGraph_id(), formula);
     }
 
-    public Optional<HintMsg> hintWithGraph(HintExercise exercise, CompModule world) {
-        Map<String, Expr> formulaExpr = HintNode.getNormalizedFormulaExprFrom(world, exercise.targetFunctions);
+    public Optional<HintMsg> hintWithGraph(Challenge exercise, CompModule world) {
+        Map<String, Expr> formulaExpr = Node.getNormalizedFormulaExprFrom(world, exercise.getTargetFunctions());
         Map<String, String> formula = formulaExprToString(formulaExpr);
 
-        return formulaTransition(exercise.graph_id, formula).map(x -> firstHint(formulaExpr, x.to.getParsedFormula(world)));
+        return formulaTransition(exercise.getGraph_id(), formula).map(x -> firstHint(formulaExpr, x.getTo().getParsedFormula(world)));
     }
 
 
-    public Optional<HintNode> mutatedNextState(HintExercise exercise, CompModule world) {
-        List<Map<String, Candidate>> candidateFormulas = mkAllMutatedFormula(HintNode.getFormulaExprFrom(world.getAllFunc().makeConstList(), exercise.targetFunctions), world.getAllReachableSigs(), 1);
+    public Optional<Node> mutatedNextState(Challenge exercise, CompModule world) {
+        List<Map<String, Candidate>> candidateFormulas = mkAllMutatedFormula(Node.getFormulaExprFrom(world.getAllFunc().makeConstList(), exercise.getTargetFunctions()), world.getAllReachableSigs(), 1);
 
         List<Map<String, String>> mutatedFormulas = candidateFormulas.stream().map(m -> DataUtil.mapValues(m, f -> ExprStringify.stringify(ExprNormalizer.normalize(f.mutated)))).toList();
 
-        return nodeRepo.findBestByGraphIdAndFormulaIn(exercise.graph_id, mutatedFormulas);
+        return nodeRepo.findBestByGraphIdAndFormulaIn(exercise.getGraph_id(), mutatedFormulas);
     }
 
-    public Optional<HintMsg> hintWithMutation(HintExercise exercise, CompModule world) {
-        List<Map<String, Candidate>> candidateFormulas = mkAllMutatedFormula(HintNode.getFormulaExprFrom(world.getAllFunc().makeConstList(), exercise.targetFunctions), world.getAllReachableSigs(), 1);
+    public Optional<HintMsg> hintWithMutation(Challenge exercise, CompModule world) {
+        List<Map<String, Candidate>> candidateFormulas = mkAllMutatedFormula(Node.getFormulaExprFrom(world.getAllFunc().makeConstList(), exercise.getTargetFunctions()), world.getAllReachableSigs(), 1);
 
         List<Map<String, String>> mutatedFormulas = candidateFormulas.stream().map(m -> DataUtil.mapValues(m, f -> ExprStringify.stringify(ExprNormalizer.normalize(f.mutated)))).toList();
 
-        Optional<HintNode> e = nodeRepo.findBestByGraphIdAndFormulaIn(exercise.graph_id, mutatedFormulas);
+        Optional<Node> e = nodeRepo.findBestByGraphIdAndFormulaIn(exercise.getGraph_id(), mutatedFormulas);
 
         if (e.isPresent()) {
-            HintNode n = e.orElseThrow();
-            int target = mutatedFormulas.indexOf(n.formula);
+            Node n = e.orElseThrow();
+            int target = mutatedFormulas.indexOf(n.getFormula());
 
             for (Candidate c : candidateFormulas.get(target).values()) {
                 if (!c.mutators.isEmpty()) {
@@ -144,16 +144,16 @@ public class HintGenerator {
 
     public Optional<HintMsg> getHint(String originId, String command_label, CompModule world) {
         String original_id = modelRepo.getOriginalById(originId);
-        HintExercise exercise = exerciseRepo.findByModelIdAndCmdN(original_id, command_label).orElse(null);
+        Challenge exercise = exerciseRepo.findByModelIdAndCmdN(original_id, command_label).orElse(null);
 
         if (exercise == null) {
             log.debug("No exercise found for original=" + original_id + " && command_label=" + command_label);
             return Optional.empty();
         }
 
-        Set<String> availableFuncs = AlloyUtil.streamFuncsNamesWithNames(world.getAllFunc().makeConstList(), exercise.targetFunctions).collect(Collectors.toSet());
-        if (!availableFuncs.containsAll(exercise.targetFunctions)) {
-            log.debug("Some of the targeted functions are not contained within provided world, missing " + new HashSet<>(exercise.targetFunctions).removeAll(availableFuncs));
+        Set<String> availableFuncs = AlloyUtil.streamFuncsNamesWithNames(world.getAllFunc().makeConstList(), exercise.getTargetFunctions()).collect(Collectors.toSet());
+        if (!availableFuncs.containsAll(exercise.getTargetFunctions())) {
+            log.debug("Some of the targeted functions are not contained within provided world, missing " + new HashSet<>(exercise.getTargetFunctions()).removeAll(availableFuncs));
             return Optional.empty();
         }
 

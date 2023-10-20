@@ -1,7 +1,10 @@
 package pt.haslab.specassistant.data.aggregation;
 
+import lombok.Data;
+
+@Data
 public class EntityStringLong {
-    public String s;
-    public Long l;
+    private String id;
+    private Long l;
 
 }

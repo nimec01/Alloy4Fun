@@ -1,5 +1,8 @@
 package pt.haslab.specassistant.data.aggregation;
 
+import lombok.Data;
+
+@Data
 public class EntityDouble {
-    public Double d;
+    private Double d;
 }

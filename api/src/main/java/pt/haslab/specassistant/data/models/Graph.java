@@ -2,19 +2,28 @@ package pt.haslab.specassistant.data.models;
 
 import io.quarkus.mongodb.panache.PanacheMongoEntity;
 import io.quarkus.mongodb.panache.common.MongoEntity;
+import lombok.*;
 import org.bson.Document;
+import org.bson.codecs.pojo.annotations.BsonIgnore;
 import org.bson.types.ObjectId;
 
-@MongoEntity(collection = "HintGraph")
-public class HintGraph extends PanacheMongoEntity {
+@MongoEntity(collection = "Graph")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
+public class Graph extends PanacheMongoEntity {
 
-    public String name;
+    private String name;
 
-    public HintGraph() {
+    @BsonIgnore
+    @ToString.Include(rank = 2)
+    public ObjectId getId() {
+        return this.id;
     }
 
-    public static HintGraph newGraph(String name) {
-        HintGraph result = new HintGraph();
+    public static Graph newGraph(String name) {
+        Graph result = new Graph();
         result.persist();
         if (name != null && !name.isEmpty())
             result.name = name;

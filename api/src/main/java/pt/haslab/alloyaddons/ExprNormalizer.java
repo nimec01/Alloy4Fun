@@ -39,6 +39,34 @@ public class ExprNormalizer {
             Expr right = this.visitThis(exprBinary.right);
             Expr swap = right;
 
+            if (Objects.equals(left.toString(), "true")) { // Yes, it is possible
+                switch (op) {
+                    case AND, IFF, EQUALS -> {
+                        return right;
+                    }
+                    case OR -> {
+                        return left;
+                    }
+                    case IMPLIES, NOT_EQUALS -> {
+                        return ExprUnary.Op.NOT.make(exprBinary.pos(), right);
+                    }
+                }
+            }
+
+            if (Objects.equals(right.toString(), "true")) { // Yes, it is possible
+                switch (op) {
+                    case AND, IFF, EQUALS, IMPLIES -> {
+                        return left;
+                    }
+                    case OR -> {
+                        return right;
+                    }
+                    case NOT_EQUALS -> {
+                        return ExprUnary.Op.NOT.make(exprBinary.pos(), right);
+                    }
+                }
+            }
+
             if (UnorderedOp.contains(exprBinary.op) && left.toString().compareTo(right.toString()) > 0) {
                 right = left;
                 left = swap;
@@ -49,6 +77,7 @@ public class ExprNormalizer {
                     op = BinOpSym.get(exprBinary.op);
                 }
             }
+
 
             return op.make(exprBinary.pos, exprBinary.closingBracket, left, right);
 
@@ -102,6 +131,9 @@ public class ExprNormalizer {
             Expr left = this.visitThis(exprITE.left);
             Expr right = this.visitThis(exprITE.right);
 
+            if (cond.toString().equals("true"))
+                return left;
+
             return ExprITE.make(exprITE.pos(), cond, left, right);
         }
 
@@ -112,15 +144,6 @@ public class ExprNormalizer {
             var_context.put(var_label, var_expr);
 
             return this.visitThis(exprLet.sub);
-        }
-
-
-        public int typeFormatInt(Type t) {
-            boolean isFormula = t.is_bool;
-            boolean isInt = t.is_small_int() || t.is_int();
-            boolean isSet = t.is_small_int() || t.is_int() || t.size() > 0;
-
-            return (isFormula ? 1 : 0) | (isInt ? 2 : 0) | (isSet ? 4 : 0);
         }
 
         @Override
@@ -210,64 +233,6 @@ public class ExprNormalizer {
         @Override
         public Expr visit(Sig.Field field) throws Err {
             return field;
-        }
-    }
-
-    private static class StreamFieldNames extends VisitReturn<Stream<String>> {
-
-        @Override
-        public Stream<String> visit(ExprBinary exprBinary) throws Err {
-            return Stream.concat(visitThis(exprBinary.left), visitThis(exprBinary.right));
-        }
-
-        @Override
-        public Stream<String> visit(ExprList exprList) throws Err {
-            return exprList.args.stream().flatMap(this::visitThis);
-        }
-
-        @Override
-        public Stream<String> visit(ExprCall exprCall) throws Err {
-            return exprCall.args.stream().flatMap(this::visitThis);
-        }
-
-        @Override
-        public Stream<String> visit(ExprConstant exprConstant) throws Err {
-            return Stream.of();
-        }
-
-        @Override
-        public Stream<String> visit(ExprITE exprITE) throws Err {
-            return Stream.of(visitThis(exprITE.cond), visitThis(exprITE.left), visitThis(exprITE.right)).flatMap(i -> i);
-        }
-
-        @Override
-        public Stream<String> visit(ExprLet exprLet) throws Err {
-            return Stream.concat(visitThis(exprLet.expr), visitThis(exprLet.sub));
-        }
-
-        @Override
-        public Stream<String> visit(ExprQt exprQt) throws Err {
-            return Stream.concat(exprQt.decls.stream().map(x -> x.expr).flatMap(this::visitThis), visitThis(exprQt.sub));
-        }
-
-        @Override
-        public Stream<String> visit(ExprUnary exprUnary) throws Err {
-            return visitThis(exprUnary.sub);
-        }
-
-        @Override
-        public Stream<String> visit(ExprVar exprVar) throws Err {
-            return Stream.of(exprVar.label);
-        }
-
-        @Override
-        public Stream<String> visit(Sig sig) throws Err {
-            return Stream.of();
-        }
-
-        @Override
-        public Stream<String> visit(Sig.Field field) throws Err {
-            return visitThis(field.decl().expr);
         }
     }
 

@@ -8,12 +8,12 @@ import jakarta.inject.Inject;
 import org.bson.types.ObjectId;
 import pt.haslab.alloyaddons.AlloyUtil;
 import pt.haslab.alloyaddons.ParseUtil;
-import pt.haslab.specassistant.data.models.HintExercise;
-import pt.haslab.specassistant.data.models.HintGraph;
+import pt.haslab.specassistant.data.models.Challenge;
+import pt.haslab.specassistant.data.models.Graph;
 import pt.haslab.specassistant.data.models.Model;
-import pt.haslab.specassistant.repositories.HintEdgeRepository;
-import pt.haslab.specassistant.repositories.HintExerciseRepository;
-import pt.haslab.specassistant.repositories.HintNodeRepository;
+import pt.haslab.specassistant.repositories.EdgeRepository;
+import pt.haslab.specassistant.repositories.ChallengeRepository;
+import pt.haslab.specassistant.repositories.NodeRepository;
 import pt.haslab.specassistant.repositories.ModelRepository;
 
 import java.util.List;
@@ -29,11 +29,11 @@ public class GraphManager {
     @Inject
     ModelRepository modelRepo;
     @Inject
-    HintNodeRepository nodeRepo;
+    NodeRepository nodeRepo;
     @Inject
-    HintEdgeRepository edgeRepo;
+    EdgeRepository edgeRepo;
     @Inject
-    HintExerciseRepository exerciseRepo;
+    ChallengeRepository exerciseRepo;
 
     public void cleanGraph(ObjectId graph_id) {
         nodeRepo.deleteByGraphId(graph_id);
@@ -43,35 +43,35 @@ public class GraphManager {
     public void deleteGraph(ObjectId graph_id) {
         cleanGraph(graph_id);
         exerciseRepo.deleteByGraphId(graph_id);
-        HintGraph.deleteById(graph_id);
+        Graph.deleteById(graph_id);
     }
 
     public void dropEverything() {
-        HintGraph.deleteAll();
+        Graph.deleteAll();
         nodeRepo.deleteAll();
         edgeRepo.deleteAll();
         exerciseRepo.deleteAll();
     }
 
-    public void generateExercise(ObjectId graph_id, String model_id, Integer secretCommandCount, String cmd_n, Set<String> targetFunctions) {
+    public void generateChallenge(ObjectId graph_id, String model_id, Integer secretCommandCount, String cmd_n, Set<String> targetFunctions) {
         if (exerciseRepo.notExistsModelIdAndCmdN(model_id, cmd_n)) {
-            exerciseRepo.persistOrUpdate(new HintExercise(model_id, graph_id, secretCommandCount, cmd_n, targetFunctions));
+            exerciseRepo.persistOrUpdate(new Challenge(model_id, graph_id, secretCommandCount, cmd_n, targetFunctions));
         }
     }
 
     public void generateExercisesWithGraphIdFromSecrets(Function<String, ObjectId> commandToGraphId, String model_id) {
         Model m = modelRepo.findByIdOptional(model_id).orElseThrow();
-        CompModule world = ParseUtil.parseModel(m.code);
-        List<Pos> secretPositions = secretPos(world.path, m.code);
+        CompModule world = ParseUtil.parseModel(m.getCode());
+        List<Pos> secretPositions = secretPos(world.path, m.getCode());
 
         Map<String, Set<String>> targets = AlloyUtil.getFunctionWithPositions(world, secretPositions);
         Integer cmdCount = targets.size();
 
-        exerciseRepo.persistOrUpdate(targets.entrySet().stream().map(x -> new HintExercise(model_id, commandToGraphId.apply(x.getKey()), cmdCount, x.getKey(), x.getValue())));
+        exerciseRepo.persistOrUpdate(targets.entrySet().stream().map(x -> new Challenge(model_id, commandToGraphId.apply(x.getKey()), cmdCount, x.getKey(), x.getValue())));
     }
 
     public Set<ObjectId> getModelGraphs(String modelid) {
-        return exerciseRepo.streamByModelId(modelid).map(x -> x.graph_id).collect(Collectors.toSet());
+        return exerciseRepo.streamByModelId(modelid).map(Challenge::getGraph_id).collect(Collectors.toSet());
     }
 
     public void deleteAllGraphStructures() {
@@ -83,7 +83,7 @@ public class GraphManager {
         if (!cascadeToGraphs) {
             exerciseRepo.deleteByModelIdIn(ids);
         } else {
-            Set<ObjectId> graph_ids = exerciseRepo.streamByModelIdIn(ids).map(x -> x.graph_id).collect(Collectors.toSet());
+            Set<ObjectId> graph_ids = exerciseRepo.streamByModelIdIn(ids).map(Challenge::getGraph_id).collect(Collectors.toSet());
             exerciseRepo.deleteByModelIdIn(ids);
             graph_ids.forEach(graph_id -> {
                 if (!exerciseRepo.containsGraph(graph_id))

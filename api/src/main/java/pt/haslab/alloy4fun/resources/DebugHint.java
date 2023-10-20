@@ -7,17 +7,17 @@ import jakarta.ws.rs.core.Response;
 import org.bson.types.ObjectId;
 import org.jboss.logging.Logger;
 import pt.haslab.alloy4fun.data.request.YearRange;
+import pt.haslab.specassistant.data.policy.BinaryRule;
+import pt.haslab.specassistant.data.policy.PolicyRule;
+import pt.haslab.specassistant.data.policy.VarRule;
 import pt.haslab.specassistant.services.GraphManager;
 import pt.haslab.specassistant.services.PolicyManager;
 import pt.haslab.specassistant.services.TestService;
-import pt.haslab.specassistant.services.policy.Probability;
-import pt.haslab.specassistant.services.policy.Reward;
 import pt.haslab.specassistant.util.FutureUtil;
 import pt.haslab.specassistant.util.Text;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 @Path("/debug-hint")
 public class DebugHint {
@@ -35,7 +35,7 @@ public class DebugHint {
     @GET
     public Response debug() {
 
-        policyManager.computePolicyForGraph(new ObjectId("6515a63750e414688cb8a1ef"), 1.0, Reward.REWARD_ONE, Probability.EDGE);
+        policyManager.computePolicyForGraph(new ObjectId("6515a63750e414688cb8a1ef"), BinaryRule.sumOld(VarRule.Name.TED));
 
         return Response.ok().build();
     }
@@ -49,7 +49,7 @@ public class DebugHint {
     @Path("/setup-graphs")
     @Produces(MediaType.APPLICATION_JSON)
     public Response genGraphs(List<String> model_ids, @DefaultValue("Unkown") @QueryParam("prefix") String prefix, @BeanParam YearRange yearRange) {
-        testService.autoSetupJob(model_ids, prefix, yearRange);
+        testService.autoSetupJob(model_ids, prefix, x -> yearRange.testDate(Text.parseDate(x.getTime())));
         return Response.ok("Setup in progress.").build();
     }
 
@@ -58,7 +58,7 @@ public class DebugHint {
     @Path("/setup-multiple-graphs")
     @Produces(MediaType.APPLICATION_JSON)
     public Response genGraphs(Map<String, List<String>> model_ids, @BeanParam YearRange yearRange) {
-        FutureUtil.forEachOrderedAsync(model_ids.entrySet(), e -> testService.autoSetupJob(e.getValue(), e.getKey(), yearRange));
+        FutureUtil.forEachOrderedAsync(model_ids.entrySet(), e -> testService.autoSetupJob(e.getValue(), e.getKey(), x -> yearRange.testDate(Text.parseDate(x.getTime()))));
         return Response.ok("Setup in progress.").build();
     }
 
@@ -74,7 +74,7 @@ public class DebugHint {
     @Path("/do-tar-for-model")
     @Produces(MediaType.APPLICATION_JSON)
     public Response tarModel(@QueryParam("model_id") String model_id, @BeanParam YearRange yearRange) {
-        testService.testChallengeWithTAR(model_id, x -> yearRange.testDate(Text.parseDate(x.time)));
+        testService.testChallengeWithTAR(model_id, x -> yearRange.testDate(Text.parseDate(x.getTime())));
         return Response.ok("Test Started").build();
     }
 
@@ -91,7 +91,7 @@ public class DebugHint {
     @Path("/setup-exercises")
     @Produces(MediaType.APPLICATION_JSON)
     public Response setUpExercises(Map<String, List<String>> model_ids) {
-        model_ids.forEach(testService::makeGraphAndExercisesFromCommands);
+        model_ids.forEach(testService::makeGraphAndChallengesFromCommands);
         return Response.ok().build();
     }
 
@@ -107,18 +107,16 @@ public class DebugHint {
     @Path("/do-tar-for-all-date")
     @Produces(MediaType.APPLICATION_JSON)
     public Response tarALLDATE(@BeanParam YearRange yearRange) {
-        testService.testAllChallengesWithTAR(x -> yearRange.testDate(Text.parseDate(x.time)));
+        testService.testAllChallengesWithTAR(x -> yearRange.testDate(Text.parseDate(x.getTime())));
         return Response.ok("Test Started").build();
     }
 
     @POST
     @Path("/compute-policy-for-all-models")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response computeTedEdge(@QueryParam("discount") @DefaultValue("0.99") Double discount, @QueryParam("reward") @DefaultValue("COST_TED") String reward, @QueryParam("probability") @DefaultValue("EDGE") String probability) {
-        Reward eval = Reward.valueOf(reward);
-        Probability prob = Probability.valueOf(probability);
+    public Response computeTedEdge(@QueryParam("reward") @DefaultValue("TED") String reward, @QueryParam("probability") @DefaultValue("ARRIVALS") String probability) {
 
-        testService.computePoliciesForAll(discount, eval, prob);
+        testService.computePoliciesForAll(PolicyRule.oneMinusPrefTimesCostPlusOld(VarRule.Name.TED, VarRule.Name.ARRIVALS));
 
         return Response.ok("Policy computation started.").build();
     }
@@ -128,15 +126,8 @@ public class DebugHint {
     @Path("/spec-test-default")
     @Produces({MediaType.APPLICATION_JSON})
     public Response specSplitDefault(Map<String, List<String>> model_ids) {
-        CompletableFuture.runAsync(() -> testService.specTestDefaultPolicies(model_ids));
+        testService.specTestDefaultPolicies(model_ids);
         return Response.ok("Started.").build();
     }
 
-    @GET
-    @Path("/spec-test-all")
-    @Produces({MediaType.APPLICATION_JSON})
-    public Response specSplitAll(Map<String, List<String>> model_ids) {
-        testService.specTestAllPolicies(model_ids);
-        return Response.ok("Started.").build();
-    }
 }

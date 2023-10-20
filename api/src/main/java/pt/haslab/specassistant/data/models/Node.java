@@ -8,6 +8,8 @@ import edu.mit.csail.sdg.ast.Func;
 import edu.mit.csail.sdg.parser.CompModule;
 import io.quarkus.mongodb.panache.PanacheMongoEntity;
 import io.quarkus.mongodb.panache.common.MongoEntity;
+import lombok.*;
+import org.bson.Document;
 import org.bson.codecs.pojo.annotations.BsonIgnore;
 import org.bson.types.ObjectId;
 import pt.haslab.alloyaddons.*;
@@ -21,46 +23,38 @@ import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toUnmodifiableMap;
 
-@MongoEntity(collection = "HintNode")
-public class HintNode extends PanacheMongoEntity {
+@MongoEntity(collection = "Node")
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@ToString(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(callSuper = false)
+public class Node extends PanacheMongoEntity {
+    private ObjectId graph_id;
+    @ToString.Include
+    private Map<String, String> formula;
 
-    public ObjectId graph_id;
-    public Map<String, String> formula;
+    private String witness;
 
-    public String witness;
+    private Boolean valid;
 
-    public Boolean valid;
+    private Integer visits;
 
-    public Integer visits;
+    private Integer leaves;
 
-    public Integer leaves;
+    private Integer hopDistance;
 
-    public Integer hopDistance;
+    private Double complexity;
+    @ToString.Include(rank = 1)
 
-    public Double complexity;
-
-    public Double score;
-
-    public HintNode() {
-    }
+    private Double score;
 
     @BsonIgnore
-    public Double getComplexity() {
-        if (complexity == null)
-            return Double.POSITIVE_INFINITY;
-        return complexity;
-    }
-
-    public static HintNode create(ObjectId graph_id, Map<String, String> formula, Boolean sat, String witness) {
-        HintNode result = new HintNode();
-
-        result.graph_id = graph_id;
-        result.formula = formula;
-        result.valid = sat;
-        result.witness = witness;
-        result.visits = result.leaves = 0;
-
-        return result;
+    @ToString.Include(rank = 2)
+    public ObjectId getId() {
+        return this.id;
     }
 
     public Map<String, String> getFormula() {
@@ -102,9 +96,18 @@ public class HintNode extends PanacheMongoEntity {
         }
     }
 
-    public HintNode visit() {
+    public Node visit() {
         visits++;
         return this;
+    }
+
+    public static Optional<Node> findByMax(ObjectId graph_id, String field) {
+        return find(new Document("graph_id", graph_id), new Document(field, -1)).project(Node.class).firstResultOptional();
+
+    }
+
+    public static Optional<Node> findByMin(ObjectId graph_id, String field) {
+        return find(new Document("graph_id", graph_id), new Document(field, 1)).project(Node.class).firstResultOptional();
     }
 
 }

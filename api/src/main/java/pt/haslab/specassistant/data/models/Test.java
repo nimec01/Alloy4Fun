@@ -1,22 +1,28 @@
 package pt.haslab.specassistant.data.models;
 
 import io.quarkus.mongodb.panache.PanacheMongoEntityBase;
+import io.quarkus.mongodb.panache.common.MongoEntity;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.bson.codecs.pojo.annotations.BsonId;
 import org.bson.codecs.pojo.annotations.BsonIgnore;
 import org.bson.types.ObjectId;
 
-
+@MongoEntity(collection = "Test")
+@Data
+@EqualsAndHashCode(callSuper = false)
+@AllArgsConstructor
+@NoArgsConstructor
 public class Test extends PanacheMongoEntityBase {
 
     @BsonId
-    public ID id;
+    private ID id;
 
-    public ObjectId graphId;
+    private ObjectId graphId;
 
-    public Data data;
-
-    public Test() {
-    }
+    private Data data;
 
     public Test(ID id) {
         this.id = id;

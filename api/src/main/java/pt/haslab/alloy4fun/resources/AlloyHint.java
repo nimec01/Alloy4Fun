@@ -14,14 +14,15 @@ import pt.haslab.alloy4fun.data.request.YearRange;
 import pt.haslab.alloy4fun.data.transfer.InstanceMsg;
 import pt.haslab.alloy4fun.repositories.SessionRepository;
 import pt.haslab.alloyaddons.ParseUtil;
-import pt.haslab.specassistant.data.models.HintGraph;
+import pt.haslab.specassistant.data.models.Graph;
+import pt.haslab.specassistant.data.policy.BinaryRule;
+import pt.haslab.specassistant.data.policy.PolicyRule;
+import pt.haslab.specassistant.data.policy.VarRule;
 import pt.haslab.specassistant.data.transfer.HintMsg;
 import pt.haslab.specassistant.services.GraphIngestor;
 import pt.haslab.specassistant.services.GraphManager;
 import pt.haslab.specassistant.services.HintGenerator;
 import pt.haslab.specassistant.services.PolicyManager;
-import pt.haslab.specassistant.services.policy.Probability;
-import pt.haslab.specassistant.services.policy.Reward;
 import pt.haslab.specassistant.util.Text;
 
 import java.util.HashSet;
@@ -54,11 +55,11 @@ public class AlloyHint {
     public Response makeGraphAndExercises(List<ExerciseForm> forms, @QueryParam("graph_id") String hexstring, @DefaultValue("Unkown") @QueryParam("name") String graph_name) {
         ObjectId graph_id;
         if (hexstring == null || hexstring.isEmpty())
-            graph_id = HintGraph.newGraph(graph_name).id;
+            graph_id = Graph.newGraph(graph_name).id;
         else
             graph_id = new ObjectId(hexstring);
 
-        forms.forEach(f -> graphManager.generateExercise(graph_id, f.modelId, f.secretCommandCount, f.cmd_n, f.targetFunctions));
+        forms.forEach(f -> graphManager.generateChallenge(graph_id, f.modelId, f.secretCommandCount, f.cmd_n, f.targetFunctions));
         return Response.ok("Sucess").build();
     }
 
@@ -66,7 +67,7 @@ public class AlloyHint {
     @Path("/scan-model")
     @Produces(MediaType.APPLICATION_JSON)
     public Response scanModel(@QueryParam("model_id") String model_id, @BeanParam YearRange yearRange) {
-        graphIngestor.parseModelTree(model_id, x -> yearRange.testDate(Text.parseDate(x.time)));
+        graphIngestor.parseModelTree(model_id, x -> yearRange.testDate(Text.parseDate(x.getTime())));
         return Response.ok().build();
     }
 
@@ -74,7 +75,7 @@ public class AlloyHint {
     @Path("/scan-models")
     @Produces(MediaType.APPLICATION_JSON)
     public Response scanModels(List<String> model_ids, @BeanParam YearRange yearRange) {
-        model_ids.forEach(id -> graphIngestor.parseModelTree(id, x -> yearRange.testDate(Text.parseDate(x.time))));
+        model_ids.forEach(id -> graphIngestor.parseModelTree(id, x -> yearRange.testDate(Text.parseDate(x.getTime()))));
         return Response.ok().build();
     }
 
@@ -114,7 +115,7 @@ public class AlloyHint {
     @Path("/compute-popular-edge-policy")
     @Produces(MediaType.APPLICATION_JSON)
     public Response computePopularEdgePolicy(@QueryParam("model_id") String modelid) {
-        graphManager.getModelGraphs(modelid).forEach(id -> policyManager.computePolicyForGraph(id, 0.99, Reward.NONE, Probability.EDGE));
+        graphManager.getModelGraphs(modelid).forEach(id -> policyManager.computePolicyForGraph(id, BinaryRule.sumOld(VarRule.of(VarRule.Name.ARRIVALS))));
         return Response.ok("Popular policy computed.").build();
     }
 
@@ -122,7 +123,7 @@ public class AlloyHint {
     @Path("/compute-policy-for-model")
     @Produces(MediaType.APPLICATION_JSON)
     public Response computeTedEdge(@QueryParam("model_id") String modelid) {
-        graphManager.getModelGraphs(modelid).forEach(id -> policyManager.computePolicyForGraph(id, 0.99, Reward.COST_TED, Probability.EDGE));
+        graphManager.getModelGraphs(modelid).forEach(id -> policyManager.computePolicyForGraph(id, PolicyRule.oneMinusPrefTimesCostPlusOld(VarRule.Name.TED, VarRule.Name.ARRIVALS)));
         return Response.ok("Popular policy computed.").build();
     }
 
@@ -130,13 +131,12 @@ public class AlloyHint {
     @POST
     @Path("/compute-policy-for-all-models")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response computeTedEdge(List<String> modelids, @QueryParam("discount") @DefaultValue("0.99") Double discount, @QueryParam("reward") @DefaultValue("TED") String reward, @QueryParam("probability") @DefaultValue("EDGE") String probability) {
-        Reward eval = Reward.valueOf(reward);
-        Probability prob = Probability.valueOf(probability);
+    public Response computeTedEdge(List<String> modelids) {
+        PolicyRule policy = PolicyRule.oneMinusPrefTimesCostPlusOld(VarRule.Name.TED, VarRule.Name.ARRIVALS);
 
         new HashSet<>(modelids).forEach(modelid ->
                 graphManager.getModelGraphs(modelid)
-                        .forEach(id -> policyManager.computePolicyForGraph(id, discount, eval, prob)));
+                        .forEach(id -> policyManager.computePolicyForGraph(id, policy)));
         return Response.ok("Popular policy computed.").build();
     }
 
@@ -144,7 +144,7 @@ public class AlloyHint {
     @Path("/compute-popular-ted-policy")
     @Produces(MediaType.APPLICATION_JSON)
     public Response computeTedPolicy(@QueryParam("model_id") String modelid) {
-        graphManager.getModelGraphs(modelid).forEach(id -> policyManager.computePolicyForGraph(id, 0.99, Reward.COST_TED, Probability.NONE));
+        graphManager.getModelGraphs(modelid).forEach(id -> policyManager.computePolicyForGraph(id, PolicyRule.oneMinusPrefTimesCostPlusOld(VarRule.Name.TED, VarRule.Name.ARRIVALS)));
         return Response.ok("Popular policy computed.").build();
     }
 
@@ -152,7 +152,7 @@ public class AlloyHint {
     @Path("/compute-popular-one")
     @Produces(MediaType.APPLICATION_JSON)
     public Response computeOnePolicy(@QueryParam("model_id") String modelid) {
-        graphManager.getModelGraphs(modelid).forEach(id -> policyManager.computePolicyForGraph(id, 0.99, Reward.REWARD_ONE, Probability.NONE));
+        graphManager.getModelGraphs(modelid).forEach(id -> policyManager.computePolicyForGraph(id, PolicyRule.oneMinusPrefTimesCostPlusOld(VarRule.Name.TED, VarRule.Name.ONE)));
         return Response.ok("Popular policy computed.").build();
     }
 

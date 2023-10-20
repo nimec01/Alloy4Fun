@@ -1,0 +1,107 @@
+package pt.haslab.specassistant.data.policy;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.*;
+import org.bson.types.ObjectId;
+import pt.haslab.specassistant.data.aggregation.Transition;
+import pt.haslab.specassistant.data.models.Edge;
+import pt.haslab.specassistant.data.models.Node;
+
+import java.util.NoSuchElementException;
+import java.util.function.Function;
+
+
+@AllArgsConstructor
+@RequiredArgsConstructor
+public class VarRule extends PolicyRule {
+    @Override
+    public String toString() {
+        return var.toString();
+    }
+
+    @Getter
+    final Name var;
+    @JsonIgnore
+    Normalizer normalizer;
+
+
+    public static VarRule of(Name name) {
+        return new VarRule(name);
+    }
+
+    @Override
+    public Double apply(Transition transition) {
+        try {
+            double result = switch (var) {
+                case OLD -> transition.getTo().getScore();
+                case NONE -> 0.0;
+                case ONE -> 1.0;
+                case TED -> transition.getEdge().getEditDistance();
+                case VISITS -> transition.getFrom().getVisits();
+                case LEAVES -> transition.getFrom().getLeaves();
+                case COMPLEXITY -> transition.getFrom().getComplexity();
+                case DEPARTURES -> (double) transition.getEdge().getCount() / (double) transition.getFrom().getLeaves();
+                case ARRIVALS -> (double) transition.getEdge().getCount() / (double) transition.getTo().getVisits();
+            };
+            if (normalizer != null)
+                normalizer.apply(result);
+            return result;
+        } catch (NullPointerException e) {
+            if (normalizer != null)
+                return 1.0;
+            else return Double.MAX_VALUE / 2;
+        }
+    }
+
+    public void normalizeByGraph(ObjectId graph_id) {
+        try {
+            normalizer = switch (var) {
+                case TED -> new Normalizer(
+                        Edge.findByMax(graph_id, "editDistance").map(Edge::getEditDistance).orElseThrow(),
+                        Edge.findByMin(graph_id, "editDistance").map(Edge::getEditDistance).orElseThrow()
+                );
+                case VISITS -> new Normalizer(
+                        Node.findByMax(graph_id, "visits").map(Node::getVisits).orElseThrow(),
+                        Node.findByMin(graph_id, "visits").map(Node::getVisits).orElseThrow()
+                );
+                case LEAVES -> new Normalizer(
+                        Node.findByMax(graph_id, "leaves").map(Node::getLeaves).orElseThrow(),
+                        Node.findByMin(graph_id, "leaves").map(Node::getLeaves).orElseThrow()
+                );
+                case COMPLEXITY -> new Normalizer(
+                        Node.findByMax(graph_id, "complexity").map(Node::getComplexity).orElseThrow(),
+                        Node.findByMin(graph_id, "complexity").map(Node::getComplexity).orElseThrow()
+                );
+                default -> null;
+            };
+        } catch (NoSuchElementException ignored) {
+        }
+    }
+
+
+    public enum Name {
+        OLD,
+        TED,
+        COMPLEXITY,
+        ONE,
+        NONE,
+        LEAVES,
+        VISITS,
+        DEPARTURES,
+        ARRIVALS
+    }
+
+    public static class Normalizer implements Function<Double, Double> {
+        Double maxMinusMin, min;
+
+        public Normalizer(Number max, Number min) {
+            this.maxMinusMin = max.doubleValue() - min.doubleValue();
+            this.min = min.doubleValue();
+        }
+
+        @Override
+        public Double apply(Double value) {
+            return (value - min) / maxMinusMin;
+        }
+    }
+}

@@ -1,43 +1,18 @@
 package pt.haslab.specassistant.util;
 
+import lombok.SneakyThrows;
 import org.jboss.logging.Logger;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
 public interface FutureUtil {
-
-    static <R> R inline(CompletableFuture<R> future) throws Throwable {
-        try {
-            return future.get();
-        } catch (ExecutionException e) {
-            throw e.getCause();
-        }
-    }
-
-    static <R> Optional<R> inlineOptional(CompletableFuture<R> future) {
-        try {
-            return Optional.of(inline(future));
-        } catch (Throwable e) {
-            return Optional.empty();
-        }
-    }
-
-    static <R> R inlineRuntime(CompletableFuture<R> future) {
-        try {
-            return inline(future);
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     static <V> CompletableFuture<Void> allFutures(Stream<CompletableFuture<V>> futureStream) {
         return CompletableFuture.allOf(futureStream.toArray(CompletableFuture[]::new));
     }
@@ -88,6 +63,10 @@ public interface FutureUtil {
             exception.accept(error);
             return null;
         })).toArray(CompletableFuture[]::new));
+    }
+
+    static <V, R> CompletableFuture<Void> runEachAsync(Collection<V> collection, Function<V, CompletableFuture<R>> function) {
+        return CompletableFuture.allOf(collection.stream().map(function).toArray(CompletableFuture[]::new));
     }
 
     static <V, R> CompletableFuture<Void> runEachAsync(Stream<V> stream, Function<V, CompletableFuture<R>> function) {
