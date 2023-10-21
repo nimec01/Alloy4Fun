@@ -39,30 +39,29 @@ public class ExprNormalizer {
             Expr right = this.visitThis(exprBinary.right);
             Expr swap = right;
 
-            if (Objects.equals(left.toString(), "true")) { // Yes, it is possible
+            if (Objects.equals(left.toString(), "true") ) { // Yes, it is possible
                 switch (op) {
-                    case AND, IFF, EQUALS -> {
+                    case IMPLIES, AND, IFF, EQUALS -> {
                         return right;
                     }
                     case OR -> {
                         return left;
                     }
-                    case IMPLIES, NOT_EQUALS -> {
+                    case NOT_EQUALS -> {
                         return ExprUnary.Op.NOT.make(exprBinary.pos(), right);
                     }
                 }
             }
-
             if (Objects.equals(right.toString(), "true")) { // Yes, it is possible
                 switch (op) {
-                    case AND, IFF, EQUALS, IMPLIES -> {
+                    case AND, IFF, EQUALS -> {
                         return left;
                     }
-                    case OR -> {
+                    case OR, IMPLIES -> {
                         return right;
                     }
                     case NOT_EQUALS -> {
-                        return ExprUnary.Op.NOT.make(exprBinary.pos(), right);
+                        return ExprUnary.Op.NOT.make(exprBinary.pos(), left);
                     }
                 }
             }

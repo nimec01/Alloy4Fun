@@ -1,7 +1,9 @@
 package pt.haslab.specassistant.data.policy;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import pt.haslab.specassistant.data.aggregation.Transition;
 import pt.haslab.specassistant.data.models.Edge;
@@ -13,7 +15,23 @@ import java.util.function.Function;
 
 @AllArgsConstructor
 @RequiredArgsConstructor
-public class VarRule extends PolicyRule {
+public class Var extends PolicyRule {
+    public static PolicyRule old() {
+        return Var.of(Name.OLD);
+    }
+
+    public static Var ted() {
+        return of(Name.TED);
+    }
+
+    public static Var complexity() {
+        return of(Name.COMPLEXITY);
+    }
+
+    public static Var arrivals() {
+        return of(Name.ARRIVALS);
+    }
+
     @Override
     public String toString() {
         return var.toString();
@@ -25,8 +43,8 @@ public class VarRule extends PolicyRule {
     Normalizer normalizer;
 
 
-    public static VarRule of(Name name) {
-        return new VarRule(name);
+    public static Var of(Name name) {
+        return new Var(name);
     }
 
     @Override
@@ -34,8 +52,6 @@ public class VarRule extends PolicyRule {
         try {
             double result = switch (var) {
                 case OLD -> transition.getTo().getScore();
-                case NONE -> 0.0;
-                case ONE -> 1.0;
                 case TED -> transition.getEdge().getEditDistance();
                 case VISITS -> transition.getFrom().getVisits();
                 case LEAVES -> transition.getFrom().getLeaves();
@@ -83,8 +99,6 @@ public class VarRule extends PolicyRule {
         OLD,
         TED,
         COMPLEXITY,
-        ONE,
-        NONE,
         LEAVES,
         VISITS,
         DEPARTURES,

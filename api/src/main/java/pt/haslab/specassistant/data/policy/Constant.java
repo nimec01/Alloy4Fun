@@ -10,10 +10,13 @@ import pt.haslab.specassistant.data.aggregation.Transition;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class ConstantRule extends PolicyRule {
+public class Constant extends PolicyRule {
 
     Double value;
 
+    public static Constant of(Double value) {
+        return new Constant(value);
+    }
 
     @Override
     public void normalizeByGraph(ObjectId objectId) {

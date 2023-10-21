@@ -52,7 +52,7 @@ public class Node extends PanacheMongoEntity {
     private Double score;
 
     @BsonIgnore
-    @ToString.Include(rank = 2)
+    @ToString.Include(rank = 2,name = "id")
     public ObjectId getId() {
         return this.id;
     }

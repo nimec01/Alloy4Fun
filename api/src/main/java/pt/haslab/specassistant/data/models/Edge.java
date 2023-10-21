@@ -31,7 +31,7 @@ public class Edge extends PanacheMongoEntity {
     }
 
     @BsonIgnore
-    @ToString.Include(rank = 2)
+    @ToString.Include(rank = 2,name = "id")
     public ObjectId getId() {
         return this.id;
     }

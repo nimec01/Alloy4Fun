@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import org.bson.codecs.pojo.annotations.BsonId;
 import org.bson.codecs.pojo.annotations.BsonIgnore;
 import org.bson.types.ObjectId;
+import pt.haslab.specassistant.data.aggregation.Transition;
 
 @MongoEntity(collection = "Test")
 @Data
@@ -42,7 +43,7 @@ public class Test extends PanacheMongoEntityBase {
     public record ID(String model_id, String type) {
     }
 
-    public record Data(Boolean success, Double time, Integer hintDistance, Float editDistance, Double complexDiff) {
+    public record Data(Boolean success, Double time, Integer hintDistance, Transition t, Double complexDiff) {
         public Data(Boolean success, Double time) {
             this(success, time, null, null, null);
         }
@@ -55,12 +56,12 @@ public class Test extends PanacheMongoEntityBase {
             this(success, nano_time * 1e-9, hintDistance, null, null);
         }
 
-        public Data(Boolean success, Long nano_time, Integer hintDistance, Float editDistance) {
-            this(success, nano_time * 1e-9, hintDistance, editDistance, null);
+        public Data(Boolean success, Long nano_time, Integer hintDistance, Transition t) {
+            this(success, nano_time * 1e-9, hintDistance, t, null);
         }
 
-        public Data(Boolean success, Long nano_time, Integer hintDistance, Float editDistance, Double complexDiff) {
-            this(success, nano_time * 1e-9, hintDistance, editDistance, complexDiff);
+        public Data(Boolean success, Long nano_time, Integer hintDistance, Transition t, Double complexDiff) {
+            this(success, nano_time * 1e-9, hintDistance, t, complexDiff);
         }
 
     }

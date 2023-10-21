@@ -14,17 +14,15 @@ import java.util.function.Function;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @NoArgsConstructor
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = VarRule.class, name = "var"),
-        @JsonSubTypes.Type(value = BinaryRule.class, name = "operation"),
-        @JsonSubTypes.Type(value = ConstantRule.class, name = "number")
+        @JsonSubTypes.Type(value = Var.class, name = "var"),
+        @JsonSubTypes.Type(value = Binary.class, name = "operation"),
+        @JsonSubTypes.Type(value = Constant.class, name = "number")
 })
 public abstract class PolicyRule implements Function<Transition, Double> {
 
     public abstract void normalizeByGraph(ObjectId objectId);
 
-    public static PolicyRule oneMinusPrefTimesCostPlusOld(VarRule.Name cost, VarRule.Name pref) {
-        return BinaryRule.binaryOld("+", new BinaryRule("*", VarRule.of(cost), new BinaryRule("-", new ConstantRule(1.0), VarRule.of(pref))));
+    public static PolicyRule costPrefMix(PolicyRule pref, PolicyRule cost) {
+        return Binary.sum(Binary.mult(Binary.sub(Constant.of(1.0), pref), cost), Var.old());
     }
-
-
 }

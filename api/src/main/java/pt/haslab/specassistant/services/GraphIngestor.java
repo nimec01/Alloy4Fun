@@ -12,12 +12,12 @@ import pt.haslab.alloyaddons.ParseUtil;
 import pt.haslab.alloyaddons.UncheckedIOException;
 import pt.haslab.specassistant.data.models.Challenge;
 import pt.haslab.specassistant.data.models.Graph;
-import pt.haslab.specassistant.data.models.Node;
 import pt.haslab.specassistant.data.models.Model;
-import pt.haslab.specassistant.repositories.EdgeRepository;
+import pt.haslab.specassistant.data.models.Node;
 import pt.haslab.specassistant.repositories.ChallengeRepository;
-import pt.haslab.specassistant.repositories.NodeRepository;
+import pt.haslab.specassistant.repositories.EdgeRepository;
 import pt.haslab.specassistant.repositories.ModelRepository;
+import pt.haslab.specassistant.repositories.NodeRepository;
 import pt.haslab.specassistant.services.treeedit.ASTEditDiff;
 import pt.haslab.specassistant.util.FutureUtil;
 
@@ -70,9 +70,9 @@ public class GraphIngestor {
         //List<Sig> tSigs = original.getAllSigs().makeConstList();
     }
 
-    private Map<ObjectId, ObjectId> walkModelTreeStep(Map<String, Challenge> cmdToExercise, Predicate<CompModule> modifiedPred, Model current, Map<ObjectId, ObjectId> context) {
+    private Map<ObjectId, ObjectId> walkModelTreeStep(Predicate<Model> model_filter, Map<String, Challenge> cmdToExercise, Predicate<CompModule> modifiedPred, Model current, Map<ObjectId, ObjectId> context) {
         try {
-            if (current.isValidExecution() && cmdToExercise.containsKey(current.getCmd_n())) {
+            if (model_filter.test(current) && current.isValidExecution() && cmdToExercise.containsKey(current.getCmd_n())) {
 
                 CompModule world = ParseUtil.parseModel(current.getCode());
                 Challenge exercise = cmdToExercise.get(current.getCmd_n());
@@ -121,8 +121,8 @@ public class GraphIngestor {
                 }
         );
         return abstractWalkModelTree(
-                (m, ctx) -> walkModelTreeStep(cmdToExercise, w -> testSpecModifications(world, w), m, ctx),
-                model -> modelRepo.streamByDerivationOfAndOriginal(model.getId(), model.getOriginal()).filter(model_filter),
+                (m, ctx) -> walkModelTreeStep(model_filter, cmdToExercise, w -> testSpecModifications(world, w), m, ctx),
+                model -> modelRepo.streamByDerivationOfAndOriginal(model.getId(), model.getOriginal()),
                 exerciseToNodeId,
                 root
         );

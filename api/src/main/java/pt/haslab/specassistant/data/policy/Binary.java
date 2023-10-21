@@ -10,7 +10,7 @@ import pt.haslab.specassistant.data.aggregation.Transition;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class BinaryRule extends PolicyRule {
+public class Binary extends PolicyRule {
     String operator;
     PolicyRule left, right;
 
@@ -31,21 +31,33 @@ public class BinaryRule extends PolicyRule {
         };
     }
 
+    public static Binary mult(PolicyRule left, PolicyRule right) {
+        return new Binary("*", left, right);
+    }
+
+    public static Binary div(PolicyRule left, PolicyRule right) {
+        return new Binary("/", left, right);
+    }
+
+    public static Binary sum(PolicyRule left, PolicyRule right) {
+        return new Binary("+", left, right);
+    }
+
+    public static Binary sub(PolicyRule left, PolicyRule right) {
+        return new Binary("-", left, right);
+    }
+
     @Override
     public String toString() {
         return "(" + left + " " + operator + " " + right + ")";
     }
 
 
-    public static PolicyRule binaryOld(String operator, PolicyRule p) {
-        return new BinaryRule(operator, p, VarRule.of(VarRule.Name.OLD));
+    public static PolicyRule scale(Double scalar, PolicyRule p) {
+        return Binary.mult(new Constant(scalar), p);
     }
 
     public static PolicyRule sumOld(PolicyRule p) {
-        return new BinaryRule("+", p, VarRule.of(VarRule.Name.OLD));
-    }
-
-    public static PolicyRule sumOld(VarRule.Name p) {
-        return new BinaryRule("+", VarRule.of(p), VarRule.of(VarRule.Name.OLD));
+        return new Binary("+", p, Var.old());
     }
 }

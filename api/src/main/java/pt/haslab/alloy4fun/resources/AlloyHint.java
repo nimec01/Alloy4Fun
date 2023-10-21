@@ -15,9 +15,10 @@ import pt.haslab.alloy4fun.data.transfer.InstanceMsg;
 import pt.haslab.alloy4fun.repositories.SessionRepository;
 import pt.haslab.alloyaddons.ParseUtil;
 import pt.haslab.specassistant.data.models.Graph;
-import pt.haslab.specassistant.data.policy.BinaryRule;
+import pt.haslab.specassistant.data.policy.Binary;
+import pt.haslab.specassistant.data.policy.PolicyOption;
 import pt.haslab.specassistant.data.policy.PolicyRule;
-import pt.haslab.specassistant.data.policy.VarRule;
+import pt.haslab.specassistant.data.policy.Var;
 import pt.haslab.specassistant.data.transfer.HintMsg;
 import pt.haslab.specassistant.services.GraphIngestor;
 import pt.haslab.specassistant.services.GraphManager;
@@ -115,7 +116,7 @@ public class AlloyHint {
     @Path("/compute-popular-edge-policy")
     @Produces(MediaType.APPLICATION_JSON)
     public Response computePopularEdgePolicy(@QueryParam("model_id") String modelid) {
-        graphManager.getModelGraphs(modelid).forEach(id -> policyManager.computePolicyForGraph(id, BinaryRule.sumOld(VarRule.of(VarRule.Name.ARRIVALS))));
+        //graphManager.getModelGraphs(modelid).forEach(id -> policyManager.computePolicyForGraph(id, PolicyOption.samples.get())));
         return Response.ok("Popular policy computed.").build();
     }
 
@@ -123,7 +124,7 @@ public class AlloyHint {
     @Path("/compute-policy-for-model")
     @Produces(MediaType.APPLICATION_JSON)
     public Response computeTedEdge(@QueryParam("model_id") String modelid) {
-        graphManager.getModelGraphs(modelid).forEach(id -> policyManager.computePolicyForGraph(id, PolicyRule.oneMinusPrefTimesCostPlusOld(VarRule.Name.TED, VarRule.Name.ARRIVALS)));
+       // graphManager.getModelGraphs(modelid).forEach(id -> policyManager.computePolicyForGraph(id, PolicyRule.costPrefMix(Var.Name.ARRIVALS, Var.Name.TED)));
         return Response.ok("Popular policy computed.").build();
     }
 
@@ -132,11 +133,11 @@ public class AlloyHint {
     @Path("/compute-policy-for-all-models")
     @Produces(MediaType.APPLICATION_JSON)
     public Response computeTedEdge(List<String> modelids) {
-        PolicyRule policy = PolicyRule.oneMinusPrefTimesCostPlusOld(VarRule.Name.TED, VarRule.Name.ARRIVALS);
+        //PolicyRule policy = PolicyRule.costPrefMix(Var.Name.ARRIVALS, Var.Name.TED);
 
-        new HashSet<>(modelids).forEach(modelid ->
-                graphManager.getModelGraphs(modelid)
-                        .forEach(id -> policyManager.computePolicyForGraph(id, policy)));
+        //new HashSet<>(modelids).forEach(modelid ->
+        //        graphManager.getModelGraphs(modelid)
+        //                .forEach(id -> policyManager.computePolicyForGraph(id, policy)));
         return Response.ok("Popular policy computed.").build();
     }
 
@@ -144,7 +145,7 @@ public class AlloyHint {
     @Path("/compute-popular-ted-policy")
     @Produces(MediaType.APPLICATION_JSON)
     public Response computeTedPolicy(@QueryParam("model_id") String modelid) {
-        graphManager.getModelGraphs(modelid).forEach(id -> policyManager.computePolicyForGraph(id, PolicyRule.oneMinusPrefTimesCostPlusOld(VarRule.Name.TED, VarRule.Name.ARRIVALS)));
+       // graphManager.getModelGraphs(modelid).forEach(id -> policyManager.computePolicyForGraph(id, PolicyRule.costPrefMix(Var.Name.ARRIVALS, Var.Name.TED)));
         return Response.ok("Popular policy computed.").build();
     }
 
@@ -152,7 +153,7 @@ public class AlloyHint {
     @Path("/compute-popular-one")
     @Produces(MediaType.APPLICATION_JSON)
     public Response computeOnePolicy(@QueryParam("model_id") String modelid) {
-        graphManager.getModelGraphs(modelid).forEach(id -> policyManager.computePolicyForGraph(id, PolicyRule.oneMinusPrefTimesCostPlusOld(VarRule.Name.TED, VarRule.Name.ONE)));
+        //graphManager.getModelGraphs(modelid).forEach(id -> policyManager.computePolicyForGraph(id, PolicyRule.costPrefMix(Var.Name.ONE, Var.Name.TED)));
         return Response.ok("Popular policy computed.").build();
     }
 

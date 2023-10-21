@@ -5,6 +5,7 @@ import edu.mit.csail.sdg.ast.Command;
 import edu.mit.csail.sdg.ast.Func;
 import edu.mit.csail.sdg.parser.CompModule;
 import edu.mit.csail.sdg.translator.A4Options;
+import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import lombok.SneakyThrows;
@@ -14,13 +15,14 @@ import pt.haslab.Repairer;
 import pt.haslab.alloyaddons.AlloyUtil;
 import pt.haslab.alloyaddons.ParseUtil;
 import pt.haslab.specassistant.data.aggregation.EntityStringLong;
+import pt.haslab.specassistant.data.aggregation.IdListLong;
 import pt.haslab.specassistant.data.aggregation.Transition;
 import pt.haslab.specassistant.data.models.*;
-import pt.haslab.specassistant.data.policy.PolicyRule;
-import pt.haslab.specassistant.data.policy.VarRule;
+import pt.haslab.specassistant.data.policy.PolicyOption;
 import pt.haslab.specassistant.repositories.ChallengeRepository;
 import pt.haslab.specassistant.repositories.ModelRepository;
 import pt.haslab.specassistant.repositories.TestRepository;
+import pt.haslab.specassistant.util.DataUtil;
 import pt.haslab.specassistant.util.FutureUtil;
 import pt.haslab.specassistant.util.Text;
 
@@ -126,7 +128,7 @@ public class TestService {
         long time = System.nanoTime();
         Optional<Transition> t = hintGenerator.worldTransition(exercise, world);
         time = System.nanoTime() - time;
-        return new Test.Data(t.isPresent(), time, t.map(x -> x.getTo().getHopDistance()).orElse(null), t.map(x -> x.getEdge().getEditDistance()).orElse(null), t.map(x -> x.getTo().getComplexity() - x.getFrom().getComplexity()).orElse(null));
+        return new Test.Data(t.isPresent(), time, t.map(x -> x.getTo().getHopDistance()).orElse(null), t.orElse(null), t.map(x -> x.getTo().getComplexity() - x.getFrom().getComplexity()).orElse(null));
     }
 
 
@@ -160,42 +162,63 @@ public class TestService {
         testRepo.deleteTestsByNotType("TAR");
         map.forEach(this::makeGraphAndChallengesFromCommands);
         fixTestGraphIds();
-        Graph.findAll().project(Graph.class).stream().forEach(x -> trainAndTestGraph(x.getId(), 0.3, List.of(PolicyRule.oneMinusPrefTimesCostPlusOld(VarRule.Name.TED, VarRule.Name.ARRIVALS))));
+        testal();
     }
+    @SneakyThrows
+    private void testal() {
+        Map<String, Set<String>> mToC = challengeRepo.findAll().stream().collect(Collectors.groupingBy(Challenge::getModel_id, Collectors.mapping(Challenge::getCmd_n, Collectors.toSet())));
 
-    private void trainAndTestGraph(ObjectId graph_id, Double ratio, Collection<PolicyRule> policies) {
-        ConcurrentMap<Challenge, Set<String>> testing_juice = challengeRepo.streamByGraphId(graph_id).parallel().collect(Collectors.toConcurrentMap(x -> x, c -> trainAndGetTestChallengeData(c, ratio)));
+        Log.trace("Splittig dataset");
 
-        policies.forEach(policy -> {
-            policyManager.computePolicyForGraph(graph_id, policy);
+        Map<String, Map<String, Set<String>>> mToSubToC = mToC.entrySet().stream().parallel().map(this::doPartitions).collect(Collectors.toConcurrentMap(Map.Entry::getKey, Map.Entry::getValue));
 
-            testing_juice.entrySet().stream().parallel().forEach(e -> {
-                modelRepo.streamSubTreesByIdInAndChallengeInAndCommandIn(e.getKey().getModel_id(), e.getKey().getCmd_n(), e.getValue())
-                        .parallel()
-                        .forEach(x -> specTest(x, policy.toString()));
-            });
+        Log.trace("Splittig dataset phase 2");
+
+        ConcurrentMap<String, List<Model>> test = mToSubToC
+                .entrySet()
+                .stream()
+                .parallel()
+                .collect(Collectors.toConcurrentMap(Map.Entry::getKey, x -> x.getValue().entrySet().stream().flatMap(y -> modelRepo.streamSubTreesByIdInAndChallengeInAndCmd(x.getKey(), y.getKey(), y.getValue())).toList()));
+
+        Map<String, Set<String>> train = test.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, x -> x.getValue().stream().map(Model::getId).collect(Collectors.toSet())));
+
+        Log.trace("Training all");
+
+        FutureUtil.forEachOrderedAsync(train.entrySet(), e -> graphIngestor.parseModelTree(e.getKey(), m -> !e.getValue().contains(m.getId()))).get();
+
+        Log.trace("Testing all");
+
+        PolicyOption.samples.forEach(option -> {
+            Log.trace("Doing policy " + option);
+
+            Graph.findAll().project(Graph.class).stream().forEach(x -> policyManager.computePolicyForGraph(x.getId(), option));
+
+            test.values().stream().flatMap(Collection::stream).parallel().forEach(m -> specTest(m, option.getRule().toString()));
         });
     }
 
-    private Set<String> trainAndGetTestChallengeData(Challenge challenge, Double ratio) {
-        long target = modelRepo.countByOriginalAndCmdNAndValid(challenge.getModel_id(), challenge.getCmd_n());
-        target *= ratio;
+    private Map.Entry<String, Map<String, Set<String>>> doPartitions(Map.Entry<String, Set<String>> e) {
+        Map<String, Map<String, Long>> root_counts = modelRepo.countSubTreeByDerivationOfAndCMDN(e.getKey(), e.getValue())
+                .collect(Collectors.toMap(IdListLong::getId, x -> x.getList().stream().collect(Collectors.toMap(EntityStringLong::getId, EntityStringLong::getL))));
 
-        Set<String> roots = new HashSet<>();
-        Set<String> checked = new HashSet<>();
-        long count = 0L;
-        while (count < target) {
-            EntityStringLong sample = modelRepo.sampleTreeByDerivationOfAndCMDNAndIdNotIn(challenge.getModel_id(), challenge.getCmd_n(), checked).toList().get(0);
-            if (sample.getL() > 0) {
-                roots.add(sample.getId());
-                count += sample.getL();
-            }
-            checked.add(sample.getId());
-        }
+        Map<String, Long> integerMap = e.getValue().stream().collect(Collectors.toMap(x -> x, x -> 0L));
+        root_counts.forEach((m, l) -> l.forEach((c, n) -> integerMap.put(c, integerMap.get(c) + n)));
+        DataUtil.mapValues(integerMap, l -> (long) (0.3 * l));
 
-        graphIngestor.parseModelTree(challenge.getModel_id(), x -> !checked.contains(x.getId()), List.of(challenge));
+        Map<String, Set<String>> r = root_counts.keySet().stream().collect(Collectors.toMap(x -> x, x -> new HashSet<>()));
+        List<Map.Entry<String, Map<String, Long>>> shuffle = new ArrayList<>(root_counts.entrySet());
+        Collections.shuffle(shuffle);
 
-        return roots;
+        shuffle.forEach(e1 -> {
+            String root = e.getKey();
+            e1.getValue().forEach((c, l) -> {
+                if (l > 0 && integerMap.get(c) > 0) {
+                    integerMap.put(c, integerMap.get(c) - l);
+                    r.get(root).add(c);
+                }
+            });
+        });
+        return Map.entry(e.getKey(), r);
     }
 
     // AUTOSETUP *******************************************************************************************
@@ -220,7 +243,7 @@ public class TestService {
                 .thenRun(() -> log.trace("Scanning models " + model_ids))
                 .thenCompose(nil -> FutureUtil.allFutures(model_ids.stream().map(id -> graphIngestor.parseModelTree(id, model_filter))))
                 .thenRun(() -> log.trace("Computing policies for " + prefix))
-                .thenRun(() -> graphManager.getModelGraphs(model_ids.get(0)).forEach(id -> policyManager.computePolicyForGraph(id, PolicyRule.oneMinusPrefTimesCostPlusOld(VarRule.Name.TED, VarRule.Name.ARRIVALS))))
+                .thenRun(() -> graphManager.getModelGraphs(model_ids.get(0)).forEach(id -> policyManager.computePolicyForGraph(id, PolicyOption.samples.get(0))))
                 .thenRun(() -> log.debug("Completed setup for " + prefix + " with model ids " + model_ids + " in " + 1e-9 * (System.nanoTime() - start.get()) + " seconds"))
                 .whenComplete(FutureUtil.log(log));
     }
@@ -233,7 +256,7 @@ public class TestService {
         }).get();
     }
 
-    public void computePoliciesForAll(PolicyRule eval) {
+    public void computePoliciesForAll(PolicyOption eval) {
         FutureUtil.forEachAsync(Graph.findAll().stream().map(x -> (Graph) x), x -> policyManager.computePolicyForGraph(x.id, eval)).whenComplete(FutureUtil.logTrace(log, "Finished computing policies"));
     }
 

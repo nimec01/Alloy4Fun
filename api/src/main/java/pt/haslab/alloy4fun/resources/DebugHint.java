@@ -7,9 +7,10 @@ import jakarta.ws.rs.core.Response;
 import org.bson.types.ObjectId;
 import org.jboss.logging.Logger;
 import pt.haslab.alloy4fun.data.request.YearRange;
-import pt.haslab.specassistant.data.policy.BinaryRule;
+import pt.haslab.specassistant.data.policy.Binary;
+import pt.haslab.specassistant.data.policy.PolicyOption;
 import pt.haslab.specassistant.data.policy.PolicyRule;
-import pt.haslab.specassistant.data.policy.VarRule;
+import pt.haslab.specassistant.data.policy.Var;
 import pt.haslab.specassistant.services.GraphManager;
 import pt.haslab.specassistant.services.PolicyManager;
 import pt.haslab.specassistant.services.TestService;
@@ -35,7 +36,7 @@ public class DebugHint {
     @GET
     public Response debug() {
 
-        policyManager.computePolicyForGraph(new ObjectId("6515a63750e414688cb8a1ef"), BinaryRule.sumOld(VarRule.Name.TED));
+        //policyManager.computePolicyForGraph(new ObjectId("6515a63750e414688cb8a1ef"), new PolicyOption(Binary.sumOld(Var.Name.TED), 0.0, PolicyOption.Objective.MIN));
 
         return Response.ok().build();
     }
@@ -116,7 +117,7 @@ public class DebugHint {
     @Produces(MediaType.APPLICATION_JSON)
     public Response computeTedEdge(@QueryParam("reward") @DefaultValue("TED") String reward, @QueryParam("probability") @DefaultValue("ARRIVALS") String probability) {
 
-        testService.computePoliciesForAll(PolicyRule.oneMinusPrefTimesCostPlusOld(VarRule.Name.TED, VarRule.Name.ARRIVALS));
+        //testService.computePoliciesForAll(PolicyRule.costPrefMix(Var.Name.ARRIVALS, Var.Name.TED));
 
         return Response.ok("Policy computation started.").build();
     }
