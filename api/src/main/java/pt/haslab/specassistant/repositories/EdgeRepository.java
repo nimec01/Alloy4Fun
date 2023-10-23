@@ -5,9 +5,9 @@ import jakarta.enterprise.context.ApplicationScoped;
 import lombok.Synchronized;
 import org.bson.Document;
 import org.bson.types.ObjectId;
+import pt.haslab.specassistant.data.aggregation.Transition;
 import pt.haslab.specassistant.data.models.Edge;
 import pt.haslab.specassistant.data.models.Node;
-import pt.haslab.specassistant.data.aggregation.Transition;
 
 import java.util.Collection;
 import java.util.List;
@@ -44,13 +44,13 @@ public class EdgeRepository implements PanacheMongoRepository<Edge> {
         update(new Document("$unset", new Document("policy", null))).where("graph_id", graph_id);
     }
 
-    public Stream<Transition> streamTransitionsByDestinationScoreGT(Node destination, Double min) {
+    public Stream<Transition> streamTransitionsByDestinationScoreNull(Node destination, Double min) {
         return StreamSupport.stream(mongoCollection().aggregate(List.of(
                 new Document("$match", new Document("destination", destination.id)),
                 new Document("$replaceRoot", new Document("newRoot", new Document("edge", "$$ROOT"))),
                 new Document("$lookup", new Document("from", "Node").append("localField", "edge.origin").append("foreignField", "_id").append("as", "from")),
                 new Document("$unwind", "$from"),
-                new Document("$match", new Document("$or", List.of(new Document("from.score", new Document("$gt", min)), new Document("from.score", null))))
+                new Document("$match", new Document(new Document("from.score", new Document("$ne", null))))
         ), Transition.class).spliterator(), false).peek(x -> x.setTo(destination));
     }
 

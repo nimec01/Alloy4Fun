@@ -22,7 +22,4 @@ public abstract class PolicyRule implements Function<Transition, Double> {
 
     public abstract void normalizeByGraph(ObjectId objectId);
 
-    public static PolicyRule costPrefMix(PolicyRule pref, PolicyRule cost) {
-        return Binary.sum(Binary.mult(Binary.sub(Constant.of(1.0), pref), cost), Var.old());
-    }
 }

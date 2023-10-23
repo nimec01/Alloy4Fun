@@ -27,6 +27,8 @@ public class Binary extends PolicyRule {
             case "/" -> left.apply(transition) / right.apply(transition);
             case "+" -> left.apply(transition) + right.apply(transition);
             case "-" -> left.apply(transition) - right.apply(transition);
+            case "max" -> Math.max(left.apply(transition), right.apply(transition));
+            case "min" -> Math.min(left.apply(transition), right.apply(transition));
             default -> throw new UnkownOperationException("Unkown operation " + operator);
         };
     }
@@ -47,6 +49,15 @@ public class Binary extends PolicyRule {
         return new Binary("-", left, right);
     }
 
+    public static Binary max(PolicyRule left, PolicyRule right) {
+        return new Binary("max", left, right);
+    }
+
+    public static Binary min(PolicyRule left, PolicyRule right) {
+        return new Binary("min", left, right);
+    }
+
+
     @Override
     public String toString() {
         return "(" + left + " " + operator + " " + right + ")";
@@ -60,4 +71,9 @@ public class Binary extends PolicyRule {
     public static PolicyRule sumOld(PolicyRule p) {
         return new Binary("+", p, Var.old());
     }
+
+    public static PolicyRule oneMinusPrefTimesCost(PolicyRule pref, PolicyRule cost) {
+        return sum(mult(sub(Constant.of(1.0), pref), cost), Var.old());
+    }
+
 }

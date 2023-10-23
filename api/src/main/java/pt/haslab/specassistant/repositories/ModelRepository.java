@@ -9,6 +9,7 @@ import pt.haslab.specassistant.data.models.Model;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -17,6 +18,10 @@ public class ModelRepository implements PanacheMongoRepositoryBase<Model, String
 
     public Stream<Model> streamByDerivationOfAndOriginal(String derivationOf, String original) {
         return find("derivationOf = ?1 and original = ?2", derivationOf, original).stream();
+    }
+
+    public Stream<Model> streamByDerivationOfInAndOriginal(Collection< String> derivationOfx, String original) {
+        return find("derivationOf in ?1 and original = ?2", derivationOfx, original).stream();
     }
 
     public Stream<Model> streamByOriginalAndUnSat(String original_id) {

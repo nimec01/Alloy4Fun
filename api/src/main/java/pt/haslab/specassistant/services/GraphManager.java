@@ -33,7 +33,7 @@ public class GraphManager {
     @Inject
     EdgeRepository edgeRepo;
     @Inject
-    ChallengeRepository exerciseRepo;
+    ChallengeRepository challengeRepo;
 
     public void cleanGraph(ObjectId graph_id) {
         nodeRepo.deleteByGraphId(graph_id);
@@ -42,7 +42,7 @@ public class GraphManager {
 
     public void deleteGraph(ObjectId graph_id) {
         cleanGraph(graph_id);
-        exerciseRepo.deleteByGraphId(graph_id);
+        challengeRepo.deleteByGraphId(graph_id);
         Graph.deleteById(graph_id);
     }
 
@@ -50,16 +50,16 @@ public class GraphManager {
         Graph.deleteAll();
         nodeRepo.deleteAll();
         edgeRepo.deleteAll();
-        exerciseRepo.deleteAll();
+        challengeRepo.deleteAll();
     }
 
     public void generateChallenge(ObjectId graph_id, String model_id, Integer secretCommandCount, String cmd_n, Set<String> targetFunctions) {
-        if (exerciseRepo.notExistsModelIdAndCmdN(model_id, cmd_n)) {
-            exerciseRepo.persistOrUpdate(new Challenge(model_id, graph_id, secretCommandCount, cmd_n, targetFunctions));
+        if (challengeRepo.notExistsModelIdAndCmdN(model_id, cmd_n)) {
+            challengeRepo.persistOrUpdate(new Challenge(model_id, graph_id, secretCommandCount, cmd_n, targetFunctions));
         }
     }
 
-    public void generateExercisesWithGraphIdFromSecrets(Function<String, ObjectId> commandToGraphId, String model_id) {
+    public void generateChallengesWithGraphIdFromSecrets(Function<String, ObjectId> commandToGraphId, String model_id) {
         Model m = modelRepo.findByIdOptional(model_id).orElseThrow();
         CompModule world = ParseUtil.parseModel(m.getCode());
         List<Pos> secretPositions = secretPos(world.path, m.getCode());
@@ -67,11 +67,11 @@ public class GraphManager {
         Map<String, Set<String>> targets = AlloyUtil.getFunctionWithPositions(world, secretPositions);
         Integer cmdCount = targets.size();
 
-        exerciseRepo.persistOrUpdate(targets.entrySet().stream().map(x -> new Challenge(model_id, commandToGraphId.apply(x.getKey()), cmdCount, x.getKey(), x.getValue())));
+        challengeRepo.persistOrUpdate(targets.entrySet().stream().map(x -> new Challenge(model_id, commandToGraphId.apply(x.getKey()), cmdCount, x.getKey(), x.getValue())));
     }
 
     public Set<ObjectId> getModelGraphs(String modelid) {
-        return exerciseRepo.streamByModelId(modelid).map(Challenge::getGraph_id).collect(Collectors.toSet());
+        return challengeRepo.streamByModelId(modelid).map(Challenge::getGraph_id).collect(Collectors.toSet());
     }
 
     public void deleteAllGraphStructures() {
@@ -79,14 +79,14 @@ public class GraphManager {
         edgeRepo.deleteAll();
     }
 
-    public void deleteExerciseByModelIDs(List<String> ids, boolean cascadeToGraphs) {
+    public void deleteChallengesByModelIDs(List<String> ids, boolean cascadeToGraphs) {
         if (!cascadeToGraphs) {
-            exerciseRepo.deleteByModelIdIn(ids);
+            challengeRepo.deleteByModelIdIn(ids);
         } else {
-            Set<ObjectId> graph_ids = exerciseRepo.streamByModelIdIn(ids).map(Challenge::getGraph_id).collect(Collectors.toSet());
-            exerciseRepo.deleteByModelIdIn(ids);
+            Set<ObjectId> graph_ids = challengeRepo.streamByModelIdIn(ids).map(Challenge::getGraph_id).collect(Collectors.toSet());
+            challengeRepo.deleteByModelIdIn(ids);
             graph_ids.forEach(graph_id -> {
-                if (!exerciseRepo.containsGraph(graph_id))
+                if (!challengeRepo.containsGraph(graph_id))
                     deleteGraph(graph_id);
             });
         }

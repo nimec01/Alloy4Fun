@@ -32,6 +32,10 @@ public class Var extends PolicyRule {
         return of(Name.ARRIVALS);
     }
 
+    public static Var departures() {
+        return of(Name.DEPARTURES);
+    }
+
     @Override
     public String toString() {
         return var.toString();

@@ -70,30 +70,30 @@ public class GraphIngestor {
         //List<Sig> tSigs = original.getAllSigs().makeConstList();
     }
 
-    private Map<ObjectId, ObjectId> walkModelTreeStep(Predicate<Model> model_filter, Map<String, Challenge> cmdToExercise, Predicate<CompModule> modifiedPred, Model current, Map<ObjectId, ObjectId> context) {
+        private Map<ObjectId, ObjectId> walkModelTreeStep(Predicate<Model> model_filter, Map<String, Challenge> cmdToChallenge, Predicate<CompModule> modifiedPred, Model current, Map<ObjectId, ObjectId> context) {
         try {
-            if (model_filter.test(current) && current.isValidExecution() && cmdToExercise.containsKey(current.getCmd_n())) {
+            if (model_filter.test(current) && current.isValidExecution() && cmdToChallenge.containsKey(current.getCmd_n())) {
 
                 CompModule world = ParseUtil.parseModel(current.getCode());
-                Challenge exercise = cmdToExercise.get(current.getCmd_n());
-                ObjectId contextId = exercise.id;
+                Challenge challenge = cmdToChallenge.get(current.getCmd_n());
+                ObjectId contextId = challenge.id;
                 ObjectId old_node_id = context.get(contextId);
 
                 boolean modified = modifiedPred.test(world);
 
-                if (exercise.isValidCommand(world, current.getCmd_i())) {
+                if (challenge.isValidCommand(world, current.getCmd_i())) {
                     boolean valid = current.getSat() == 0;
 
-                    Map<String, String> formula = Node.getNormalizedFormulaFrom(world.getAllFunc().makeConstList(), exercise.getTargetFunctions());
+                    Map<String, String> formula = Node.getNormalizedFormulaFrom(world.getAllFunc().makeConstList(), challenge.getTargetFunctions());
 
-                    nodeRepo.incrementOrCreate(formula, valid, exercise.getGraph_id(), modified ? current.getId() : null);
-                    ObjectId new_node_id = nodeRepo.findByGraphIdAndFormula(exercise.getGraph_id(), formula).orElseThrow().getId();
+                    nodeRepo.incrementOrCreate(formula, valid, challenge.getGraph_id(), modified ? current.getId() : null);
+                    ObjectId new_node_id = nodeRepo.findByGraphIdAndFormula(challenge.getGraph_id(), formula).orElseThrow().getId();
 
                     if (!old_node_id.equals(new_node_id)) { // No laces
                         nodeRepo.incrementLeaveById(old_node_id);
                         context = new HashMap<>(context); // Make a new context based on the previous one
                         context.put(contextId, new_node_id);
-                        edgeRepo.incrementOrCreate(exercise.getGraph_id(), old_node_id, new_node_id);
+                        edgeRepo.incrementOrCreate(challenge.getGraph_id(), old_node_id, new_node_id);
                     }
                 }
             }
@@ -105,25 +105,25 @@ public class GraphIngestor {
         return context;
     }
 
-    public CompletableFuture<Void> walkModelTree(Model root, Predicate<Model> model_filter, Collection<Challenge> exercises) {
-        if (exercises.isEmpty())
+    public CompletableFuture<Void> walkModelTree(Model root, Predicate<Model> model_filter, Collection<Challenge> challenges) {
+        if (challenges.isEmpty())
             return CompletableFuture.completedFuture(null);
 
         CompModule world = ParseUtil.parseModel(root.getCode());
 
-        Map<String, Challenge> cmdToExercise = exercises.stream().collect(Collectors.toUnmodifiableMap(Challenge::getCmd_n, x -> x));
-        Map<ObjectId, ObjectId> exerciseToNodeId = new HashMap<>();
+        Map<String, Challenge> cmdToChallenge = challenges.stream().collect(Collectors.toUnmodifiableMap(Challenge::getCmd_n, x -> x));
+        Map<ObjectId, ObjectId> challengeToNodeId = new HashMap<>();
 
-        cmdToExercise.values().forEach(exercise -> {
-                    Map<String, String> formula = Node.getNormalizedFormulaFrom(world.getAllFunc().makeConstList(), exercise.getTargetFunctions());
-                    nodeRepo.incrementOrCreate(formula, false, exercise.getGraph_id(), null);
-                    exerciseToNodeId.put(exercise.id, nodeRepo.findByGraphIdAndFormula(exercise.getGraph_id(), formula).orElseThrow().getId());
+        cmdToChallenge.values().forEach(challenge -> {
+                    Map<String, String> formula = Node.getNormalizedFormulaFrom(world.getAllFunc().makeConstList(), challenge.getTargetFunctions());
+                    nodeRepo.incrementOrCreate(formula, false, challenge.getGraph_id(), null);
+                    challengeToNodeId.put(challenge.id, nodeRepo.findByGraphIdAndFormula(challenge.getGraph_id(), formula).orElseThrow().getId());
                 }
         );
         return abstractWalkModelTree(
-                (m, ctx) -> walkModelTreeStep(model_filter, cmdToExercise, w -> testSpecModifications(world, w), m, ctx),
+                (m, ctx) -> walkModelTreeStep(model_filter, cmdToChallenge, w -> testSpecModifications(world, w), m, ctx),
                 model -> modelRepo.streamByDerivationOfAndOriginal(model.getId(), model.getOriginal()),
-                exerciseToNodeId,
+                challengeToNodeId,
                 root
         );
     }
@@ -175,17 +175,17 @@ public class GraphIngestor {
         return parseModelTree(model_id, model_filter, challengeRepo.streamByModelId(model_id).collect(Collectors.toSet()));
     }
 
-    public CompletableFuture<Void> parseModelTree(String model_id, Predicate<Model> model_filter, Collection<Challenge> exercises) {
+    public CompletableFuture<Void> parseModelTree(String model_id, Predicate<Model> model_filter, Collection<Challenge> challenges) {
         Model model = modelRepo.findById(model_id);
 
         CompModule base_world = ParseUtil.parseModel(model.getCode());
 
         AtomicLong parsingTime = new AtomicLong(System.nanoTime());
-        Map<ObjectId, Long> count = exercises.stream().map(Challenge::getGraph_id).collect(Collectors.toMap(x -> x, x -> nodeRepo.getTotalVisitsFromGraph(x)));
+        Map<ObjectId, Long> count = challenges.stream().map(Challenge::getGraph_id).collect(Collectors.toMap(x -> x, x -> nodeRepo.getTotalVisitsFromGraph(x)));
 
-        return walkModelTree(model, model_filter, exercises)
+        return walkModelTree(model, model_filter, challenges)
                 .thenRun(() -> parsingTime.updateAndGet(l -> System.nanoTime() - l))
-                .thenCompose(nil -> FutureUtil.runEachAsync(exercises,
+                .thenCompose(nil -> FutureUtil.runEachAsync(challenges,
                         ex -> {
                             long st = System.nanoTime();
                             AtomicLong local_count = new AtomicLong();

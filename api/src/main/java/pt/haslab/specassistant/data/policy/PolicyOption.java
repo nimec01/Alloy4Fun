@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.util.Map;
 
 @Data
 @AllArgsConstructor
@@ -26,16 +26,15 @@ public class PolicyOption {
         return new PolicyOption(r, 1.0, Objective.MAX);
     }
 
-    public static final List<PolicyOption> samples = List.of(
-            minimize(PolicyRule.costPrefMix(Var.arrivals(), Var.ted())),
-            minimize(PolicyRule.costPrefMix(Var.arrivals(), Binary.sum(Binary.scale(0.7, Var.ted()), Binary.scale(0.3, Var.complexity())))),
-            minimize(Binary.sumOld(Var.ted())),
-            minimize(Binary.sumOld(Var.complexity())),
-            minimize(Binary.sumOld(Constant.of(1.0))),
-            minimize(Binary.sumOld(Binary.sum(Binary.scale(0.7, Var.ted()), Binary.scale(0.3, Var.complexity())))),
-            maxPercentage(Binary.mult(Var.arrivals(), Var.old())),
-            maxPercentage(Binary.mult(Var.arrivals(), Var.old()))
-
+    public static final Map<String,PolicyOption> samples = Map.of(
+            "TEDxArrival",minimize(Binary.oneMinusPrefTimesCost(Var.arrivals(), Var.ted())),
+            "TEDCOMPxArrival",minimize(Binary.oneMinusPrefTimesCost(Var.arrivals(), Binary.sum(Binary.scale(0.7, Var.ted()), Binary.scale(0.3, Var.complexity())))),
+            "TED",minimize(Binary.sumOld(Var.ted())),
+            "COMP",minimize(Binary.sumOld(Var.complexity())),
+            "ONE",minimize(Binary.sumOld(Constant.of(1.0))),
+            "TEDCOMP",minimize(Binary.sumOld(Binary.sum(Binary.scale(0.7, Var.ted()), Binary.scale(0.3, Var.complexity())))),
+            "Arrival",maxPercentage(Binary.mult(Var.arrivals(), Var.old())),
+            "Departure",maxPercentage(Binary.mult(Var.departures(), Var.old()))
     );
 
 }

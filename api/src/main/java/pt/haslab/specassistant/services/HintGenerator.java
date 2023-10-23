@@ -49,7 +49,7 @@ public class HintGenerator {
     @Inject
     EdgeRepository edgeRepo;
     @Inject
-    ChallengeRepository exerciseRepo;
+    ChallengeRepository challengeRepo;
 
     public static <ID> List<Map<ID, Candidate>> mkAllMutatedFormula(Map<ID, Expr> formula, ConstList<Sig> sigs, int maxDepth) {
         Map<ID, Candidate> unchanged = new HashMap<>();
@@ -95,35 +95,35 @@ public class HintGenerator {
         return Optional.empty();
     }
 
-    public Optional<Transition> worldTransition(Challenge exercise, CompModule world) {
-        Map<String, Expr> formulaExpr = Node.getNormalizedFormulaExprFrom(world, exercise.getTargetFunctions());
+    public Optional<Transition> worldTransition(Challenge challenge, CompModule world) {
+        Map<String, Expr> formulaExpr = Node.getNormalizedFormulaExprFrom(world, challenge.getTargetFunctions());
         Map<String, String> formula = formulaExprToString(formulaExpr);
 
-        return formulaTransition(exercise.getGraph_id(), formula);
+        return formulaTransition(challenge.getGraph_id(), formula);
     }
 
-    public Optional<HintMsg> hintWithGraph(Challenge exercise, CompModule world) {
-        Map<String, Expr> formulaExpr = Node.getNormalizedFormulaExprFrom(world, exercise.getTargetFunctions());
+    public Optional<HintMsg> hintWithGraph(Challenge challenge, CompModule world) {
+        Map<String, Expr> formulaExpr = Node.getNormalizedFormulaExprFrom(world, challenge.getTargetFunctions());
         Map<String, String> formula = formulaExprToString(formulaExpr);
 
-        return formulaTransition(exercise.getGraph_id(), formula).map(x -> firstHint(formulaExpr, x.getTo().getParsedFormula(world)));
+        return formulaTransition(challenge.getGraph_id(), formula).map(x -> firstHint(formulaExpr, x.getTo().getParsedFormula(world)));
     }
 
 
-    public Optional<Node> mutatedNextState(Challenge exercise, CompModule world) {
-        List<Map<String, Candidate>> candidateFormulas = mkAllMutatedFormula(Node.getFormulaExprFrom(world.getAllFunc().makeConstList(), exercise.getTargetFunctions()), world.getAllReachableSigs(), 1);
+    public Optional<Node> mutatedNextState(Challenge challenge, CompModule world) {
+        List<Map<String, Candidate>> candidateFormulas = mkAllMutatedFormula(Node.getFormulaExprFrom(world.getAllFunc().makeConstList(), challenge.getTargetFunctions()), world.getAllReachableSigs(), 1);
 
         List<Map<String, String>> mutatedFormulas = candidateFormulas.stream().map(m -> DataUtil.mapValues(m, f -> ExprStringify.stringify(ExprNormalizer.normalize(f.mutated)))).toList();
 
-        return nodeRepo.findBestByGraphIdAndFormulaIn(exercise.getGraph_id(), mutatedFormulas);
+        return nodeRepo.findBestByGraphIdAndFormulaIn(challenge.getGraph_id(), mutatedFormulas);
     }
 
-    public Optional<HintMsg> hintWithMutation(Challenge exercise, CompModule world) {
-        List<Map<String, Candidate>> candidateFormulas = mkAllMutatedFormula(Node.getFormulaExprFrom(world.getAllFunc().makeConstList(), exercise.getTargetFunctions()), world.getAllReachableSigs(), 1);
+    public Optional<HintMsg> hintWithMutation(Challenge challenge, CompModule world) {
+        List<Map<String, Candidate>> candidateFormulas = mkAllMutatedFormula(Node.getFormulaExprFrom(world.getAllFunc().makeConstList(), challenge.getTargetFunctions()), world.getAllReachableSigs(), 1);
 
         List<Map<String, String>> mutatedFormulas = candidateFormulas.stream().map(m -> DataUtil.mapValues(m, f -> ExprStringify.stringify(ExprNormalizer.normalize(f.mutated)))).toList();
 
-        Optional<Node> e = nodeRepo.findBestByGraphIdAndFormulaIn(exercise.getGraph_id(), mutatedFormulas);
+        Optional<Node> e = nodeRepo.findBestByGraphIdAndFormulaIn(challenge.getGraph_id(), mutatedFormulas);
 
         if (e.isPresent()) {
             Node n = e.orElseThrow();
@@ -144,23 +144,23 @@ public class HintGenerator {
 
     public Optional<HintMsg> getHint(String originId, String command_label, CompModule world) {
         String original_id = modelRepo.getOriginalById(originId);
-        Challenge exercise = exerciseRepo.findByModelIdAndCmdN(original_id, command_label).orElse(null);
+        Challenge challenge = challengeRepo.findByModelIdAndCmdN(original_id, command_label).orElse(null);
 
-        if (exercise == null) {
-            log.debug("No exercise found for original=" + original_id + " && command_label=" + command_label);
+        if (challenge == null) {
+            log.debug("No challenge found for original=" + original_id + " && command_label=" + command_label);
             return Optional.empty();
         }
 
-        Set<String> availableFuncs = AlloyUtil.streamFuncsNamesWithNames(world.getAllFunc().makeConstList(), exercise.getTargetFunctions()).collect(Collectors.toSet());
-        if (!availableFuncs.containsAll(exercise.getTargetFunctions())) {
-            log.debug("Some of the targeted functions are not contained within provided world, missing " + new HashSet<>(exercise.getTargetFunctions()).removeAll(availableFuncs));
+        Set<String> availableFuncs = AlloyUtil.streamFuncsNamesWithNames(world.getAllFunc().makeConstList(), challenge.getTargetFunctions()).collect(Collectors.toSet());
+        if (!availableFuncs.containsAll(challenge.getTargetFunctions())) {
+            log.debug("Some of the targeted functions are not contained within provided world, missing " + new HashSet<>(challenge.getTargetFunctions()).removeAll(availableFuncs));
             return Optional.empty();
         }
 
-        Optional<HintMsg> result = hintWithGraph(exercise, world);
+        Optional<HintMsg> result = hintWithGraph(challenge, world);
 
         if (result.isEmpty() && mutationsEnabled) {
-            result = hintWithMutation(exercise, world);
+            result = hintWithMutation(challenge, world);
         }
 
         return result;
