@@ -70,7 +70,7 @@ public class GraphIngestor {
         //List<Sig> tSigs = original.getAllSigs().makeConstList();
     }
 
-        private Map<ObjectId, ObjectId> walkModelTreeStep(Predicate<Model> model_filter, Map<String, Challenge> cmdToChallenge, Predicate<CompModule> modifiedPred, Model current, Map<ObjectId, ObjectId> context) {
+    private Map<ObjectId, ObjectId> walkModelTreeStep(Predicate<Model> model_filter, Map<String, Challenge> cmdToChallenge, Predicate<CompModule> modifiedPred, Model current, Map<ObjectId, ObjectId> context) {
         try {
             if (model_filter.test(current) && current.isValidExecution() && cmdToChallenge.containsKey(current.getCmd_n())) {
 

@@ -1,6 +1,9 @@
 package pt.haslab.specassistant.util;
 
+import edu.mit.csail.sdg.alloy4.Err;
 import edu.mit.csail.sdg.alloy4.Pos;
+import edu.mit.csail.sdg.parser.CompModule;
+import pt.haslab.alloyaddons.ParseUtil;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -86,4 +89,14 @@ public interface Text {
         return offsetsToPos(filename, code, Text.getSecretPositions(code));
     }
 
+    static CompModule parseModelWithSecrets(String secrets, String code) {
+        CompModule w;
+        try {
+            w = ParseUtil.parseModel(code + "\n" + secrets);
+        } catch (Err e) {
+            if (containsSecrets(code)) w = ParseUtil.parseModel(code);
+            else throw e;
+        }
+        return w;
+    }
 }

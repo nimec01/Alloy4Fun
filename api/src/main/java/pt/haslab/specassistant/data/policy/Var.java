@@ -64,7 +64,7 @@ public class Var extends PolicyRule {
                 case ARRIVALS -> (double) transition.getEdge().getCount() / (double) transition.getTo().getVisits();
             };
             if (normalizer != null)
-                normalizer.apply(result);
+                result = normalizer.apply(result);
             return result;
         } catch (NullPointerException e) {
             if (normalizer != null)

@@ -11,10 +11,10 @@ import pt.haslab.alloyaddons.ParseUtil;
 import pt.haslab.specassistant.data.models.Challenge;
 import pt.haslab.specassistant.data.models.Graph;
 import pt.haslab.specassistant.data.models.Model;
-import pt.haslab.specassistant.repositories.EdgeRepository;
 import pt.haslab.specassistant.repositories.ChallengeRepository;
-import pt.haslab.specassistant.repositories.NodeRepository;
+import pt.haslab.specassistant.repositories.EdgeRepository;
 import pt.haslab.specassistant.repositories.ModelRepository;
+import pt.haslab.specassistant.repositories.NodeRepository;
 
 import java.util.List;
 import java.util.Map;

@@ -15,8 +15,8 @@ import java.util.function.Function;
 @NoArgsConstructor
 @JsonSubTypes({
         @JsonSubTypes.Type(value = Var.class, name = "var"),
-        @JsonSubTypes.Type(value = Binary.class, name = "operation"),
-        @JsonSubTypes.Type(value = Constant.class, name = "number")
+        @JsonSubTypes.Type(value = Binary.class, name = "binary"),
+        @JsonSubTypes.Type(value = Constant.class, name = "constant")
 })
 public abstract class PolicyRule implements Function<Transition, Double> {
 

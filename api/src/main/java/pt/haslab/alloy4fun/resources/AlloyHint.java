@@ -15,10 +15,6 @@ import pt.haslab.alloy4fun.data.transfer.InstanceMsg;
 import pt.haslab.alloy4fun.repositories.SessionRepository;
 import pt.haslab.alloyaddons.ParseUtil;
 import pt.haslab.specassistant.data.models.Graph;
-import pt.haslab.specassistant.data.policy.Binary;
-import pt.haslab.specassistant.data.policy.PolicyOption;
-import pt.haslab.specassistant.data.policy.PolicyRule;
-import pt.haslab.specassistant.data.policy.Var;
 import pt.haslab.specassistant.data.transfer.HintMsg;
 import pt.haslab.specassistant.services.GraphIngestor;
 import pt.haslab.specassistant.services.GraphManager;
@@ -26,7 +22,6 @@ import pt.haslab.specassistant.services.HintGenerator;
 import pt.haslab.specassistant.services.PolicyManager;
 import pt.haslab.specassistant.util.Text;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;

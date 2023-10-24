@@ -89,12 +89,7 @@ public class TestService {
         return FutureUtil.runEachAsync(modelRepo.streamByOriginalAndUnSat(modelId).filter(x -> testRepo.findByIdOptional(new Test.ID(x.getId(), "TAR")).map(y -> !y.getData().success() && y.getData().time() > 60.0).orElse(true)).filter(model_filter), m -> {
             CompModule w;
             try {
-                try {
-                    w = ParseUtil.parseModel(m.getCode() + "\n" + secrets);
-                } catch (Err e) {
-                    if (Text.containsSecrets(m.getCode())) w = ParseUtil.parseModel(m.getCode());
-                    else throw e;
-                }
+                w = Text.parseModelWithSecrets(secrets, m.getCode());
                 Challenge ex = challengeMap.get(m.getCmd_n());
                 if (ex != null && ex.isValidCommand(w, m.getCmd_i())) {
                     return this.doTarTest(w, ex).thenApply(d -> {
@@ -128,12 +123,12 @@ public class TestService {
         long time = System.nanoTime();
         Optional<Transition> t = hintGenerator.worldTransition(challenge, world);
         time = System.nanoTime() - time;
-        return new Test.Data(t.isPresent(), time, t.map(x -> x.getTo().getHopDistance()).orElse(null), t.orElse(null), t.map(x -> x.getTo().getComplexity() - x.getFrom().getComplexity()).orElse(null));
+        return new Test.Data(t.isPresent(), time, t.map(x -> x.getTo().getHopDistance()).orElse(null), t.orElse(null));
     }
 
     private void specTestBare(Challenge challenge, CompModule world, Integer cmdI, String id, String preffix) {
         if (challenge != null && challenge.isValidCommand(world, cmdI)) {
-            testRepo.updateOrCreate(new Test.ID(id, preffix), challenge.getGraph_id(), getSpecTestData(world, challenge));
+            testRepo.updateOrCreate(new Test.ID(id, preffix + ".SPEC"), challenge.getGraph_id(), getSpecTestData(world, challenge));
         }
     }
 
@@ -197,7 +192,8 @@ public class TestService {
 
 
     @SneakyThrows
-    private void retrain() {
+    public void retrain() {
+        Graph.findAll().project(Graph.class).stream().map(x -> x.id).forEach(graphManager::cleanGraph);
         Set<String> testing_dataset = readSetFromFile("testing.txt");
         Set<String> ms = challengeRepo.findAll().stream().map(Challenge::getModel_id).collect(Collectors.toSet());
 
@@ -205,19 +201,22 @@ public class TestService {
     }
 
     @SneakyThrows
-    private void retest() {
+    public void retest() {
+        testRepo.deleteTestsByNotType("TAR");
         Set<String> testing_dataset = readSetFromFile("testing.txt");
 
         Log.trace("Parsing test dataset");
 
         Map<String, Map<String, Challenge>> mToCmdToC = challengeRepo.findAll().stream().collect(Collectors.groupingBy(Challenge::getModel_id, Collectors.toMap(Challenge::getCmd_n, x -> x)));
 
+        Map<String, String> secrets = mToCmdToC.keySet().stream().map(modelRepo::findById).filter(Objects::nonNull).collect(Collectors.toMap(Model::getId, x -> Text.extractSecrets(x.getCode())));
+
         AtomicInteger i = new AtomicInteger();
         ConcurrentMap<Integer, Consumer<String>> runs = testing_dataset.stream().parallel().map(id -> {
             try {
                 Model m = modelRepo.findByIdOptional(id).orElseThrow();
                 Challenge challenge = mToCmdToC.get(m.getOriginal()).get(m.getCmd_n());
-                CompModule world = ParseUtil.parseModel(m.getCode());
+                CompModule world = Text.parseModelWithSecrets(secrets.get(challenge.getModel_id()), m.getCode());
 
                 return specTestFullUncurry(challenge, world, m.getCmd_i(), m.getId());
             } catch (NoSuchElementException | Err e) {

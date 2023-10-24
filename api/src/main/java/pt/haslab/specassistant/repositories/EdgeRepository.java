@@ -50,7 +50,7 @@ public class EdgeRepository implements PanacheMongoRepository<Edge> {
                 new Document("$replaceRoot", new Document("newRoot", new Document("edge", "$$ROOT"))),
                 new Document("$lookup", new Document("from", "Node").append("localField", "edge.origin").append("foreignField", "_id").append("as", "from")),
                 new Document("$unwind", "$from"),
-                new Document("$match", new Document(new Document("from.score", new Document("$ne", null))))
+                new Document("$match", new Document(new Document("from.score",  null)))
         ), Transition.class).spliterator(), false).peek(x -> x.setTo(destination));
     }
 

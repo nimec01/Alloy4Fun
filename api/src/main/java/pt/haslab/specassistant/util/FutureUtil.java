@@ -1,11 +1,9 @@
 package pt.haslab.specassistant.util;
 
-import lombok.SneakyThrows;
 import org.jboss.logging.Logger;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;

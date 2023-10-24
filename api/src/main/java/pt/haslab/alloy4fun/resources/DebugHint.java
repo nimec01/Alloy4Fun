@@ -4,13 +4,8 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.bson.types.ObjectId;
 import org.jboss.logging.Logger;
 import pt.haslab.alloy4fun.data.request.YearRange;
-import pt.haslab.specassistant.data.policy.Binary;
-import pt.haslab.specassistant.data.policy.PolicyOption;
-import pt.haslab.specassistant.data.policy.PolicyRule;
-import pt.haslab.specassistant.data.policy.Var;
 import pt.haslab.specassistant.services.GraphManager;
 import pt.haslab.specassistant.services.PolicyManager;
 import pt.haslab.specassistant.services.TestService;
@@ -19,6 +14,7 @@ import pt.haslab.specassistant.util.Text;
 
 import java.util.List;
 import java.util.Map;
+
 
 @Path("/debug-hint")
 public class DebugHint {
@@ -36,7 +32,7 @@ public class DebugHint {
     @GET
     public Response debug() {
 
-        //policyManager.computePolicyForGraph(new ObjectId("6515a63750e414688cb8a1ef"), new PolicyOption(Binary.sumOld(Var.Name.TED), 0.0, PolicyOption.Objective.MIN));
+
 
         return Response.ok().build();
     }
@@ -59,7 +55,7 @@ public class DebugHint {
     @Path("/setup-multiple-graphs")
     @Produces(MediaType.APPLICATION_JSON)
     public Response genGraphs(Map<String, List<String>> model_ids, @BeanParam YearRange yearRange) {
-        FutureUtil.forEachOrderedAsync(model_ids.entrySet(), e -> testService.autoSetupJob(e.getValue(), e.getKey(), x -> yearRange.testDate(Text.parseDate(x.getTime()))));
+        FutureUtil.forEachAsync(model_ids.entrySet(), e -> testService.autoSetupJob(e.getValue(), e.getKey(), x -> yearRange.testDate(Text.parseDate(x.getTime()))));
         return Response.ok("Setup in progress.").build();
     }
 
@@ -128,6 +124,23 @@ public class DebugHint {
     @Produces({MediaType.APPLICATION_JSON})
     public Response specSplitDefault(Map<String, List<String>> model_ids) {
         testService.specTestDefaultPolicies(model_ids);
+        return Response.ok("Started.").build();
+    }
+
+    @GET
+    @Path("/retrain")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response retrain(Map<String, List<String>> model_ids) {
+        testService.retrain();
+        return Response.ok("Started.").build();
+    }
+
+
+    @GET
+    @Path("/retest")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response retest(Map<String, List<String>> model_ids) {
+        testService.retest();
         return Response.ok("Started.").build();
     }
 
