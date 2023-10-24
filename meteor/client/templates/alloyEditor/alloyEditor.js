@@ -17,7 +17,8 @@ Template.alloyEditor.helpers({
      */
     execEnabled() {
         const commands = Session.get('commands')
-        const enab = Session.get('model-updated') && commands.length > 0
+        const running = Session.get('is_running')
+        const enab = !running && Session.get('model-updated') && commands.length > 0
         return enab ? '' : 'disabled'
     },
 
@@ -122,7 +123,12 @@ Template.alloyEditor.helpers({
         const cmds = Session.get('hidden_commands')
         const inherits = cmds ? cmds.length > 0 : false
         const hasLocal = Session.get('local-secrets')
+
         return inherits && !hasLocal
+    },
+
+    isRunning() {
+        return Session.get('is_running')
     },
 
     /**
@@ -133,17 +139,23 @@ Template.alloyEditor.helpers({
     },
 
     /**
-     * The logging message to be presented.
+     * The logging messages to be presented.
      */
-    logMessage() {
-        return Session.get('log-message')
-    },
-
-    /**
-     * The logging class to be presented.
-     */
-    logClass() {
-        return Session.get('log-class')
+    logs() {
+        messages = Session.get('log-message')
+        classes = Session.get('log-class')
+        if (messages == "") {
+            return []
+        } else if (Array.isArray(messages) && Array.isArray(classes)) {
+            if(messages.length !== classes.length) {
+                console.error("Arrays must be of same length")
+                return []
+            } else {
+                return messages.map((msg, i) => ({ message: msg, class: classes[i] }))
+            }
+        } else {
+            return [{ message: messages, class: classes }]
+        }
     },
 
     /**
@@ -204,6 +216,9 @@ Template.alloyEditor.helpers({
 Template.alloyEditor.events({
     keydown(e) {
         if (e.ctrlKey && e.key === 'e') $('#exec > button').trigger('click')
+
+        // clear all marks
+        textEditor.doc.getAllMarks().forEach(marker => marker.clear())
     },
     'click #exec > button': executeModel,
     'change .command-selection > select'() {

@@ -5,9 +5,8 @@
  */
 
 import { displayError,
-    displayWarningMsg,
-    displayInfoMsg,
-    displayErrorMsg } from './feedback'
+    markEditorError,
+    markEditorWarning} from './feedback'
 import { getCommandIndex,
     storeInstances,
     modelExecuted,
@@ -20,11 +19,15 @@ import { getCommandIndex,
     currentState } from './state'
 import { resetPositions,newInstanceSetup } from '../visualizer/projection'
 
+const no_more_msg = 'No more satisfying instances!'
+
 /**
  * Execute the model through the selected command. Will call the Alloy API.
  */
 export function executeModel() {
+    Session.set('is_running',true)
     const commandIndex = getCommandIndex()
+
     // no command to run
     if (commandIndex < 0) displayError('There are no commands to execute', '')
 
@@ -41,6 +44,15 @@ export function executeModel() {
  * instances if no more cached, unless already unsat. May call the Alloy API.
  */
 export function nextInstance() {
+    log_messages = Session.get('log-message')
+    log_classes = Session.get('log-class')
+    if (log_messages[log_messages.length-1] == no_more_msg) {
+        log_messages.pop()
+        log_classes.pop()
+        Session.set('log-message',log_messages)
+        Session.set('log-class',log_classes)
+    }
+
     const instanceIndex = Session.get('currentInstance')
     const maxInstanceNumber = Session.get('maxInstance')
     // no more local instances but still not unsat
@@ -52,12 +64,19 @@ export function nextInstance() {
     if (typeof ni !== 'undefined') {
         if (ni.unsat) {
             Session.set('currentInstance', instanceIndex)
-            displayInfoMsg('No more satisfying instances!', '')
+            log_messages = Session.get('log-message')
+            log_messages.push(no_more_msg)
+            Session.set('log-message',log_messages)
+
+            log_classes = Session.get('log-class')
+            log_classes.push('log-info')
+            Session.set('log-class',log_classes)
         } else {
             resetPositions()
             updateGraph(ni)
             newInstanceSetup()
             instChanged()
+            Meteor.call('navInstance', 0, Session.get('currentInstance'), Session.get('last_id'))
         }
     }
 }
@@ -66,12 +85,23 @@ export function nextInstance() {
  * Show the previous instance for the executed command, always cached if any.
  */
 export function prevInstance() {
+    log_messages = Session.get('log-message')
+    log_classes = Session.get('log-class')
+    if (log_messages[log_messages.length-1] == no_more_msg) {
+        log_messages.pop()
+        log_classes.pop()
+        Session.set('log-message',log_messages)
+        Session.set('log-class',log_classes)
+    }
+
+
     const ni = getPreviousInstance()
     if (typeof ni !== 'undefined') {
         resetPositions()
         updateGraph(ni)
         newInstanceSetup()
         instChanged()
+        Meteor.call('navInstance', 1, Session.get('currentInstance'), Session.get('last_id'))
     }
 }
 
@@ -84,6 +114,7 @@ export function prevInstance() {
  *     meteor calls
  */
 function handleExecuteModel(err, result) {
+    Session.set('is_running',false)
     if (err) {
         maxInstanceNumber = -1
         return displayError(err)
@@ -99,31 +130,43 @@ function handleExecuteModel(err, result) {
     // if there error returned by Alloy
     if (result.alloy_error) {
         let resmsg = result.msg
-        if (result.line) resmsg = `${resmsg} (${result.line}:${result.column})`
-        resmsg += '\n'
-        displayErrorMsg('There was a problem running the model!', `${resmsg}Please validate your model.`)
+        if (result.line) {
+            resmsg = `${resmsg} (${result.line}:${result.column})-(${result.line2}:${result.column2})`
+            markEditorError(result.line - 1, result.column - 1, result.line2 - 1, result.column2 - 1)
+        }
+        resmsg = `There was a problem running the model!\n${resmsg}.`
+        console.error(resmsg)
+        Session.set('log-message', resmsg)
+        Session.set('log-class', 'log-error')
     }
     // else, show instance or unsat
     else {
         const command = getCommandLabel()
 
+        log_messages = []
+        log_classes = []
+
         if (result.warning_error) {
             let resmsg = result.msg
-            if (result.line) resmsg = `${resmsg} (${result.line}:${result.column})`
-            resmsg += '\n'
-            displayWarningMsg('There is a possible problem with the model!', resmsg)
+            if (result.line) resmsg = `${resmsg} (${result.line}:${result.column})-(${result.line2}:${result.column2})`
+            log_messages.push(`There is a possible problem with the model!\n${resmsg}\n`)
+            log_classes.push('log-warning')
+            markEditorWarning(result.line - 1, result.column - 1, result.line2 - 1, result.column2 - 1)
         }
         if (result.unsat) {
-            Session.set('log-message', result.check ? `No counter-examples. ${command} may be valid.` : `No instance found. ${command} may be inconsistent.`)
-            Session.set('log-class', result.check ? 'log-complete' : 'log-wrong')
+            log_messages.push(result.check ? `No counter-examples. ${command} may be valid.` : `No instance found. ${command} may be inconsistent.`)
+            log_classes.push(result.check ? 'log-complete' : 'log-wrong')
         } else {
-            Session.set('log-message', result.check ? `Counter-example found. ${command} is invalid.` : `Instance found. ${command} is consistent.`)
-            Session.set('log-class', result.check ? 'log-wrong' : 'log-complete')
+            log_messages.push(result.check ? `Counter-example found. ${command} is invalid.` : `Instance found. ${command} is consistent.`)
+            log_classes.push(result.check ? 'log-wrong' : 'log-complete')
             initGraphViewer('instance')
             resetPositions()
             resetState()
             updateGraph(result.instance[currentState()])
             newInstanceSetup()
         }
+
+        Session.set('log-message', log_messages)
+        Session.set('log-class', log_classes)
     }
 }
