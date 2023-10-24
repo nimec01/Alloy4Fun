@@ -6,6 +6,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.jboss.logging.Logger;
 import pt.haslab.alloy4fun.data.request.YearRange;
+import pt.haslab.specassistant.data.policy.PolicyOption;
 import pt.haslab.specassistant.services.GraphManager;
 import pt.haslab.specassistant.services.PolicyManager;
 import pt.haslab.specassistant.services.TestService;
@@ -55,7 +56,7 @@ public class DebugHint {
     @Path("/setup-multiple-graphs")
     @Produces(MediaType.APPLICATION_JSON)
     public Response genGraphs(Map<String, List<String>> model_ids, @BeanParam YearRange yearRange) {
-        FutureUtil.forEachAsync(model_ids.entrySet(), e -> testService.autoSetupJob(e.getValue(), e.getKey(), x -> yearRange.testDate(Text.parseDate(x.getTime()))));
+        FutureUtil.forEachOrderedAsync(model_ids.entrySet(), e -> testService.autoSetupJob(e.getValue(), e.getKey(), x -> yearRange.testDate(Text.parseDate(x.getTime()))));
         return Response.ok("Setup in progress.").build();
     }
 
@@ -111,9 +112,9 @@ public class DebugHint {
     @POST
     @Path("/compute-policy-for-all-models")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response computeTedEdge(@QueryParam("reward") @DefaultValue("TED") String reward, @QueryParam("probability") @DefaultValue("ARRIVALS") String probability) {
+    public Response computeTedEdge() {
 
-        //testService.computePoliciesForAll(PolicyRule.costPrefMix(Var.Name.ARRIVALS, Var.Name.TED));
+        testService.computePoliciesForAll(PolicyOption.samples.get("TED"));
 
         return Response.ok("Policy computation started.").build();
     }

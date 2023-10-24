@@ -346,7 +346,7 @@ public class TestService {
                 .thenRun(() -> log.trace("Scanning models " + model_ids))
                 .thenCompose(nil -> FutureUtil.allFutures(model_ids.stream().map(id -> graphIngestor.parseModelTree(id, model_filter))))
                 .thenRun(() -> log.trace("Computing policies for " + prefix))
-                .thenRun(() -> graphManager.getModelGraphs(model_ids.get(0)).forEach(id -> policyManager.computePolicyForGraph(id, PolicyOption.samples.get(0))))
+                .thenRun(() -> graphManager.getModelGraphs(model_ids.get(0)).forEach(id -> policyManager.computePolicyForGraph(id, PolicyOption.samples.get("TED"))))
                 .thenRun(() -> log.debug("Completed setup for " + prefix + " with model ids " + model_ids + " in " + 1e-9 * (System.nanoTime() - start.get()) + " seconds"))
                 .whenComplete(FutureUtil.log(log));
     }
