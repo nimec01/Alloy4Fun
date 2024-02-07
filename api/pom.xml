@@ -1,7 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>.</groupId>
 	<artifactId>alloy4fun-api</artifactId>
@@ -11,8 +8,8 @@
 		<finalName>alloy4fun-api</finalName>
 		<plugins>
 			<plugin>
-				<groupId>org.wildfly.swarm</groupId>
-				<artifactId>wildfly-swarm-plugin</artifactId>
+				<groupId>io.thorntail</groupId>
+				<artifactId>thorntail-maven-plugin</artifactId>
 				<version>${version.wildfly-swarm}</version>
 				<executions>
 					<execution>
@@ -29,32 +26,31 @@
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<version.wildfly-swarm>2017.7.0</version.wildfly-swarm>
+		<version.wildfly-swarm>2.7.0.Final</version.wildfly-swarm>
 	</properties>
 	<dependencies>
+		<dependency>
+  			<groupId>io.thorntail</groupId>
+  			<artifactId>logging</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>javax</groupId>
 			<artifactId>javaee-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.wildfly.swarm</groupId>
+			<groupId>io.thorntail</groupId>
 			<artifactId>jaxrs</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.alloytools</groupId>
-			<artifactId>Electrum</artifactId>
-			<version>2.0.0</version>
+			<artifactId>Alloy</artifactId>
+			<version>6.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
 			<version>20180813</version>
-		</dependency>
-		<dependency>
-			<groupId>javax.json</groupId>
-			<artifactId>javax.json-api</artifactId>
-			<version>1.1.4</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish</groupId>
@@ -67,11 +63,11 @@
 			<dependency>
 				<groupId>javax</groupId>
 				<artifactId>javaee-api</artifactId>
-				<version>7.0</version>
+				<version>8.0.1</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
-				<groupId>org.wildfly.swarm</groupId>
+				<groupId>io.thorntail</groupId>
 				<artifactId>bom-all</artifactId>
 				<version>${version.wildfly-swarm}</version>
 				<type>pom</type>

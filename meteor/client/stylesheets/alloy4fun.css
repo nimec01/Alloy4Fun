@@ -187,10 +187,8 @@ body {
 }
 
 #log{
-    margin-top:50px;
+    margin-top:10px;
 }
-
-
 
 .shapePickerTarget.settings {
     background: white !important;
@@ -240,6 +238,14 @@ body {
     background-color: rgba(113, 29, 30, 0.76);
 }
 
+.editor-error-mark {
+    background-color: #811;
+}
+
+.editor-warning-mark {
+    background-color: #fa04;
+}
+
 .margin-top10px {
     margin-top: 10px;
 }
@@ -277,6 +283,7 @@ body {
     color: white;
     width: auto;
     padding: 5px;
+    text-align: center;
 }
 
 .log-wrong {
@@ -285,14 +292,36 @@ body {
     color: white;
     width: auto;
     padding: 5px;
+    text-align: center;
 }
 
-.log-info {
-    background-color: #009933;
+.log-warning {
+    background-color: #fdcf55;
+    font-weight: 700;
+    color: #333333;
+    width: auto;
+    padding: 5px;
+    white-space: pre-line;
+    text-align: center;
+}
+
+.log-error {
+    background-color: #990033;
     font-weight: 700;
     color: white;
     width: auto;
     padding: 5px;
+    white-space: pre-line;
+    text-align: center;
+}
+
+.log-info {
+    background-color: #93ccea;
+    font-weight: 700;
+    color: white;
+    width: auto;
+    padding: 5px;
+    text-align: center;
 }
 
 .btn-margins {
