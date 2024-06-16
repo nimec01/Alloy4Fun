@@ -1,15 +1,5 @@
 version: '3'
 services:
-  meteor:
-    build:
-      context: ./meteor/
-    ports:
-      - "3010:3000"
-    links:
-      - mongo
-      - api
-    env_file:
-      - .env
   mongo:
     image: mongo:latest
     command: mongod --storageEngine=wiredTiger
@@ -18,7 +8,14 @@ services:
     ports:
       - "27017:27017"
   api:
-    build:
-      context: ./api/
+    image: quarkus/alloy4fun-api-jvm
     ports:
-      - "8081:8080" # if access id needed from the outside (otherwise no need)
+      - "8080:8080" # if access id needed from the outside (otherwise no need)
+    links:
+      - mongo
+    environment:
+      - QUARKUS_MONGODB_CONNECTION_STRING=mongodb://mongo:27017
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # for accessing the host from within the container
+
+    

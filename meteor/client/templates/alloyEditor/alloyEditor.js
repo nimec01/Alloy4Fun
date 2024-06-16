@@ -5,9 +5,12 @@ import { shareModel, shareInstance } from '../../lib/editor/genUrl'
 import { executeModel, nextInstance, prevInstance } from '../../lib/editor/executeModel'
 import { downloadTree } from '../../lib/editor/downloadTree'
 import { copyToClipboard } from '../../lib/editor/clipboard'
-import { cmdChanged, isUnsatInstance, prevState, nextState, 
-    lastState, currentState, setCurrentState, storeInstances, 
-    getCurrentState, getCurrentTrace } from '../../lib/editor/state'
+import { displayHint, hintModel } from '../../lib/editor/hintModel'
+import {
+    cmdChanged, isUnsatInstance, prevState, nextState,
+    lastState, currentState, setCurrentState, storeInstances,
+    getCurrentState, getCurrentTrace
+} from '../../lib/editor/state'
 import { staticProjection, savePositions, applyPositions } from '../../lib/visualizer/projection'
 
 Template.alloyEditor.helpers({
@@ -19,6 +22,15 @@ Template.alloyEditor.helpers({
         const commands = Session.get('commands')
         const running = Session.get('is_running')
         const enab = !running && Session.get('model-updated') && commands.length > 0
+        return enab ? '' : 'disabled'
+    },
+
+    hintReplacesExecution() {
+        return !Session.get('is_running') && !Session.get('model-updated') && Session.get('hint-enabled')
+    },
+
+    hintAvailable() {
+        const enab = !Session.get('model-updated') && Session.get('hint-available')
         return enab ? '' : 'disabled'
     },
 
@@ -130,7 +142,9 @@ Template.alloyEditor.helpers({
     isRunning() {
         return Session.get('is_running')
     },
-
+    isHintRunning() {
+        return Session.get('is_hint_running')
+    },
     /**
      * Whether the model has local secrets defined.
      */
@@ -144,18 +158,23 @@ Template.alloyEditor.helpers({
     logs() {
         messages = Session.get('log-message')
         classes = Session.get('log-class')
-        if (messages == "") {
+        if (messages == '') {
             return []
-        } else if (Array.isArray(messages) && Array.isArray(classes)) {
-            if(messages.length !== classes.length) {
-                console.error("Arrays must be of same length")
-                return []
-            } else {
-                return messages.map((msg, i) => ({ message: msg, class: classes[i] }))
-            }
-        } else {
-            return [{ message: messages, class: classes }]
         }
+        if (Array.isArray(messages) && Array.isArray(classes)) {
+            if (messages.length !== classes.length) {
+                console.error('Arrays must be of same length')
+                return []
+            }
+            return messages.map((msg, i) => ({
+                message: msg,
+                class: classes[i]
+            }))
+        }
+        return [{
+            message: messages,
+            class: classes
+        }]
     },
 
     /**
@@ -215,26 +234,34 @@ Template.alloyEditor.helpers({
 
 Template.alloyEditor.events({
     keydown(e) {
-        if (e.ctrlKey && e.key === 'e') $('#exec > button').trigger('click')
+        if (e.ctrlKey && e.key === 'e') {
+            $('#exec > button')
+                .trigger('click')
+        }
 
         // clear all marks
         textEditor.doc.getAllMarks().forEach(marker => marker.clear())
     },
-    'click #exec > button': executeModel,
+    'click #exec > button'() {
+        // clear all marks
+        textEditor.doc.getAllMarks().forEach(marker => marker.clear())
+        executeModel()
+    },
     'change .command-selection > select'() {
         cmdChanged()
     },
+    'click #hint > button': displayHint,
     'click #genUrl > button': shareModel,
     'click #prev > button': prevInstance,
     'click #next > button': nextInstance,
-    'click #nextTrace'() {       
-        savePositions() 
-        updateGraph(nextState(),true)
+    'click #nextTrace'() {
+        savePositions()
+        updateGraph(nextState(), true)
         applyPositions()
     },
     'click #prevTrace'() {
         savePositions()
-        updateGraph(prevState(),true)
+        updateGraph(prevState(), true)
         applyPositions()
     },
     'click #genInstanceUrl > button': shareInstance,
@@ -357,12 +384,13 @@ function buttonsEffects() {
 
     const eventtype = mobilecheck() ? 'touchstart' : 'click';
 
-    [].slice.call(document.querySelectorAll('.cbutton')).forEach((el) => {
-        el.addEventListener(eventtype, () => {
-            classie.add(el, 'cbutton--click')
-            onEndAnimation(classie.has(el, 'cbutton--complex') ? el.querySelector('.cbutton__helper') : el, () => {
-                classie.remove(el, 'cbutton--click')
+    [].slice.call(document.querySelectorAll('.cbutton'))
+        .forEach((el) => {
+            el.addEventListener(eventtype, () => {
+                classie.add(el, 'cbutton--click')
+                onEndAnimation(classie.has(el, 'cbutton--complex') ? el.querySelector('.cbutton__helper') : el, () => {
+                    classie.remove(el, 'cbutton--click')
+                })
             })
         })
-    })
 }
