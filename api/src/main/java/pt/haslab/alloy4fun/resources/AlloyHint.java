@@ -13,7 +13,7 @@ import pt.haslab.alloy4fun.data.request.HintRequest;
 import pt.haslab.alloy4fun.data.request.YearRange;
 import pt.haslab.alloy4fun.data.transfer.InstanceMsg;
 import pt.haslab.alloy4fun.repositories.SessionRepository;
-import pt.haslab.alloyaddons.ParseUtil;
+import pt.haslab.alloy4fun.util.ParseUtil;
 import pt.haslab.specassistant.data.models.Graph;
 import pt.haslab.specassistant.data.transfer.HintMsg;
 import pt.haslab.specassistant.services.GraphIngestor;
@@ -23,6 +23,7 @@ import pt.haslab.specassistant.services.PolicyManager;
 import pt.haslab.specassistant.util.Text;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
@@ -103,53 +104,17 @@ public class AlloyHint {
     @Path("/get")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getHint(HintRequest request) {
-        Optional<HintMsg> result = hintGenerator.getHint(request.challenge, request.predicate, ParseUtil.parseModel(request.model));
-        return result.map(r -> Response.ok(InstanceMsg.from(r))).orElseGet(() -> Response.status(Response.Status.NO_CONTENT)).build();
-    }
+        Optional<HintMsg> result;
+        try {
+            result = sessionManager.findById(request.challenge).hintRequest.get();
+        } catch (InterruptedException | ExecutionException e) {
+            if (request.isComplete())
+                result = hintGenerator.getHint(request.challenge, request.predicate, ParseUtil.parseModel(request.model));
+            else
+                result = Optional.empty();
+        }
 
-    @POST
-    @Path("/compute-popular-edge-policy")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response computePopularEdgePolicy(@QueryParam("model_id") String modelid) {
-        //graphManager.getModelGraphs(modelid).forEach(id -> policyManager.computePolicyForGraph(id, PolicyOption.samples.get())));
-        return Response.ok("Popular policy computed.").build();
-    }
-
-    @POST
-    @Path("/compute-policy-for-model")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response computeTedEdge(@QueryParam("model_id") String modelid) {
-       // graphManager.getModelGraphs(modelid).forEach(id -> policyManager.computePolicyForGraph(id, PolicyRule.costPrefMix(Var.Name.ARRIVALS, Var.Name.TED)));
-        return Response.ok("Popular policy computed.").build();
-    }
-
-
-    @POST
-    @Path("/compute-policy-for-all-models")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response computeTedEdge(List<String> modelids) {
-        //PolicyRule policy = PolicyRule.costPrefMix(Var.Name.ARRIVALS, Var.Name.TED);
-
-        //new HashSet<>(modelids).forEach(modelid ->
-        //        graphManager.getModelGraphs(modelid)
-        //                .forEach(id -> policyManager.computePolicyForGraph(id, policy)));
-        return Response.ok("Popular policy computed.").build();
-    }
-
-    @POST
-    @Path("/compute-popular-ted-policy")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response computeTedPolicy(@QueryParam("model_id") String modelid) {
-       // graphManager.getModelGraphs(modelid).forEach(id -> policyManager.computePolicyForGraph(id, PolicyRule.costPrefMix(Var.Name.ARRIVALS, Var.Name.TED)));
-        return Response.ok("Popular policy computed.").build();
-    }
-
-    @POST
-    @Path("/compute-popular-one")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response computeOnePolicy(@QueryParam("model_id") String modelid) {
-        //graphManager.getModelGraphs(modelid).forEach(id -> policyManager.computePolicyForGraph(id, PolicyRule.costPrefMix(Var.Name.ONE, Var.Name.TED)));
-        return Response.ok("Popular policy computed.").build();
+        return result.map(r -> Response.ok(InstanceMsg.from(r))).orElseGet(() -> Response.ok(Map.of("alloy_hint", false))).build();
     }
 
 }

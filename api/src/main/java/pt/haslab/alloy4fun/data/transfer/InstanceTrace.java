@@ -16,7 +16,6 @@ public class InstanceTrace {
 
     List<TupleTrace> rels;
 
-
     public static InstanceTrace from(AlloyInstance instance) {
         InstanceTrace result = new InstanceTrace();
 

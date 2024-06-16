@@ -5,7 +5,7 @@ import { download } from './downloadTree'
 function handleHintGet(err, result) {
     if (err) {
         console.error(err)
-    } else if (result && result.alloy_hint && !result.alloy_error) {
+    } else if (Math.random() > 0.20 && result && result.alloy_hint && !result.alloy_error) {
         Session.set('hint-data', result)
         Session.set('hint-enabled', true)
         Session.set('hint-available', true)

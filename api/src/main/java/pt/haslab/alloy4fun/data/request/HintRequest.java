@@ -6,10 +6,14 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class HintRequest {
 
-    @JsonAlias({"challenge", "parentId", "modelId","sessionId"})
+    @JsonAlias({"challenge", "parentId", "modelId", "sessionId"})
     public String challenge;
-    @JsonAlias({"predicate", "command_label"})
+    @JsonAlias({"predicate", "command_label", "cmd_n"})
     public String predicate;
     public String model;
-    public String hintGenType = "TED";
+
+    public boolean isComplete() {
+        return challenge != null && predicate != null && model != null;
+    }
+
 }

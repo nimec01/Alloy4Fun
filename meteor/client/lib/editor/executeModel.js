@@ -23,6 +23,7 @@ import {
 } from './state'
 import { resetPositions, newInstanceSetup } from '../visualizer/projection'
 import { bufferHint } from './hintModel'
+import log_messages from 'cytoscape/src/heap'
 
 const no_more_msg = 'No more satisfying instances!'
 
@@ -165,6 +166,8 @@ function handleExecuteModel(err, result) {
             log_messages.push(result.check ? `No counter-examples. ${command} may be valid.` : `No instance found. ${command} may be inconsistent.`)
             log_classes.push(result.check ? 'log-complete' : 'log-wrong')
         } else {
+            bufferHint()
+
             log_messages.push(result.check ? `Counter-example found. ${command} is invalid.` : `Instance found. ${command} is consistent.`)
             log_classes.push(result.check ? 'log-wrong' : 'log-complete')
             initGraphViewer('instance')
@@ -174,7 +177,6 @@ function handleExecuteModel(err, result) {
             newInstanceSetup()
         }
 
-        bufferHint()
 
         Session.set('log-message', log_messages)
         Session.set('log-class', log_classes)

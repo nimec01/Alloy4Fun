@@ -4,12 +4,11 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.jboss.logging.Logger;
 import pt.haslab.alloy4fun.data.request.YearRange;
 import pt.haslab.specassistant.data.policy.PolicyOption;
 import pt.haslab.specassistant.services.GraphManager;
 import pt.haslab.specassistant.services.PolicyManager;
-import pt.haslab.specassistant.services.TestService;
+import pt.haslab.specassistant.services.SpecAssistantTestService;
 import pt.haslab.specassistant.util.FutureUtil;
 import pt.haslab.specassistant.util.Text;
 
@@ -19,22 +18,13 @@ import java.util.Map;
 
 @Path("/debug-hint")
 public class DebugHint {
-
-    @Inject
-    Logger log;
     @Inject
     GraphManager graphManager;
     @Inject
-    TestService testService;
-
-    @Inject
-    PolicyManager policyManager;
+    SpecAssistantTestService testService;
 
     @GET
     public Response debug() {
-
-
-
         return Response.ok().build();
     }
 
@@ -113,9 +103,7 @@ public class DebugHint {
     @Path("/compute-policy-for-all-models")
     @Produces(MediaType.APPLICATION_JSON)
     public Response computeTedEdge() {
-
         testService.computePoliciesForAll(PolicyOption.samples.get("TED"));
-
         return Response.ok("Policy computation started.").build();
     }
 
@@ -133,15 +121,6 @@ public class DebugHint {
     @Produces({MediaType.APPLICATION_JSON})
     public Response retrain(Map<String, List<String>> model_ids) {
         testService.retrain();
-        return Response.ok("Started.").build();
-    }
-
-
-    @GET
-    @Path("/retest")
-    @Produces({MediaType.APPLICATION_JSON})
-    public Response retest(Map<String, List<String>> model_ids) {
-        testService.retest();
         return Response.ok("Started.").build();
     }
 
