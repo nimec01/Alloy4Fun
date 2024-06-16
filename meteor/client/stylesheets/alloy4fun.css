@@ -287,6 +287,7 @@ body {
     color: white;
     width: auto;
     padding: 5px;
+    text-align: center;
 }
 
 .log-wrong {
@@ -295,6 +296,7 @@ body {
     color: white;
     width: auto;
     padding: 5px;
+    text-align: center;
 }
 
 .log-warning {
@@ -323,6 +325,7 @@ body {
     color: white;
     width: auto;
     padding: 5px;
+    text-align: center;
 }
 
 .log-unavailable {
