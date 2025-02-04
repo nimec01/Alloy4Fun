@@ -1,8 +1,9 @@
-version: '3'
 services:
   meteor:
     build:
       context: ./meteor/
+      dockerfile: Dockerfile
+    image: alloy4fun-meteor:latest
     ports:
       - "3010:3000"
     links:
@@ -20,5 +21,6 @@ services:
   api:
     build:
       context: ./api/
+    image: alloy4fun-api:latest
     ports:
       - "8081:8080" # if access id needed from the outside (otherwise no need)
