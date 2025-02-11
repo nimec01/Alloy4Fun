@@ -27,6 +27,8 @@ cd -
 
 docker create --name alloy4fun-meteor alloy4fun-meteor:fmi
 
-docker cp alloy4fun-meteor:/opt/meteor/dist/bundle/ meteor-dist/bundle/
+mkdir -p meteor-dist/
+
+docker cp alloy4fun-meteor:/opt/meteor/dist/bundle/ meteor-dist/
 
 docker rm alloy4fun-meteor
