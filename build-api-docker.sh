@@ -2,7 +2,7 @@
 
 set -eux
 
-CACHE=.cache/api
+CACHE=../.cache/api
 CACHE_TO=--cache-to=type=local,dest=${CACHE}/dist,mode=max
 
 mkdir -p ${CACHE}/base/ ${CACHE}/dist/
