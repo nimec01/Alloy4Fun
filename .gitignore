@@ -38,3 +38,4 @@ api/bin/
 alloy-examples
 Alloy4FunMeteor/\.meteor/
 .DS_Store
+.cache/
