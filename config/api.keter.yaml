@@ -1,0 +1,15 @@
+user-edited: true
+stanzas:
+  - type: webapp
+
+    exec: ../start.sh
+
+    env:
+      LANG: "C.UTF-8"
+      LC_ALL: "C.UTF-8"
+      PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+    hosts:
+      - localhost
+
+    requires-secure: false
