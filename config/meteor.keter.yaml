@@ -1,0 +1,19 @@
+user-edited: true
+stanzas:
+  - type: webapp
+
+    exec: ../start.sh
+
+    env:
+      LANG: "C.UTF-8"
+      LC_ALL: "C.UTF-8"
+      PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+      # The following environment variables need to be adjusted to the actual values
+      MONGO_URL: "mongodb://mongo:27017/meteor"
+      METEOR_SETTINGS: '{"env": {"API_URL": "http://api:8080", "MAX_INSTANCES" : 20}}'
+      ROOT_URL: "http://localhost"
+
+    hosts:
+      - localhost
+
+    requires-secure: false
