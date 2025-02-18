@@ -1,1 +1,1 @@
-FROM jshimko/meteor-launchpad:latest
+FROM gbhrdt/meteor-launchpad:1 AS builder
