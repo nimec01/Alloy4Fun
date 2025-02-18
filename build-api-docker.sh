@@ -19,14 +19,14 @@ echo "Building the api..."
 
 cd api
 
-docker buildx build --load --cache-from=type=local,src=${CACHE}/dist ${CACHE_TO} --tag alloy4fun-api:fmi --file Dockerfile .
+docker buildx build --load --cache-from=type=local,src=${CACHE}/dist ${CACHE_TO} --tag alloy4fun-quarkus-api:fmi --file Dockerfile .
 
 cd -
 
 # Copy the api jar
 
-docker create --name alloy4fun-api alloy4fun-api:fmi
+docker create --name alloy4fun-api alloy4fun-quarkus-api:fmi
 
-docker cp alloy4fun-api:/home/target/alloy4fun-api-thorntail.jar alloy4fun-api.jar
+docker cp alloy4fun-api:/app/target/quarkus-app/ quarkus-app/
 
 docker rm alloy4fun-api

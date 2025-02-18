@@ -6,9 +6,9 @@ set -eux
 
 TEMP_API_DIR=$(mktemp -d)
 
-cp alloy4fun-api.jar $TEMP_API_DIR
+cp -r quarkus-app/ $TEMP_API_DIR/quarkus-app/
 
-echo "/usr/bin/java -Djava.net.preferIPv4Stack=true -Dthorntail.http.port=\${PORT:=8080} -jar alloy4fun-api.jar" > $TEMP_API_DIR/start.sh
+echo "/usr/bin/java -Dquarkus.http.port=\${PORT:=8080} -jar /opt/alloy4fun-api/quarkus-app/quarkus-run.jar" > $TEMP_API_DIR/start.sh
 
 chmod +x $TEMP_API_DIR/start.sh
 
@@ -18,7 +18,7 @@ cp config/api.keter.yaml $TEMP_API_DIR/config/keter.yaml
 
 tar -C $TEMP_API_DIR -czf alloy4fun-api.keter .
 
-rm -rf $TEMP_API_DIR alloy4fun-api.jar
+rm -rf $TEMP_API_DIR quarkus-app/
 
 # Pack meteor
 
@@ -73,6 +73,12 @@ scp ${JUMP_HOST:+-J} ${JUMP_HOST:+"${JUMP_HOST}"}\
 
 ssh ${JUMP_HOST:+-J} ${JUMP_HOST:+"${JUMP_HOST}"}\
   -p "${PORT}" "${SSH_USER}@${SERVER}" -C "set -x trace\
+  && cd ${API_REMOTE_DIR}\
+  && tar xf ${API_KET}\
+  && rm -rf ${API_REMOTE_DIR}/${API_KET}\
+  && tar czf ${API_REMOTE_DIR}/${API_KET} -C ${API_REMOTE_DIR} config/ start.sh\
+  && chown -R ${USER}:${GROUP} ${API_REMOTE_DIR}\
+  && ln -sf ${API_REMOTE_DIR} ${API_TARGET_FOLDER}\
   && mkdir ${METEOR_REMOTE_DIR}/meteor\
   && cd ${METEOR_REMOTE_DIR}/meteor\
   && tar xf ../${METEOR_KET}\
