@@ -7,7 +7,7 @@ release.properties
 .flattened-pom.xml
 mvn
 mvn.cmd
-.mvn
+.mvn/wrapper/maven-wrapper.jar
 
 # Eclipse
 .project
